@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="auth_method">
+        <item>Without authentification</item>
+        <item>NickServ</item>
+    </string-array>
+    <string-array name="nicknames" />
+    <string-array name="encoding_array">
+        <item>UTF-8</item>
+        <item>Windows-1251</item>
+    </string-array>
+</resources>

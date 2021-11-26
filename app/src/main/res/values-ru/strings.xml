@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tinelix IRC Client</string>
+    <string name="action_settings">Настройки</string>
+    <string name="about_app">О приложении</string>
+    <string name="profile_name_string">Имя профиля</string>
+    <string name="auth_method_string">Метод аутентификации</string>
+    <string name="nicknames_string">Никнеймы</string>
+    <string name="main_settings_catefory_string">Общие</string>
+    <string name="password_string">Пароль</string>
+    <string name="realname_string">Реальное имя</string>
+    <string name="connection_category_string">Подключение</string>
+    <string name="server_settings_string">Сервер</string>
+    <string name="port_settings_string">Порт</string>
+    <string name="encoding_string">Кодировка</string>
+    <string name="identification_settings_category_string">Идентификация</string>
+    <string name="quit_message_string">Сообщение при выходе</string>
+    <string name="host_name_string">Имя хоста</string>
+    <string name="dark_theme_string">Темная тема</string>
+    <string name="main_settings_string">Настройки</string>
+    <string name="under_contruction_string">Пока не реализовано.</string>
+</resources>
