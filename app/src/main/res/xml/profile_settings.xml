@@ -1,78 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <PreferenceCategory android:title="@string/main_settings_catefory_string">
-
-    </PreferenceCategory>
-    <EditTextPreference
-        android:defaultValue="Default value"
-        android:key="profile_name_key"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/profile_name_string" />
-    <ListPreference
-        android:defaultValue="1"
-        android:entries="@array/auth_method"
-        android:entryValues="@array/auth_method"
-        android:key="auth_method_key"
-        android:title="@string/auth_method_string" />
-    <ListPreference
-        android:defaultValue="1"
-        android:entries="@array/nicknames"
-        android:entryValues="@array/nicknames"
-        android:key="nicknames_key"
-        android:title="@string/nicknames_string" />
-    <EditTextPreference
-        android:defaultValue="Default value"
-        android:inputType="textPassword"
-        android:key="password_key"
-        android:password="true"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/password_string" />
-    <EditTextPreference
-        android:defaultValue="Default value"
-        android:key="realname_key"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/realname_string" />
-    <PreferenceCategory android:title="@string/connection_category_string">
-
-    </PreferenceCategory>
-    <EditTextPreference
-        android:defaultValue="Default value"
-        android:key="server_key"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/server_settings_string" />
-    <EditTextPreference
-        android:defaultValue="Default value"
-        android:inputType="numberSigned"
-        android:key="port_key"
-        android:maxLength="5"
-        android:numeric="integer"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/port_settings_string" />
-    <ListPreference
-        android:defaultValue="1"
-        android:entries="@array/encoding_array"
-        android:entryValues="@array/encoding_array"
-        android:key="encoding_key"
-        android:title="@string/encoding_string" />
-    <PreferenceCategory android:title="@string/identification_settings_category_string">
-
-    </PreferenceCategory>
-    <EditTextPreference
-        android:defaultValue="Default value"
-        android:key="quit_msg_key"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/quit_message_string" />
-    <EditTextPreference
-        android:defaultValue="Default value"
-        android:key="hostname_key"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/host_name_string" />
+    <Preference
+        android:key="prof_name"
+        android:title="@string/prof_name"
+        android:defaultValue="(profile name)"
+        android:dialogTitle="@string/enter_the_pfn_title" />
 </PreferenceScreen>

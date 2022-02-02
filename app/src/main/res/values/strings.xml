@@ -1,21 +1,18 @@
 <resources>
-    <string name="app_name">Tinelix IRC Client</string>
-    <string name="action_settings">Settings</string>
-    <string name="about_app">About</string>
-    <string name="profile_name_string">Profile name</string>
-    <string name="auth_method_string">Authentification method</string>
-    <string name="nicknames_string">Nicknames</string>
-    <string name="main_settings_catefory_string">Main</string>
-    <string name="password_string">Password</string>
-    <string name="realname_string">Real name</string>
-    <string name="connection_category_string">Connection</string>
-    <string name="server_settings_string">Server</string>
-    <string name="port_settings_string">Port</string>
-    <string name="encoding_string">Encoding</string>
-    <string name="identification_settings_category_string">Identification</string>
-    <string name="quit_message_string">Quit message</string>
-    <string name="host_name_string">Host name</string>
-    <string name="dark_theme_string">Dark theme</string>
-    <string name="main_settings_string">Settings</string>
-    <string name="under_contruction_string">Not implemented yet.</string>
+    <string-array name="main_menu_array">
+        <item>Connect...</item>
+        <item>Statistics</item>
+        <item>Quit</item>
+    </string-array>
+    <string name="app_name" translatable="false">Tinelix IRC Client</string>
+    <string name="connection_manager_title">Connection manager</string>
+    <string name="connection_manager_add_item">Add</string>
+    <string name="connection_manager_connect_item">Connect</string>
+    <string name="connection_manager_change_item">Change</string>
+    <string name="connection_manager_delete_item">Delete</string>
+    <string name="profile_name_label">Profile name:</string>
+    <string name="ok_button" translatable="false">OK</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="enter_the_pfn_title">Enter the profile name</string>
+    <string name="prof_name">Profile name</string>
 </resources>

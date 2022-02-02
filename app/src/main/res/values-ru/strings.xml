@@ -1,22 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tinelix IRC Client</string>
-    <string name="action_settings">Настройки</string>
-    <string name="about_app">О приложении</string>
-    <string name="profile_name_string">Имя профиля</string>
-    <string name="auth_method_string">Метод аутентификации</string>
-    <string name="nicknames_string">Никнеймы</string>
-    <string name="main_settings_catefory_string">Общие</string>
-    <string name="password_string">Пароль</string>
-    <string name="realname_string">Реальное имя</string>
-    <string name="connection_category_string">Подключение</string>
-    <string name="server_settings_string">Сервер</string>
-    <string name="port_settings_string">Порт</string>
-    <string name="encoding_string">Кодировка</string>
-    <string name="identification_settings_category_string">Идентификация</string>
-    <string name="quit_message_string">Сообщение при выходе</string>
-    <string name="host_name_string">Имя хоста</string>
-    <string name="dark_theme_string">Темная тема</string>
-    <string name="main_settings_string">Настройки</string>
-    <string name="under_contruction_string">Пока не реализовано.</string>
+    <string-array name="main_menu_array">
+        <item>Подключиться…</item>
+        <item>Статистика</item>
+        <item>Выход</item>
+    </string-array>
+    <string name="connection_manager_title">Менеджер подключений</string>
+    <string name="connection_manager_add_item">Добавить</string>
+    <string name="connection_manager_connect_item">Подключиться</string>
+    <string name="connection_manager_change_item">Изменить</string>
+    <string name="connection_manager_delete_item">Удалить</string>
+    <string name="profile_name_label">Имя профиля:</string>
+    <string name="cancel_button">Отмена</string>
+    <string name="enter_the_pfn_title">Введите имя профиля</string>
+    <string name="prof_name">Имя профиля</string>
 </resources>
