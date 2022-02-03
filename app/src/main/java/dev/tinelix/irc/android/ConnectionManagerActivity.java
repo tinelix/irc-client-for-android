@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.BaseAdapter;
 
 public class ConnectionManagerActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
     @Override
@@ -23,7 +25,13 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         Context context = getApplicationContext();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.registerOnSharedPreferenceChangeListener(this);
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        CreateItemFragm ci_fragment = new CreateItemFragm();
+        fragmentTransaction.add(R.id.create_item_layout, ci_fragment);
+        fragmentTransaction.commit();
     };
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -46,7 +54,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         return super.onOptionsItemSelected(item);
     }
 
-    private boolean showEnterTextDialog() {
+    public boolean showEnterTextDialog() {
         DialogFragment enterTextDialogFragm = new EnterTextDialogFragm();
         enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
         return false;
@@ -57,6 +65,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         SharedPreferences prefs = context.getSharedPreferences(profile_name, 0);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("name", profile_name);
+        editor.putString("auth_method", "Disabled");
         editor.commit();
         Intent intent = new Intent(this, ProfileSettingsActivity.class);
         intent.putExtra("profile_name", profile_name);

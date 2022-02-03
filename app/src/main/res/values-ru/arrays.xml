@@ -2,7 +2,7 @@
 <resources>
 
     <string-array name="auth_method">
-        <item>Без аунтентификации</item>
+        <item>Без аутентификации</item>
         <item>NickServ</item>
     </string-array>
     <string-array name="nicknames" />

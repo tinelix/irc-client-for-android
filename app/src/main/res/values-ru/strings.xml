@@ -14,4 +14,8 @@
     <string name="cancel_button">Отмена</string>
     <string name="enter_the_pfn_title">Введите имя профиля</string>
     <string name="prof_name">Имя профиля</string>
+    <string name="profile_main_category">Общие</string>
+    <string name="auth_method">Метод аутентификации</string>
+    <string name="add_nickname_item">Добавить никнейм</string>
+    <string name="add_profile_item">Создать профиль</string>
 </resources>

@@ -7,10 +7,34 @@
 
     <ListView
         android:id="@+id/profile_list"
-        android:layout_width="409dp"
-        android:layout_height="729dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/create_item_layout">
+
+    </ListView>
+
+    <LinearLayout
+        android:id="@+id/create_item_layout"
+        android:layout_width="409dp"
+        android:layout_height="58dp"
+        android:layout_marginBottom="2dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/profile_list"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <fragment
+            android:id="@+id/create_item_fragm"
+            android:name="dev.tinelix.irc.android.CreateItemFragm"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            tools:layout="@layout/create_item" />
+    </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>

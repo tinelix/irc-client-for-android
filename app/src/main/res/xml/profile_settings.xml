@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/profile_main_category">
+
+    </PreferenceCategory>
     <Preference
         android:key="prof_name"
         android:title="@string/prof_name"
         android:defaultValue="(profile name)"
         android:dialogTitle="@string/enter_the_pfn_title" />
+    <Preference
+        android:defaultValue="true"
+        android:key="auth_method"
+        android:title="@string/auth_method" />
 </PreferenceScreen>

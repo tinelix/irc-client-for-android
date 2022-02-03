@@ -15,4 +15,9 @@
     <string name="cancel_button">Cancel</string>
     <string name="enter_the_pfn_title">Enter the profile name</string>
     <string name="prof_name">Profile name</string>
+    <string name="profile_main_category">Main</string>
+    <string name="auth_method">Authentication method</string>
+    <string name="add_nickname_item">Add nickname</string>
+    <string name="add_profile_item">Add profile</string>
+    <string name="add">add</string>
 </resources>
