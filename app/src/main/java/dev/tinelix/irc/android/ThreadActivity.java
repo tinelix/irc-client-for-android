@@ -97,72 +97,11 @@ public class ThreadActivity extends Activity {
         send_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                if(socket != null) {
-                    outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
-                    if(outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
-                        try {
-                            socket.getOutputStream().write(("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes());
-                            channelsArray.add(outputMsgArray.get(1));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else if(outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && !outputMsgArray.get(1).startsWith("#")) {
-                        try {
-                            socket.getOutputStream().write(("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes());
-                            channelsArray.add("#" + outputMsgArray.get(1));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else if(outputMsgArray.get(0).startsWith("/mode") && outputMsgArray.size() > 1) {
-                        try {
-                            StringBuilder message_sb = new StringBuilder();
-                            for (int i = 1; i < outputMsgArray.size(); i++)
-                            {
-                                if(i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
-                                    message_sb.append(outputMsgArray.get(i)).append(" ");
-                                } else if(outputMsgArray.get(i).length() > 0) {
-                                    message_sb.append(outputMsgArray.get(i));
-                                }
-                            };
-                            socket.getOutputStream().write(("MODE " + message_sb.toString() + "\r\n").getBytes());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else if(outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() == 1) {
-                        try {
-                            socket.getOutputStream().write(("NICK " + outputMsgArray.get(1) + "\r\n").getBytes());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else if(outputMsgArray.get(0).startsWith("/")) {
-                        try {
-                            StringBuilder message_sb = new StringBuilder();
-                            for (int i = 0; i < outputMsgArray.size(); i++)
-                            {
-                                if(i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
-                                    message_sb.append(outputMsgArray.get(i)).append(" ");
-                                } else if(outputMsgArray.get(i).length() > 0) {
-                                    message_sb.append(outputMsgArray.get(i));
-                                }
-                            };
-                            socket.getOutputStream().write((message_sb.toString().substring(1) + "\r\n").getBytes());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        try {
-                            if(channelsArray.size() > 0) {
-                                socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText() + "\r\n").getBytes());
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    socks_msg_text.setText(socks_msg_text.getText() + "\nYou: " + output_msg_text.getText());
-                    socks_msg_text.setSelection(socks_msg_text.getText().length());
-                    output_msg_text.setText("");
-                }
+                Thread send_msg_thread = new Thread(new SendSocketMsg());
+                send_msg_thread.start();
+                socks_msg_text.setText(socks_msg_text.getText() + "You: " + output_msg_text.getText());
+                socks_msg_text.setSelection(socks_msg_text.getText().length());
+                output_msg_text.setText("");
             }
         });
     }
@@ -250,6 +189,76 @@ public class ThreadActivity extends Activity {
                 socket = null;
                 state = "disconnected";
                 updateUITask.run();
+            }
+        }
+    }
+
+    class SendSocketMsg implements Runnable {
+        @Override
+        public void run() {
+            if(socket != null) {
+                outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
+                if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
+                    try {
+                        socket.getOutputStream().write(("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes());
+                        channelsArray.add(outputMsgArray.get(1));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && !outputMsgArray.get(1).startsWith("#")) {
+                    try {
+                        socket.getOutputStream().write(("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes());
+                        channelsArray.add("#" + outputMsgArray.get(1));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (outputMsgArray.get(0).startsWith("/mode") && outputMsgArray.size() > 1) {
+                    try {
+                        StringBuilder message_sb = new StringBuilder();
+                        for (int i = 1; i < outputMsgArray.size(); i++) {
+                            if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
+                                message_sb.append(outputMsgArray.get(i)).append(" ");
+                            } else if (outputMsgArray.get(i).length() > 0) {
+                                message_sb.append(outputMsgArray.get(i));
+                            }
+                        }
+                        ;
+                        socket.getOutputStream().write(("MODE " + message_sb.toString() + "\r\n").getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() == 1) {
+                    try {
+                        socket.getOutputStream().write(("NICK " + outputMsgArray.get(1) + "\r\n").getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (outputMsgArray.get(0).startsWith("/")) {
+                    try {
+                        StringBuilder message_sb = new StringBuilder();
+                        for (int i = 0; i < outputMsgArray.size(); i++) {
+                            if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
+                                message_sb.append(outputMsgArray.get(i)).append(" ");
+                            } else if (outputMsgArray.get(i).length() > 0) {
+                                message_sb.append(outputMsgArray.get(i));
+                            }
+                        }
+                        ;
+                        socket.getOutputStream().write((message_sb.toString().substring(1) + "\r\n").getBytes());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    try {
+                        if (channelsArray.size() > 0) {
+                            socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText() + "\r\n").getBytes());
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                Log.e("Socket", "Socket not created");
             }
         }
     }
