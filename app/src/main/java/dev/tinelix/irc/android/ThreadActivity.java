@@ -41,6 +41,7 @@ public class ThreadActivity extends Activity {
     public String nicknames;
     public String hostname;
     public String realname;
+    public StringBuilder msg;
     public int received_bytes;
     public List<String> channelsArray = new ArrayList<String>();
     public List<String> outputMsgArray = new ArrayList<String>();
@@ -183,13 +184,20 @@ public class ThreadActivity extends Activity {
                 socket.getOutputStream().flush();
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String response;
-                StringBuilder msg = new StringBuilder();
+                msg = new StringBuilder();
                 while((received_bytes = socket.getInputStream().read()) != 1) {
-                    response = in.readLine();
-                    msg.append(response).append("\n");
-                    socket_data_string = msg.toString();
-                    state = "getting_data";
-                    updateUITask.run();
+                    if(in.ready() == true) {
+                        response = in.readLine();
+                        if (response.startsWith("PING")) {
+                            socket.getOutputStream().write(("PONG " + response.split(" ")[1]).getBytes());
+                        }
+                        if(response != null) {
+                            msg.append(response).append("\n");
+                            socket_data_string = msg.toString();
+                            state = "getting_data";
+                            updateUITask.run();
+                        }
+                    };
                 }
                 socket.close();
                 socket = null;
@@ -197,18 +205,51 @@ public class ThreadActivity extends Activity {
                 updateUITask.run();
             } catch (UnknownHostException uhEx) {
                 Log.e("Socket", "UnknownHostException");
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                socket = null;
                 state = "no_connection";
                 updateUITask.run();
             } catch(SocketTimeoutException timeoutEx) {
                 Log.e("Socket", "SocketTimeoutException");
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                socket = null;
                 state = "timeout";
                 updateUITask.run();
             } catch (IllegalBlockingModeException ibmEx) {
                 Log.e("Socket", "IllegalBlockingModeException");
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                socket = null;
             } catch (IllegalArgumentException iaEx) {
                 Log.e("Socket", "IllegalArgumentException");
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                socket = null;
             } catch (IOException ioEx) {
                 Log.e("Socket", "IOException");
+            } catch (Exception ex) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                socket = null;
+                state = "disconnected";
+                updateUITask.run();
             }
         }
     }
@@ -220,7 +261,7 @@ public class ThreadActivity extends Activity {
                 @Override
                 public void run() {
                     if(state == "getting_data") {
-                        socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
+                        socks_msg_text.setText(msg.toString());
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         socket_data_string = "";
                     } else if(state == "disconnected") {
