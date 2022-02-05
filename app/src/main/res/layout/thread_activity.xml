@@ -5,6 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageView
+        android:id="@+id/connect_icon2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="connect"
+        android:src="@drawable/ic_menu_send"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/send_button"
+        app:layout_constraintEnd_toEndOf="@+id/send_button"
+        app:layout_constraintStart_toStartOf="@+id/send_button"
+        app:layout_constraintTop_toTopOf="@+id/send_button" />
+
     <EditText
         android:id="@+id/sock_msg_text"
         android:layout_width="fill_parent"
@@ -31,14 +43,15 @@
         style="@android:style/Widget.Holo.Button.Borderless"
         android:layout_width="48dp"
         android:layout_height="36dp"
-        android:foreground="@drawable/ic_menu_send"
         android:foregroundGravity="center"
         android:textAllCaps="true"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/output_msg_text"
         app:layout_constraintTop_toBottomOf="@+id/sock_msg_text"
+        app:layout_constraintVertical_bias="0.0"
         tools:ignore="SpeakableTextPresentCheck" />
 
     <EditText
@@ -50,6 +63,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/send_button"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sock_msg_text" />
+        app:layout_constraintTop_toBottomOf="@+id/sock_msg_text"
+        tools:ignore="SpeakableTextPresentCheck" />
 
 </android.support.constraint.ConstraintLayout>

@@ -27,6 +27,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
         <fragment
             android:id="@+id/create_item_fragm"
             android:name="dev.tinelix.irc.android.CreateItemFragm"

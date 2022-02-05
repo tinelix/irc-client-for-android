@@ -8,6 +8,9 @@
     <string-array name="nicknames" />
     <string-array name="encoding_array">
         <item>UTF-8</item>
+        <item>DOS (866)</item>
         <item>Windows-1251</item>
+        <item>KOI8-R</item>
+        <item>KOI8-U</item>
     </string-array>
 </resources>

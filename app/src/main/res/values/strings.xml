@@ -39,4 +39,8 @@
     <string name="connection_lost_msg">Connection lost.</string>
     <string name="connection_timeout_msg">Connection time is exceeded. Try again later.</string>
     <string name="no_connection_msg">Could not connect to the server.</string>
+    <string name="encoding">Encoding:</string>
+    <string name="deleted_profile">Profile deleted</string>
+    <string name="quit_session_title">Quit session</string>
+    <string name="quit_session_msg">Disconnect from server?</string>
 </resources>

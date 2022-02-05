@@ -217,17 +217,41 @@ public class ProfileSettingsActivity extends PreferenceActivity
 
     public String getCurrentValue(String parameter) {
         String value;
-        if(parameter == "changing_auth_method") {
+        if(current_parameter == "changing_profile_name") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            value = prefs.getString("prof_name", "");
+        } else if(parameter == "changing_auth_method") {
             Context context = getApplicationContext();
             SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
             value = prefs.getString("auth_method", "");
+        } else if(parameter == "changing_realname") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            value = prefs.getString("realname", "");
+        } else if(parameter == "changing_hostname") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            value = prefs.getString("hostname", "");
+        } else if(parameter == "changing_server") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            value = prefs.getString("server", "");
+        } else if(parameter == "changing_port") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            value = "" + prefs.getInt("port", 0);
+        } else if(parameter == "changing_encoding") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            value = prefs.getString("encoding", "");
         } else {
             value = "";
         };
         return value;
     }
 
-    public void onSettingServer(String server, String port) {
+    public void onSettingServer(String server, String port, String encoding) {
         Preference server_settings = (Preference) findPreference("server_settings");
         Context context = getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
@@ -238,5 +262,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
         if(server.length() > 0 && port.length() > 0) {
             server_settings.setSummary(server + ":" + port);
         }
+        editor.putString("encoding", encoding);
+        editor.commit();
     }
 }

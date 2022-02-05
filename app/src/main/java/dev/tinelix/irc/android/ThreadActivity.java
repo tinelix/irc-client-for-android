@@ -1,7 +1,9 @@
 package dev.tinelix.irc.android;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +25,7 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.channels.IllegalBlockingModeException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -54,6 +57,7 @@ public class ThreadActivity extends Activity {
     private Timer timer;
     private UpdateUITask updateUITask;
     public String state;
+    public String encoding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +90,7 @@ public class ThreadActivity extends Activity {
         nicknames = prefs.getString("nicknames", "");
         hostname = prefs.getString("hostname", "");
         realname = prefs.getString("realname", "");
+        encoding = prefs.getString("encoding", "");
         if(hostname.length() <= 2) {
             hostname = nicknames.split(", ")[0];
         }
@@ -106,6 +111,32 @@ public class ThreadActivity extends Activity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.quit_session_title);
+        builder.setMessage(R.string.quit_session_msg);
+        builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                socket = null;
+                finish();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                return;
+            }
+        });
+        builder.show();
+    }
+
     class ircThread implements Runnable {
         @Override
         public void run() {
@@ -117,18 +148,18 @@ public class ThreadActivity extends Activity {
                 input = socket.getInputStream();
                 socket.getOutputStream().write(("USER " + nicknames.split(", ")[0] + " " +
                         hostname + " " + nicknames.split(", ")[0] + " :" +
-                        realname + "\r\n").getBytes());
+                        realname + "\r\n").getBytes(encoding));
                 socket.getOutputStream().flush();
-                socket.getOutputStream().write(("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes());
+                socket.getOutputStream().write(("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes(encoding));
                 socket.getOutputStream().flush();
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), encoding));
                 String response;
                 msg = new StringBuilder();
                 while((received_bytes = socket.getInputStream().read()) != 1) {
                     if(in.ready() == true) {
                         response = in.readLine();
                         if (response.startsWith("PING")) {
-                            socket.getOutputStream().write(("PONG " + response.split(" ")[1]).getBytes());
+                            socket.getOutputStream().write(("PONG " + response.split(" ")[1]).getBytes(encoding));
                         }
                         if(response != null) {
                             msg.append(response).append("\n");
@@ -200,14 +231,14 @@ public class ThreadActivity extends Activity {
                 outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
                 if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
                     try {
-                        socket.getOutputStream().write(("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes());
+                        socket.getOutputStream().write(("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
                         channelsArray.add(outputMsgArray.get(1));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && !outputMsgArray.get(1).startsWith("#")) {
                     try {
-                        socket.getOutputStream().write(("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes());
+                        socket.getOutputStream().write(("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
                         channelsArray.add("#" + outputMsgArray.get(1));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -223,13 +254,13 @@ public class ThreadActivity extends Activity {
                             }
                         }
                         ;
-                        socket.getOutputStream().write(("MODE " + message_sb.toString() + "\r\n").getBytes());
+                        socket.getOutputStream().write(("MODE " + message_sb.toString() + "\r\n").getBytes(encoding));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else if (outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() == 1) {
                     try {
-                        socket.getOutputStream().write(("NICK " + outputMsgArray.get(1) + "\r\n").getBytes());
+                        socket.getOutputStream().write(("NICK " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -244,14 +275,14 @@ public class ThreadActivity extends Activity {
                             }
                         }
                         ;
-                        socket.getOutputStream().write((message_sb.toString().substring(1) + "\r\n").getBytes());
+                        socket.getOutputStream().write((message_sb.toString().substring(1) + "\r\n").getBytes(encoding));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 } else {
                     try {
                         if (channelsArray.size() > 0) {
-                            socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText() + "\r\n").getBytes());
+                            socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText() + "\r\n").getBytes(encoding));
                         }
                     } catch (IOException e) {
                         e.printStackTrace();

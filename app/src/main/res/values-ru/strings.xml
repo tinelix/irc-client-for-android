@@ -37,4 +37,8 @@
     <string name="connection_lost_msg">Соединение потеряно.</string>
     <string name="connection_timeout_msg">Время подключения превышено. Повторите позже.</string>
     <string name="no_connection_msg">Не удалось подключиться к серверу.</string>
+    <string name="encoding">Кодировка:</string>
+    <string name="deleted_profile">Профиль удален</string>
+    <string name="quit_session_title">Выход из сеанса</string>
+    <string name="quit_session_msg">Отсоединиться от сервера?</string>
 </resources>
