@@ -11,18 +11,64 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.DialogFragment;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ConnectionManagerActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
+    List<String> profilesArray = new ArrayList<String>();
+    ArrayList<Profile> profilesList = new ArrayList<Profile>();
+    ProfileAdapter profilesAdapter;
+    public String selected_profile_name;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connection_manager);
+        profilesAdapter = new ProfileAdapter(this, profilesList);
+        String package_name = getApplicationContext().getPackageName();
+        String profile_path = "/data/data/" + package_name + "/shared_prefs";
+        File prefs_directory = new File(profile_path);
+        File[] prefs_files = prefs_directory.listFiles();
+        profilesArray = new LinkedList<String>();
+        String file_extension;
         Context context = getApplicationContext();
+        for (int i = 0; i < prefs_files.length; i++)
+        {
+            SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
+            file_extension = prefs_files[i].getName().substring((int)(prefs_files[i].getName().length() - 4));
+            if(file_extension.contains(".xml") && file_extension.length() == 4) {
+                profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
+                        prefs.getString("server", ""), prefs.getInt("port", 0), false));
+            };
+        }
+        ListView profilesList = findViewById(R.id.profile_list);
+        ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1, profilesArray);
+
+        profilesList.setAdapter(profilesAdapter);
+        profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(context, ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
+            }
+        });
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.registerOnSharedPreferenceChangeListener(this);
         FragmentManager fragmentManager = getFragmentManager();
@@ -36,6 +82,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.connection_manager_menu, menu);
+        getActionBar().setHomeButtonEnabled(true);
         return true;
     }
 
@@ -71,6 +118,18 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         intent.putExtra("profile_name", profile_name);
         intent.putExtra("package_name", getApplicationContext().getPackageName());
         startActivity(intent);
+    }
+
+    public void selectProfile(View v) {
+    }
+
+    public void connectProfile(View v) {
+        Context context = getApplicationContext();
+        Intent intent = new Intent(context, ThreadActivity.class);
+        TextView profile_name = v.getRootView().findViewById(R.id.profile_item_label);
+        intent.putExtra("profile_name", profile_name.getText());
+        startActivity(intent);
+        finish();
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {

@@ -5,36 +5,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ListView
-        android:id="@+id/profile_list"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/create_item_layout">
-
-    </ListView>
-
     <LinearLayout
-        android:id="@+id/create_item_layout"
+        android:id="@+id/create_item_layout2"
         android:layout_width="fill_parent"
         android:layout_height="58dp"
         android:layout_marginBottom="2dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/profile_list"
+        app:layout_constraintBottom_toTopOf="@+id/nicknames_list"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
         <fragment
-            android:id="@+id/create_item_fragm"
-            android:name="dev.tinelix.irc.android.CreateItemFragm"
-            android:layout_width="fill_parent"
+            android:id="@+id/create_item_fragm2"
+            android:name="dev.tinelix.irc.android.CreateItemFragm2"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             tools:layout="@layout/create_item" />
-
     </LinearLayout>
 
+    <ListView
+        android:id="@+id/nicknames_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/create_item_layout2" />
 </android.support.constraint.ConstraintLayout>

@@ -19,12 +19,17 @@ public class ProfileSettingsActivity extends PreferenceActivity
     public String package_name;
     public String current_parameter;
     public String auth_method_string;
+    public String server_name;
+    public int server_port;
+    public String realname_string;
+    public String hostname_string;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.profile_settings);
+        getActionBar().setHomeButtonEnabled(true);
 
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -64,6 +69,63 @@ public class ProfileSettingsActivity extends PreferenceActivity
                 return true;
             }
         });
+        Preference nicknames = (Preference) findPreference("nicknames");
+        nicknames.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            public boolean onPreferenceClick(Preference pref)
+            {
+                showNicknamesActivity(old_profile_name);
+                return true;
+            }
+        });
+        Preference password = (Preference) findPreference("password");
+        password.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            public boolean onPreferenceClick(Preference pref)
+            {
+                setResult(Activity.RESULT_OK);
+                current_parameter = "setting_password";
+                DialogFragment enterPasswordDialogFragm = new EnterPasswordDialogFragm();
+                enterPasswordDialogFragm.show(getFragmentManager(), "enter_password_dlg");
+                return true;
+            }
+        });
+        Preference server_settings = (Preference) findPreference("server_settings");
+        server_settings.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            public boolean onPreferenceClick(Preference pref)
+            {
+                setResult(Activity.RESULT_OK);
+                current_parameter = "setting_server";
+                DialogFragment serverSettingsDialogFragm = new ServerSettingsDialogFragm();
+                serverSettingsDialogFragm.show(getFragmentManager(), "server_settings_dlg");
+                return true;
+            }
+        });
+        Preference realname = (Preference) findPreference("realname");
+        realname.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            public boolean onPreferenceClick(Preference pref)
+            {
+                setResult(Activity.RESULT_OK);
+                current_parameter = "changing_realname";
+                DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
+                enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
+                return true;
+            }
+        });
+        Preference hostname = (Preference) findPreference("hostname");
+        hostname.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            public boolean onPreferenceClick(Preference pref)
+            {
+                setResult(Activity.RESULT_OK);
+                current_parameter = "changing_hostname";
+                DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
+                enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
+                return true;
+            }
+        });
         Context context = getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
         auth_method_string = prefs.getString("auth_method", "");
@@ -73,7 +135,23 @@ public class ProfileSettingsActivity extends PreferenceActivity
             String[] auth_methods = getResources().getStringArray(R.array.auth_method);
             auth_method.setSummary(auth_methods[0]);
         };
+        server_name = prefs.getString("server", "");
+        server_port = prefs.getInt("port", 0);
+        if(server_name.length() > 0 && server_port > 0) {
+            server_settings.setSummary(server_name + ":" + Integer.toString(server_port));
+        };
+        realname_string = prefs.getString("realname", "");
+        hostname_string = prefs.getString("hostname", "");
+        realname.setSummary(realname_string);
+        hostname.setSummary(hostname_string);
     }
+
+    private void showNicknamesActivity(String profile_name) {
+        Intent intent = new Intent(this, CustomNicknamesActivity.class);
+        intent.putExtra("profile_name", profile_name);
+        startActivity(intent);
+    }
+
     public void onChangingValues(String parameter, String value) {
         Preference prof_name = (Preference) findPreference("prof_name");
         Preference nicknames = (Preference) findPreference("nicknames");
@@ -103,11 +181,33 @@ public class ProfileSettingsActivity extends PreferenceActivity
             editor.commit();
         } else if (parameter == "changing_nicknames") {
             Context context = getApplicationContext();
-            SharedPreferences prefs = context.getSharedPreferences(value, 0);
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString("nicknames", value);
             editor.commit();
             nicknames.setSummary(value);
+        } else if (parameter == "setting_password") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("password", value);
+            editor.commit();
+        } else if (parameter == "changing_realname") {
+            Preference realname = (Preference) findPreference("realname");
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("realname", value);
+            editor.commit();
+            realname.setSummary(value);
+        } else if (parameter == "changing_hostname") {
+            Preference hostname = (Preference) findPreference("hostname");
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("hostname", value);
+            editor.commit();
+            hostname.setSummary(value);
         }
     }
 
@@ -125,5 +225,18 @@ public class ProfileSettingsActivity extends PreferenceActivity
             value = "";
         };
         return value;
+    }
+
+    public void onSettingServer(String server, String port) {
+        Preference server_settings = (Preference) findPreference("server_settings");
+        Context context = getApplicationContext();
+        SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("server", server);
+        editor.putInt("port", Integer.parseInt(port));
+        editor.commit();
+        if(server.length() > 0 && port.length() > 0) {
+            server_settings.setSummary(server + ":" + port);
+        }
     }
 }

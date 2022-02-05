@@ -5,12 +5,45 @@
 
     </PreferenceCategory>
     <Preference
+        android:id="@+id/prof_name"
+        android:dialogTitle="@string/enter_the_pfn_title"
         android:key="prof_name"
-        android:title="@string/prof_name"
-        android:defaultValue="(profile name)"
-        android:dialogTitle="@string/enter_the_pfn_title" />
+        android:title="@string/prof_name" />
     <Preference
+        android:id="@+id/auth_method"
         android:defaultValue="true"
         android:key="auth_method"
         android:title="@string/auth_method" />
+    <Preference
+        android:id="@+id/nicknames"
+        android:defaultValue="true"
+        android:key="nicknames"
+        android:title="@string/nicknames" />
+    <Preference
+        android:id="@+id/password"
+        android:key="password"
+        android:selectAllOnFocus="true"
+        android:title="@string/password_label" />
+    <PreferenceCategory android:title="@string/server">
+        <Preference
+            android:id="@+id/server_settings"
+            android:key="server_settings"
+            android:selectAllOnFocus="true"
+            android:title="@string/server_settings" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/identification">
+
+        <Preference
+            android:id="@+id/realname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:key="realname"
+            android:selectAllOnFocus="true"
+            android:title="@string/realname" />
+        <Preference
+            android:id="@+id/hostname"
+            android:key="hostname"
+            android:selectAllOnFocus="true"
+            android:title="@string/hostname" />
+    </PreferenceCategory>
 </PreferenceScreen>

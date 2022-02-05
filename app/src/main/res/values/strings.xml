@@ -13,11 +13,30 @@
     <string name="profile_name_label">Profile name:</string>
     <string name="ok_button" translatable="false">OK</string>
     <string name="cancel_button">Cancel</string>
-    <string name="enter_the_pfn_title">Enter the profile name</string>
+    <string name="enter_the_pfn_title">Enter profile name</string>
+    <string name="enter_the_nick_title">Enter nickname</string>
+    <string name="enter_the_password_title">Enter password</string>
+    <string name="enter_the_realname_title">Enter real name</string>
+    <string name="enter_the_hostname_title">Enter hostname</string>
+    <string name="your_nickname">Никнейм</string>
     <string name="prof_name">Profile name</string>
     <string name="profile_main_category">Main</string>
     <string name="auth_method">Authentication method</string>
     <string name="add_nickname_item">Add nickname</string>
     <string name="add_profile_item">Add profile</string>
-    <string name="add">add</string>
+    <string name="nicknames">Nicknames</string>
+    <string name="nicknames_manager_title">Nicknames manager</string>
+    <string name="add" translatable="false">add</string>
+    <string name="clear_nicknames_btn">Clear</string>
+    <string name="password_label">Password</string>
+    <string name="realname">Real name</string>
+    <string name="server">Server</string>
+    <string name="server_settings">Server settings</string>
+    <string name="identification">Identification</string>
+    <string name="hostname">Hostname</string>
+    <string name="port">Port</string>
+    <string name="only_ssl">Only SSL/TLS (not implemented yet)</string>
+    <string name="connection_lost_msg">Connection lost.</string>
+    <string name="connection_timeout_msg">Connection time is exceeded. Try again later.</string>
+    <string name="no_connection_msg">Could not connect to the server.</string>
 </resources>
