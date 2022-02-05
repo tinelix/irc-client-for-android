@@ -49,26 +49,29 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         profilesArray = new LinkedList<String>();
         String file_extension;
         Context context = getApplicationContext();
-        for (int i = 0; i < prefs_files.length; i++)
-        {
-            SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
-            file_extension = prefs_files[i].getName().substring((int)(prefs_files[i].getName().length() - 4));
-            if(file_extension.contains(".xml") && file_extension.length() == 4) {
-                profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                        prefs.getString("server", ""), prefs.getInt("port", 0), false));
-            };
-        }
-        ListView profilesList = findViewById(R.id.profile_list);
-        ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, profilesArray);
-
-        profilesList.setAdapter(profilesAdapter);
-        profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(context, ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
+        try {
+            for (int i = 0; i < prefs_files.length; i++) {
+                SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
+                file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
+                if (file_extension.contains(".xml") && file_extension.length() == 4) {
+                    profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
+                            prefs.getString("server", ""), prefs.getInt("port", 0), false));
+                }
+                ;
             }
-        });
+            ListView profilesList = findViewById(R.id.profile_list);
+            ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_list_item_1, profilesArray);
+            profilesList.setAdapter(profilesAdapter);
+            profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Toast.makeText(context, ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
+                }
+            });
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.registerOnSharedPreferenceChangeListener(this);
         FragmentManager fragmentManager = getFragmentManager();
