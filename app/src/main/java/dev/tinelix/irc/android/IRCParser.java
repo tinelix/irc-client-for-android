@@ -50,7 +50,7 @@ public class IRCParser {
             Log.w("Tinelix IRC Parser", "Messages with \"374\" code ignored.");
             parsed = "";
         } else if(array[1].startsWith("JOIN")) {
-            parsed = member_msgs_array[0] + " joined on the " + array[2] + " channel.";
+            parsed = member_msgs_array[0].replace(":", "") + " joined on the " + array[2] + " channel.";
             Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
         } else if(array[1].startsWith("PRIVMSG")) {
             for(int index = 3; index < array.length; index++) {
@@ -60,7 +60,7 @@ public class IRCParser {
                     stringBuilder.append(" " + array[index]);
                 }
             }
-            parsed = member_msgs_array[0] + ": " + stringBuilder.toString();
+            parsed = member_msgs_array[0].replace(":", "") + ": " + stringBuilder.toString();
             Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
         } else {
             parsed = raw;
