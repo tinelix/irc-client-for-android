@@ -50,7 +50,24 @@ public class IRCParser {
             Log.w("Tinelix IRC Parser", "Messages with \"374\" code ignored.");
             parsed = "";
         } else if(array[1].startsWith("JOIN")) {
-            parsed = member_msgs_array[0].replace(":", "") + " joined on the " + array[2] + " channel.";
+            parsed = member_msgs_array[0].replace(":", "") + " joined on the " + array[2].replace(":", "") + " channel.";
+            Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
+        } else if(array[1].startsWith("PART")) {
+            parsed = member_msgs_array[0].replace(":", "") + " left the " + array[2].replace(":", "") + " channel.";
+            Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
+        } else if(array[1].startsWith("QUIT")) {
+            if(array.length > 2) {
+                for(int index = 4; index < array.length; index++) {
+                    if(index == 4) {
+                        stringBuilder.append(array[index].replace(":",""));
+                    } else {
+                        stringBuilder.append(" " + array[index]);
+                    }
+                }
+                parsed = member_msgs_array[0].replace(":", "") + " quited with reason: " + stringBuilder;
+            } else {
+                parsed = member_msgs_array[0].replace(":", "") + " quited.";
+            }
             Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
         } else if(array[1].startsWith("PRIVMSG")) {
             for(int index = 3; index < array.length; index++) {
@@ -65,7 +82,7 @@ public class IRCParser {
         } else {
             parsed = raw;
         }
-        if(getTimestamp == true) {
+        if(getTimestamp == true && parsed.length() > 0) {
             Date time = new java.util.Date(System.currentTimeMillis());
             parsed = parsed + " (" + new SimpleDateFormat("HH:mm:ss").format(time) + ")";
         }

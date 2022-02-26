@@ -86,6 +86,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.connection_manager_menu, menu);
         getActionBar().setHomeButtonEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
         return true;
     }
 

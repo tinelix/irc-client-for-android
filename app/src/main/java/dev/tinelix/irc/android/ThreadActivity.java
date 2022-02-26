@@ -60,6 +60,8 @@ public class ThreadActivity extends Activity {
     public String state;
     public String encoding;
     public String channel;
+    public String password;
+    public String auth_method;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +93,8 @@ public class ThreadActivity extends Activity {
         port = prefs.getInt("port", 0);
         getActionBar().setSubtitle(server + ":" + port);
         nicknames = prefs.getString("nicknames", "");
+        auth_method = prefs.getString("auth_method", "");
+        password = prefs.getString("password", "");
         hostname = prefs.getString("hostname", "");
         realname = prefs.getString("realname", "");
         encoding = prefs.getString("encoding", "");
@@ -160,6 +164,10 @@ public class ThreadActivity extends Activity {
                 socket.getOutputStream().flush();
                 socket.getOutputStream().write(("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes(encoding));
                 socket.getOutputStream().flush();
+                if(password.length() > 0 && auth_method.startsWith("NickServ")) {
+                    socket.getOutputStream().write(("NICKSERV identify " + password + "\r\n").getBytes(encoding));
+                    socket.getOutputStream().flush();
+                }
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), encoding));
                 String response;
                 IRCParser parser = new IRCParser();
@@ -248,6 +256,7 @@ public class ThreadActivity extends Activity {
                     try {
                         socket.getOutputStream().write(("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
                         channelsArray.add(outputMsgArray.get(1));
+                        socket.getOutputStream().flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -255,6 +264,7 @@ public class ThreadActivity extends Activity {
                     try {
                         socket.getOutputStream().write(("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
                         channelsArray.add("#" + outputMsgArray.get(1));
+                        socket.getOutputStream().flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -270,12 +280,14 @@ public class ThreadActivity extends Activity {
                         }
                         ;
                         socket.getOutputStream().write(("MODE " + message_sb.toString() + "\r\n").getBytes(encoding));
+                        socket.getOutputStream().flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else if (outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() == 1) {
                     try {
                         socket.getOutputStream().write(("NICK " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
+                        socket.getOutputStream().flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -291,6 +303,7 @@ public class ThreadActivity extends Activity {
                         }
                         ;
                         socket.getOutputStream().write((message_sb.toString().substring(1) + "\r\n").getBytes(encoding));
+                        socket.getOutputStream().flush();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -298,7 +311,8 @@ public class ThreadActivity extends Activity {
                     try {
                         Log.i("Client", "Channels length: " + channelsArray.size());
                         if (channelsArray.size() > 0) {
-                            socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText() + "\r\n").getBytes(encoding));
+                            socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n").getBytes(encoding));
+                            socket.getOutputStream().flush();
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
