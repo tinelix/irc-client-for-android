@@ -83,7 +83,6 @@
         android:layout_marginEnd="12dp"
         android:layout_marginRight="12dp"
         android:entries="@array/encoding_array"
-        android:popupBackground="@android:drawable/screen_background_light"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/checkBox"

@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -58,6 +59,7 @@ public class ThreadActivity extends Activity {
     private UpdateUITask updateUITask;
     public String state;
     public String encoding;
+    public String channel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +89,7 @@ public class ThreadActivity extends Activity {
         SharedPreferences prefs = context.getSharedPreferences(profile_name, 0);
         server = prefs.getString("server", "");
         port = prefs.getInt("port", 0);
+        getActionBar().setSubtitle(server + ":" + port);
         nicknames = prefs.getString("nicknames", "");
         hostname = prefs.getString("hostname", "");
         realname = prefs.getString("realname", "");
@@ -104,7 +107,7 @@ public class ThreadActivity extends Activity {
             public void onClick(View view) {
                 Thread send_msg_thread = new Thread(new SendSocketMsg());
                 send_msg_thread.start();
-                socks_msg_text.setText(socks_msg_text.getText() + "You: " + output_msg_text.getText());
+                socks_msg_text.setText(socks_msg_text.getText() + "You: " + output_msg_text.getText() + "\r\n");
                 socks_msg_text.setSelection(socks_msg_text.getText().length());
                 output_msg_text.setText("");
             }
@@ -137,6 +140,11 @@ public class ThreadActivity extends Activity {
         builder.show();
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
+
     class ircThread implements Runnable {
         @Override
         public void run() {
@@ -154,24 +162,29 @@ public class ThreadActivity extends Activity {
                 socket.getOutputStream().flush();
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), encoding));
                 String response;
+                IRCParser parser = new IRCParser();
                 msg = new StringBuilder();
-                while((received_bytes = socket.getInputStream().read()) != 1) {
+                while(socket.isConnected() == true) {
                     if(in.ready() == true) {
                         response = in.readLine();
                         if (response.startsWith("PING")) {
                             socket.getOutputStream().write(("PONG " + response.split(" ")[1]).getBytes(encoding));
                         }
                         if(response != null) {
-                            msg.append(response).append("\n");
-                            socket_data_string = msg.toString();
-                            state = "getting_data";
-                            updateUITask.run();
+                            String parsedString = parser.parseString(response, true);
+                            if(parsedString.length() > 0) {
+                                msg.append(parsedString).append("\n");
+                                socket_data_string = msg.toString();
+                                msg.setLength(0);
+                                state = "getting_data";
+                                updateUITask.run();
+                            };
                         }
                     };
                 }
                 socket.close();
                 socket = null;
-                state = "disconnected";
+                state = "connection_lost";
                 updateUITask.run();
             } catch (UnknownHostException uhEx) {
                 Log.e("Socket", "UnknownHostException");
@@ -213,7 +226,9 @@ public class ThreadActivity extends Activity {
                 Log.e("Socket", "IOException");
             } catch (Exception ex) {
                 try {
-                    socket.close();
+                    if(socket != null) {
+                        socket.close();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -281,6 +296,7 @@ public class ThreadActivity extends Activity {
                     }
                 } else {
                     try {
+                        Log.i("Client", "Channels length: " + channelsArray.size());
                         if (channelsArray.size() > 0) {
                             socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText() + "\r\n").getBytes(encoding));
                         }
@@ -301,14 +317,19 @@ public class ThreadActivity extends Activity {
                 @Override
                 public void run() {
                     if(state == "getting_data") {
-                        socks_msg_text.setText(msg.toString());
-                        socks_msg_text.setSelection(socks_msg_text.getText().length());
-                        socket_data_string = "";
+                        if(socket_data_string.length() > 0) {
+                            socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
+                            socks_msg_text.setSelection(socks_msg_text.getText().length());
+                            socket_data_string = "";
+                        }
                     } else if(state == "disconnected") {
+                        socks_msg_text.setSelection(socks_msg_text.getText().length());
+                        finish();
+                    } else if(state == "connection_lost") {
                         Toast.makeText(getApplicationContext(), R.string.connection_lost_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         finish();
-                    } else if(state == "timeout") {
+                    }else if(state == "timeout") {
                         Toast.makeText(getApplicationContext(), R.string.connection_timeout_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         finish();
