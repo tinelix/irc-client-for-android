@@ -7,10 +7,10 @@ android {
 
     defaultConfig {
         applicationId "dev.tinelix.irc.android"
-        minSdk 16
+        minSdk 14
         targetSdk 32
         versionCode 1
-        versionName '0.0-alpha_2022-02-05'
+        versionName '0.0-alpha_2022-02-26'
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
