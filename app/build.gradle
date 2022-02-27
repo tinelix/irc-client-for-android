@@ -10,7 +10,7 @@ android {
         minSdk 14
         targetSdk 32
         versionCode 1
-        versionName '0.0.2-alpha_2022-02-27'
+        versionName '0.0.3-alpha_2022-02-27'
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

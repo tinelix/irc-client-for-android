@@ -58,7 +58,6 @@ public class ThreadActivity extends Activity {
     public byte[] socket_data_bytes;
     public int port;
     private EditText socks_msg_text;
-    private EditText output_msg_text;
     public byte[] socket_data = new byte[1<<12];
     public String socket_data_string;
     private Timer timer;
@@ -74,6 +73,7 @@ public class ThreadActivity extends Activity {
     public String messageAuthor;
     public String messageBody;
     public boolean isMentioned;
+    public String sendingMsgText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +82,7 @@ public class ThreadActivity extends Activity {
         getActionBar().setHomeButtonEnabled(true);
         socks_msg_text = findViewById(R.id.sock_msg_text);
         socks_msg_text.setKeyListener(null);
-        output_msg_text = findViewById(R.id.output_msg_text);
+        EditText output_msg_text = findViewById(R.id.output_msg_text);
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if(extras == null) {
@@ -98,6 +98,7 @@ public class ThreadActivity extends Activity {
         }
 
         updateUITask = new UpdateUITask();
+        sendingMsgText = new String();
 
         Context context = getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(profile_name, 0);
@@ -123,11 +124,11 @@ public class ThreadActivity extends Activity {
             @Override
             public void onClick(View view) {
                 if (output_msg_text.getText().toString().length() > 0) {
+                    EditText output_msg_text = findViewById(R.id.output_msg_text);
                     Thread send_msg_thread = new Thread(new SendSocketMsg());
-                    send_msg_thread.start();
+                    new Thread(new SendSocketMsg()).start();
                     socks_msg_text.setText(socks_msg_text.getText() + "You: " + output_msg_text.getText() + "\r\n");
                     socks_msg_text.setSelection(socks_msg_text.getText().length());
-                    output_msg_text.setText("");
                 } else {
                     Toast emptyMessageAttempting = Toast.makeText(context, getString(R.string.empty_message_sending_attempt), Toast.LENGTH_SHORT);
                     emptyMessageAttempting.show();
@@ -334,80 +335,19 @@ public class ThreadActivity extends Activity {
     class SendSocketMsg implements Runnable {
         @Override
         public void run() {
-            if(socket != null) {
-                    outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
-                    if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
-                        try {
-                            socket.getOutputStream().write(("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
-                            channelsArray.add(outputMsgArray.get(1));
-                            socket.getOutputStream().flush();
-                            sended_bytes_count += ("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && !outputMsgArray.get(1).startsWith("#")) {
-                        try {
-                            socket.getOutputStream().write(("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
-                            channelsArray.add("#" + outputMsgArray.get(1));
-                            socket.getOutputStream().flush();
-                            sended_bytes_count += ("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else if (outputMsgArray.get(0).startsWith("/mode") && outputMsgArray.size() > 1) {
-                        try {
-                            StringBuilder message_sb = new StringBuilder();
-                            for (int i = 1; i < outputMsgArray.size(); i++) {
-                                if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
-                                    message_sb.append(outputMsgArray.get(i)).append(" ");
-                                } else if (outputMsgArray.get(i).length() > 0) {
-                                    message_sb.append(outputMsgArray.get(i));
-                                }
-                            }
-                            ;
-                            socket.getOutputStream().write(("MODE " + message_sb.toString() + "\r\n").getBytes(encoding));
-                            socket.getOutputStream().flush();
-                            sended_bytes_count += ("MODE " + message_sb.toString() + "\r\n").getBytes(encoding).length;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else if (outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() == 1) {
-                        try {
-                            socket.getOutputStream().write(("NICK " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
-                            socket.getOutputStream().flush();
-                            sended_bytes_count += ("NICK " + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else if (outputMsgArray.get(0).startsWith("/")) {
-                        try {
-                            StringBuilder message_sb = new StringBuilder();
-                            for (int i = 0; i < outputMsgArray.size(); i++) {
-                                if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
-                                    message_sb.append(outputMsgArray.get(i)).append(" ");
-                                } else if (outputMsgArray.get(i).length() > 0) {
-                                    message_sb.append(outputMsgArray.get(i));
-                                }
-                            }
-                            ;
-                            socket.getOutputStream().write((message_sb.toString().substring(1) + "\r\n").getBytes(encoding));
-                            socket.getOutputStream().flush();
-                            sended_bytes_count += (message_sb.toString().substring(1) + "\r\n").getBytes(encoding).length;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        try {
-                            Log.i("Client", "Channels length: " + channelsArray.size());
-                            if (channelsArray.size() > 0) {
-                                socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n").getBytes(encoding));
-                                socket.getOutputStream().flush();
-                                sended_bytes_count += ("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n").getBytes(encoding).length;
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+            if (socket != null) {
+                state = "sending_message";
+                while(state == "sending_message") {
+                    updateUITask.run();
+                }
+                if(sendingMsgText.length() > 0) {
+                    try {
+                        socket.getOutputStream().write((sendingMsgText).getBytes(encoding));
+                        socket.getOutputStream().flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
+                }
             } else {
                 Log.e("Socket", "Socket not created");
             }
@@ -466,6 +406,79 @@ public class ThreadActivity extends Activity {
                         Toast.makeText(getApplicationContext(), R.string.no_connection_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         finish();
+                    } else if(state == "sending_message") {
+                        if (socket != null) {
+                            EditText output_msg_text = findViewById(R.id.output_msg_text);
+                            outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
+                            if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
+                                try {
+                                    channelsArray.add(outputMsgArray.get(1));
+                                    sendingMsgText = ("JOIN " + outputMsgArray.get(1) + "\r\n");
+                                    sended_bytes_count += ("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && !outputMsgArray.get(1).startsWith("#")) {
+                                try {
+                                    channelsArray.add("#" + outputMsgArray.get(1));
+                                    sendingMsgText = ("JOIN #" + outputMsgArray.get(1) + "\r\n");
+                                    sended_bytes_count += ("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if (outputMsgArray.get(0).startsWith("/mode") && outputMsgArray.size() > 1) {
+                                try {
+                                    StringBuilder message_sb = new StringBuilder();
+                                    for (int i = 1; i < outputMsgArray.size(); i++) {
+                                        if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
+                                            message_sb.append(outputMsgArray.get(i)).append(" ");
+                                        } else if (outputMsgArray.get(i).length() > 0) {
+                                            message_sb.append(outputMsgArray.get(i));
+                                        }
+                                    }
+                                    sendingMsgText = ("MODE " + message_sb.toString() + "\r\n");
+                                    sended_bytes_count += ("MODE " + message_sb.toString() + "\r\n").getBytes(encoding).length;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if (outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() == 1) {
+                                try {
+                                    sendingMsgText = ("NICK " + outputMsgArray.get(1) + "\r\n");
+                                    sended_bytes_count += ("NICK " + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if (outputMsgArray.get(0).startsWith("/")) {
+                                try {
+                                    StringBuilder message_sb = new StringBuilder();
+                                    for (int i = 0; i < outputMsgArray.size(); i++) {
+                                        if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
+                                            message_sb.append(outputMsgArray.get(i)).append(" ");
+                                        } else if (outputMsgArray.get(i).length() > 0) {
+                                            message_sb.append(outputMsgArray.get(i));
+                                        }
+                                    }
+                                    sendingMsgText = (message_sb.toString().substring(1) + "\r\n");
+                                    sended_bytes_count += (message_sb.toString().substring(1) + "\r\n").getBytes(encoding).length;
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                try {
+                                    if (channelsArray.size() > 0) {
+                                        sendingMsgText = ("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n");
+                                        sended_bytes_count += ("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n").getBytes(encoding).length;
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            output_msg_text.setText("");
+                            Log.i("Client", "Message: [" + sendingMsgText + "]");
+                            state = "finishing_sending_message";
+                        } else {
+                            Log.e("Socket", "Socket not created");
+                        }
                     }
                 }
             });
