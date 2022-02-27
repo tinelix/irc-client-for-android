@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -265,7 +266,6 @@ public class ProfileSettingsActivity extends PreferenceActivity
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("server", server);
         editor.putInt("port", Integer.parseInt(port));
-        editor.commit();
         if(server.length() > 0 && port.length() > 0) {
             server_settings.setSummary(server + ":" + port);
         }

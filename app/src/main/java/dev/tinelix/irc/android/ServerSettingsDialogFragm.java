@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -50,9 +51,9 @@ public class ServerSettingsDialogFragm extends DialogFragment {
                         };
                         String hide_ip = new String();
                         if(hide_ip_cb.isChecked() == true) {
-                            hide_ip = "Disabled";
-                        } else {
                             hide_ip = "Enabled";
+                        } else {
+                            hide_ip = "Disabled";
                         }
                        ((ProfileSettingsActivity) getActivity()).onSettingServer(server_name.getText().toString(),
                                port_number.getText().toString(), encoding, hide_ip);
