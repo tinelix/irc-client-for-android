@@ -122,12 +122,15 @@ public class ThreadActivity extends Activity {
         send_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Thread send_msg_thread = new Thread(new SendSocketMsg());
-                send_msg_thread.start();
                 if (output_msg_text.getText().toString().length() > 0) {
+                    Thread send_msg_thread = new Thread(new SendSocketMsg());
+                    send_msg_thread.start();
                     socks_msg_text.setText(socks_msg_text.getText() + "You: " + output_msg_text.getText() + "\r\n");
                     socks_msg_text.setSelection(socks_msg_text.getText().length());
                     output_msg_text.setText("");
+                } else {
+                    Toast emptyMessageAttempting = Toast.makeText(context, getString(R.string.empty_message_sending_attempt), Toast.LENGTH_SHORT);
+                    emptyMessageAttempting.show();
                 }
             }
         });
@@ -233,7 +236,7 @@ public class ThreadActivity extends Activity {
                     sended_bytes_count += ("NICKSERV identify " + password + "\r\n").getBytes(encoding).length;
                 }
                 if(hide_ip.startsWith("Enabled")) {
-                    socket.getOutputStream().write(("MODE " + nicknames.split(", ")[0] + "+x\r\n").getBytes(encoding));
+                    socket.getOutputStream().write(("MODE " + nicknames.split(", ")[0] + " +x\r\n").getBytes(encoding));
                     socket.getOutputStream().flush();
                     sended_bytes_count += ("MODE " + nicknames.split(", ")[0] + " +x\r\n").getBytes(encoding).length;
                 }
@@ -332,16 +335,6 @@ public class ThreadActivity extends Activity {
         @Override
         public void run() {
             if(socket != null) {
-                if (output_msg_text.getText().toString().length() < 1) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast emptyMessageAttempting = Toast.makeText(getApplicationContext(), getString(R.string.empty_message_sending_attempt), Toast.LENGTH_SHORT);
-                            emptyMessageAttempting.show();
-                        }
-                    });
-                    return;
-                } else {
                     outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
                     if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
                         try {
@@ -415,7 +408,6 @@ public class ThreadActivity extends Activity {
                             e.printStackTrace();
                         }
                     }
-                }
             } else {
                 Log.e("Socket", "Socket not created");
             }
