@@ -44,8 +44,22 @@
     <string name="quit_session_title">Quit session</string>
     <string name="quit_session_msg">Disconnect from server?</string>
     <string name="about_application_str">About application</string>
-    <string name="version_str">Version 0.0.1 Alpha (February 26, 2022)</string>
+    <string name="version_str">Version 0.0.2 Alpha (February 27, 2022)</string>
     <string name="license_info">This is free software with open source, distributed under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License 3.0 (read license)</a>.\n\n<b>WITHOUT ANY WARRANTY, NOT EVEN FOR MERCHANTABILITY.</b></string>
     <string name="repo_button">Repository</string>
     <string name="copyright_str" translatable="false">Copyright © 2022 Dmitry Tretyakov (aka. Tinelix)</string>
+    <string name="message_text_hint">Message</string>
+    <string name="statistics_item">Statistics</string>
+    <string name="sended_label">Sended:</string>
+    <string name="received_label">Received:</string>
+    <string name="total_label">Total:</string>
+    <string name="bytes_stats">%1$s bytes</string>
+    <string name="kbytes_stats">%1$s kB</string>
+    <string name="mbytes_stats">%1$s MB</string>
+    <string name="gbytes_stats">%1$s GB</string>
+    <string name="session_stats">Session</string>
+    <string name="disconnect_item">Disconnect</string>
+    <string name="hide_ip_label">Hide IP address</string>
+    <string name="mention_notification_title">%1$s mentioned you</string>
+    <string name="empty_message_sending_attempt">You cannot send empty message.</string>
 </resources>

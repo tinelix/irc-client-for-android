@@ -42,7 +42,21 @@
     <string name="quit_session_title">Выход из сеанса</string>
     <string name="quit_session_msg">Отсоединиться от сервера?</string>
     <string name="about_application_str">О приложении</string>
-    <string name="version_str">Версия 0.0.1 Alpha (26 февраля 2022 г.)</string>
+    <string name="version_str">Версия 0.0.2 Alpha (27 февраля 2022 г.)</string>
     <string name="license_info">Это свободное программное обеспечение с открытым исходным кодом, распространяемое в соответствии с условиями <a href="https://www.gnu.org/licenses/gpl-3.0.ru.html">GNU General Public License 3.0 (прочитать лицензию)</a>.\n\n<b>БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ, ВКЛЮЧАЯ КОММЕРЧЕСКУЮ ЦЕННОСТЬ.</b></string>
     <string name="repo_button">Репозиторий</string>
+    <string name="message_text_hint">Сообщение</string>
+    <string name="statistics_item">Статистика</string>
+    <string name="sended_label">Отправлено:</string>
+    <string name="received_label">Получено:</string>
+    <string name="total_label">Итого:</string>
+    <string name="bytes_stats">%1$s байт</string>
+    <string name="kbytes_stats">%1$s кБ</string>
+    <string name="mbytes_stats">%1$s МБ</string>
+    <string name="gbytes_stats">%1$s ГБ</string>
+    <string name="session_stats">Сеанс</string>
+    <string name="disconnect_item">Отсоединиться</string>
+    <string name="hide_ip_label">Скрывать IP-адрес</string>
+    <string name="mention_notification_title">%1$s упомянул(a) вас</string>
+    <string name="empty_message_sending_attempt">Вы не можете отправить пустое сообщение.</string>
 </resources>

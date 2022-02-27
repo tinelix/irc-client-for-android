@@ -8,16 +8,4 @@
         android:title="@string/connection_manager_add_item"
         android:visible="true"
         app:showAsAction="always" />
-    <item
-        android:id="@+id/change_item"
-        android:icon="@android:drawable/ic_menu_edit"
-        android:title="@string/connection_manager_change_item"
-        android:visible="true"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/delete_item"
-        android:icon="@android:drawable/ic_menu_delete"
-        android:title="@string/connection_manager_delete_item"
-        android:visible="true"
-        app:showAsAction="ifRoom" />
 </menu>

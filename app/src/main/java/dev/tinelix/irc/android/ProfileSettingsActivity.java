@@ -248,13 +248,17 @@ public class ProfileSettingsActivity extends PreferenceActivity
             Context context = getApplicationContext();
             SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
             value = prefs.getString("encoding", "");
+        } else if(parameter == "hide_ip") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            value = prefs.getString("hide_ip", "");
         } else {
             value = "";
         };
         return value;
     }
 
-    public void onSettingServer(String server, String port, String encoding) {
+    public void onSettingServer(String server, String port, String encoding, String hide_ip) {
         Preference server_settings = (Preference) findPreference("server_settings");
         Context context = getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
@@ -266,6 +270,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
             server_settings.setSummary(server + ":" + port);
         }
         editor.putString("encoding", encoding);
+        editor.putString("hide_ip", hide_ip);
         editor.commit();
     }
     @Override

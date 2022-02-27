@@ -2,20 +2,27 @@ package dev.tinelix.irc.android;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DialogFragment;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,7 +33,6 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.channels.IllegalBlockingModeException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -62,6 +68,12 @@ public class ThreadActivity extends Activity {
     public String channel;
     public String password;
     public String auth_method;
+    public String hide_ip;
+    public int sended_bytes_count;
+    public int received_bytes_count;
+    public String messageAuthor;
+    public String messageBody;
+    public boolean isMentioned;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +110,7 @@ public class ThreadActivity extends Activity {
         hostname = prefs.getString("hostname", "");
         realname = prefs.getString("realname", "");
         encoding = prefs.getString("encoding", "");
+        hide_ip = prefs.getString("hide_ip", "");
         if(hostname.length() <= 2) {
             hostname = nicknames.split(", ")[0];
         }
@@ -111,9 +124,11 @@ public class ThreadActivity extends Activity {
             public void onClick(View view) {
                 Thread send_msg_thread = new Thread(new SendSocketMsg());
                 send_msg_thread.start();
-                socks_msg_text.setText(socks_msg_text.getText() + "You: " + output_msg_text.getText() + "\r\n");
-                socks_msg_text.setSelection(socks_msg_text.getText().length());
-                output_msg_text.setText("");
+                if (output_msg_text.getText().toString().length() > 0) {
+                    socks_msg_text.setText(socks_msg_text.getText() + "You: " + output_msg_text.getText() + "\r\n");
+                    socks_msg_text.setSelection(socks_msg_text.getText().length());
+                    output_msg_text.setText("");
+                }
             }
         });
     }
@@ -149,6 +164,50 @@ public class ThreadActivity extends Activity {
         super.onConfigurationChanged(newConfig);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.thread_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.statistics_item) {
+            showStatisticsDialog();
+            return true;
+        } else if (id == R.id.about_application_item) {
+            showAboutApplication();
+        } else if(id == R.id.disconnect_item) {
+            onBackPressed();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showAboutApplication() {
+        Intent intent = new Intent(this, AboutApplicationActivity.class);
+        startActivity(intent);
+    }
+
+    private void showStatisticsDialog() {
+        DialogFragment enterTextDialogFragm = new StatisticsFragm();
+        enterTextDialogFragm.show(getFragmentManager(), "stats_dialog");
+    }
+
+    public int getSendedBytes() {
+        return sended_bytes_count;
+    }
+
+    public int getReceivedBytes() {
+        return received_bytes_count;
+    }
+
     class ircThread implements Runnable {
         @Override
         public void run() {
@@ -162,29 +221,51 @@ public class ThreadActivity extends Activity {
                         hostname + " " + nicknames.split(", ")[0] + " :" +
                         realname + "\r\n").getBytes(encoding));
                 socket.getOutputStream().flush();
+                sended_bytes_count += ("USER " + nicknames.split(", ")[0] + " " +
+                        hostname + " " + nicknames.split(", ")[0] + " :" +
+                        realname + "\r\n").getBytes(encoding).length;
                 socket.getOutputStream().write(("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes(encoding));
                 socket.getOutputStream().flush();
+                sended_bytes_count += ("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes(encoding).length;
                 if(password.length() > 0 && auth_method.startsWith("NickServ")) {
                     socket.getOutputStream().write(("NICKSERV identify " + password + "\r\n").getBytes(encoding));
                     socket.getOutputStream().flush();
+                    sended_bytes_count += ("NICKSERV identify " + password + "\r\n").getBytes(encoding).length;
+                }
+                if(hide_ip.startsWith("Enabled")) {
+                    socket.getOutputStream().write(("MODE " + nicknames.split(", ")[0] + "+x\r\n").getBytes(encoding));
+                    socket.getOutputStream().flush();
+                    sended_bytes_count += ("MODE " + nicknames.split(", ")[0] + " +x\r\n").getBytes(encoding).length;
                 }
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), encoding));
                 String response;
+                messageAuthor = new String();
+                messageBody = new String();
+                messageBody = "";
+                String nick = nicknames.split(", ")[0];
                 IRCParser parser = new IRCParser();
                 msg = new StringBuilder();
                 while(socket.isConnected() == true) {
                     if(in.ready() == true) {
                         response = in.readLine();
+                        received_bytes_count += response.length();
                         if (response.startsWith("PING")) {
                             socket.getOutputStream().write(("PONG " + response.split(" ")[1]).getBytes(encoding));
+                            sended_bytes_count += ("PONG " + response.split(" ")[1]).getBytes(encoding).length;
                         }
                         if(response != null) {
                             String parsedString = parser.parseString(response, true);
+                            messageBody = parser.getMessageBody(response);
+                            messageAuthor = parser.getMessageAuthor(response);
                             if(parsedString.length() > 0) {
                                 msg.append(parsedString).append("\n");
                                 socket_data_string = msg.toString();
                                 msg.setLength(0);
-                                state = "getting_data";
+                                if(messageBody.contains(nicknames.split(", ")[0])) {
+                                    state = "getting_data_with_mention";
+                                } else {
+                                    state = "getting_data";
+                                }
                                 updateUITask.run();
                             };
                         }
@@ -251,71 +332,88 @@ public class ThreadActivity extends Activity {
         @Override
         public void run() {
             if(socket != null) {
-                outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
-                if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
-                    try {
-                        socket.getOutputStream().write(("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
-                        channelsArray.add(outputMsgArray.get(1));
-                        socket.getOutputStream().flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && !outputMsgArray.get(1).startsWith("#")) {
-                    try {
-                        socket.getOutputStream().write(("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
-                        channelsArray.add("#" + outputMsgArray.get(1));
-                        socket.getOutputStream().flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else if (outputMsgArray.get(0).startsWith("/mode") && outputMsgArray.size() > 1) {
-                    try {
-                        StringBuilder message_sb = new StringBuilder();
-                        for (int i = 1; i < outputMsgArray.size(); i++) {
-                            if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
-                                message_sb.append(outputMsgArray.get(i)).append(" ");
-                            } else if (outputMsgArray.get(i).length() > 0) {
-                                message_sb.append(outputMsgArray.get(i));
-                            }
+                if (output_msg_text.getText().toString().length() < 1) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast emptyMessageAttempting = Toast.makeText(getApplicationContext(), getString(R.string.empty_message_sending_attempt), Toast.LENGTH_SHORT);
+                            emptyMessageAttempting.show();
                         }
-                        ;
-                        socket.getOutputStream().write(("MODE " + message_sb.toString() + "\r\n").getBytes(encoding));
-                        socket.getOutputStream().flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else if (outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() == 1) {
-                    try {
-                        socket.getOutputStream().write(("NICK " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
-                        socket.getOutputStream().flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else if (outputMsgArray.get(0).startsWith("/")) {
-                    try {
-                        StringBuilder message_sb = new StringBuilder();
-                        for (int i = 0; i < outputMsgArray.size(); i++) {
-                            if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
-                                message_sb.append(outputMsgArray.get(i)).append(" ");
-                            } else if (outputMsgArray.get(i).length() > 0) {
-                                message_sb.append(outputMsgArray.get(i));
-                            }
-                        }
-                        ;
-                        socket.getOutputStream().write((message_sb.toString().substring(1) + "\r\n").getBytes(encoding));
-                        socket.getOutputStream().flush();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    });
+                    return;
                 } else {
-                    try {
-                        Log.i("Client", "Channels length: " + channelsArray.size());
-                        if (channelsArray.size() > 0) {
-                            socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n").getBytes(encoding));
+                    outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
+                    if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
+                        try {
+                            socket.getOutputStream().write(("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
+                            channelsArray.add(outputMsgArray.get(1));
                             socket.getOutputStream().flush();
+                            sended_bytes_count += ("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } else if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && !outputMsgArray.get(1).startsWith("#")) {
+                        try {
+                            socket.getOutputStream().write(("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
+                            channelsArray.add("#" + outputMsgArray.get(1));
+                            socket.getOutputStream().flush();
+                            sended_bytes_count += ("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (outputMsgArray.get(0).startsWith("/mode") && outputMsgArray.size() > 1) {
+                        try {
+                            StringBuilder message_sb = new StringBuilder();
+                            for (int i = 1; i < outputMsgArray.size(); i++) {
+                                if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
+                                    message_sb.append(outputMsgArray.get(i)).append(" ");
+                                } else if (outputMsgArray.get(i).length() > 0) {
+                                    message_sb.append(outputMsgArray.get(i));
+                                }
+                            }
+                            ;
+                            socket.getOutputStream().write(("MODE " + message_sb.toString() + "\r\n").getBytes(encoding));
+                            socket.getOutputStream().flush();
+                            sended_bytes_count += ("MODE " + message_sb.toString() + "\r\n").getBytes(encoding).length;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() == 1) {
+                        try {
+                            socket.getOutputStream().write(("NICK " + outputMsgArray.get(1) + "\r\n").getBytes(encoding));
+                            socket.getOutputStream().flush();
+                            sended_bytes_count += ("NICK " + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (outputMsgArray.get(0).startsWith("/")) {
+                        try {
+                            StringBuilder message_sb = new StringBuilder();
+                            for (int i = 0; i < outputMsgArray.size(); i++) {
+                                if (i < outputMsgArray.size() - 1 && outputMsgArray.get(i).length() > 0) {
+                                    message_sb.append(outputMsgArray.get(i)).append(" ");
+                                } else if (outputMsgArray.get(i).length() > 0) {
+                                    message_sb.append(outputMsgArray.get(i));
+                                }
+                            }
+                            ;
+                            socket.getOutputStream().write((message_sb.toString().substring(1) + "\r\n").getBytes(encoding));
+                            socket.getOutputStream().flush();
+                            sended_bytes_count += (message_sb.toString().substring(1) + "\r\n").getBytes(encoding).length;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        try {
+                            Log.i("Client", "Channels length: " + channelsArray.size());
+                            if (channelsArray.size() > 0) {
+                                socket.getOutputStream().write(("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n").getBytes(encoding));
+                                socket.getOutputStream().flush();
+                                sended_bytes_count += ("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n").getBytes(encoding).length;
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             } else {
@@ -335,6 +433,31 @@ public class ThreadActivity extends Activity {
                             socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
                             socks_msg_text.setSelection(socks_msg_text.getText().length());
                             socket_data_string = "";
+                        }
+                    } else if(state == "getting_data_with_mention") {
+                        if(socket_data_string.length() > 0) {
+                            socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
+                            socks_msg_text.setSelection(socks_msg_text.getText().length());
+                            socket_data_string = "";
+                            Context context = getApplicationContext();
+                            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                            NotificationCompat.Builder builder = null;
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                                NotificationChannel notificationChannel = new NotificationChannel("ID", "Name", importance);
+                                notificationManager.createNotificationChannel(notificationChannel);
+                                builder = new NotificationCompat.Builder(getApplicationContext(), notificationChannel.getId());
+                            } else {
+                                builder = new NotificationCompat.Builder(getApplicationContext());
+                            }
+
+                            builder = builder
+                                    .setSmallIcon(R.drawable.full_application_icon)
+                                    .setContentTitle(getString(R.string.mention_notification_title, messageAuthor))
+                                    .setContentText(messageBody)
+                                    .setDefaults(Notification.DEFAULT_ALL)
+                                    .setAutoCancel(true);
+                            notificationManager.notify(1, builder.build());
                         }
                     } else if(state == "disconnected") {
                         socks_msg_text.setSelection(socks_msg_text.getText().length());

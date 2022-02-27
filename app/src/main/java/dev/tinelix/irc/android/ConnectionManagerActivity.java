@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.DialogFragment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -100,6 +101,8 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         //noinspection SimplifiableIfStatement
         if (id == R.id.add_item) {
             return showEnterTextDialog();
+        } else if(id == android.R.id.home) {
+            onBackPressed();
         }
 
         return super.onOptionsItemSelected(item);
@@ -161,6 +164,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("name", profile_name);
         editor.putString("auth_method", "Disabled");
+        editor.putString("hide_ip", "Disabled");
         editor.commit();
         Intent intent = new Intent(this, ProfileSettingsActivity.class);
         intent.putExtra("profile_name", profile_name);

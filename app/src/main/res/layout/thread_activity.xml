@@ -59,6 +59,7 @@
         android:layout_width="0dp"
         android:layout_height="36dp"
         android:ems="10"
+        android:hint="@string/message_text_hint"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/send_button"

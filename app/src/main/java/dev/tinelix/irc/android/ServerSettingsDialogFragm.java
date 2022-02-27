@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -33,6 +34,7 @@ public class ServerSettingsDialogFragm extends DialogFragment {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         EditText server_name = view.findViewById(R.id.server_text);
                         EditText port_number = view.findViewById(R.id.port_numb);
+                        CheckBox hide_ip_cb = view.findViewById(R.id.hide_ip_checkbox);
                         String[] encoding_array = getResources().getStringArray(R.array.encoding_array);
                         String encoding = new String();
                         if(encoding_spinner.getSelectedItemPosition() == 0) {
@@ -46,8 +48,14 @@ public class ServerSettingsDialogFragm extends DialogFragment {
                         } else if(encoding_spinner.getSelectedItemPosition() == 4) {
                             encoding = "koi8_u";
                         };
+                        String hide_ip = new String();
+                        if(hide_ip_cb.isChecked() == true) {
+                            hide_ip = "Disabled";
+                        } else {
+                            hide_ip = "Enabled";
+                        }
                        ((ProfileSettingsActivity) getActivity()).onSettingServer(server_name.getText().toString(),
-                               port_number.getText().toString(), encoding);
+                               port_number.getText().toString(), encoding, hide_ip);
                     }
             });
             builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
@@ -81,6 +89,14 @@ public class ServerSettingsDialogFragm extends DialogFragment {
                 encoding_spinner.setSelection(3);
             } else if(current_value.contains("koi8_u")) {
                 encoding_spinner.setSelection(4);
+            }
+            server_parameter = "hide_ip";
+            current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(server_parameter);
+            CheckBox hide_ip_cb = view.findViewById(R.id.hide_ip_checkbox);
+            if(current_value.contains("Disabled")) {
+                hide_ip_cb.setChecked(false);
+            } else {
+                hide_ip_cb.setChecked(true);
             }
         };
         return builder.create();

@@ -57,8 +57,8 @@ public class IRCParser {
             Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
         } else if(array[1].startsWith("QUIT")) {
             if(array.length > 2) {
-                for(int index = 4; index < array.length; index++) {
-                    if(index == 4) {
+                for(int index = 3; index < array.length; index++) {
+                    if(index == 3) {
                         stringBuilder.append(array[index].replace(":",""));
                     } else {
                         stringBuilder.append(" " + array[index]);
@@ -72,7 +72,8 @@ public class IRCParser {
         } else if(array[1].startsWith("PRIVMSG")) {
             for(int index = 3; index < array.length; index++) {
                 if(index == 3) {
-                    stringBuilder.append(array[index].replace(":",""));
+                    stringBuilder.append(array[index].replace(":","").replace("http//", "http://")
+                            .replace("https//", "https://").replace("ftp//", "ftp://"));
                 } else {
                     stringBuilder.append(" " + array[index]);
                 }
@@ -85,6 +86,40 @@ public class IRCParser {
         if(getTimestamp == true && parsed.length() > 0) {
             Date time = new java.util.Date(System.currentTimeMillis());
             parsed = parsed + " (" + new SimpleDateFormat("HH:mm:ss").format(time) + ")";
+        }
+        return parsed;
+    }
+    public String getMessageBody(String raw) {
+       String[] array = raw.split(" ");
+       String[] member_msgs_array = array[0].split("!");
+       StringBuilder stringBuilder = new StringBuilder();
+       String parsed = new String();
+       if(array[1].startsWith("PRIVMSG")) {
+          for(int index = 3; index < array.length; index++) {
+               if(index == 3) {
+                  stringBuilder.append(array[index].replace(":","").replace("http//", "http://")
+                       .replace("https//", "https://").replace("ftp//", "ftp://"));
+               } else {
+                  stringBuilder.append(" " + array[index]);
+               }
+          }
+          parsed = stringBuilder.toString();
+          Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
+       } else {
+           parsed = "";
+       }
+       return parsed;
+    }
+    public String getMessageAuthor(String raw) {
+        String[] array = raw.split(" ");
+        String[] member_msgs_array = array[0].split("!");
+        StringBuilder stringBuilder = new StringBuilder();
+        String parsed = new String();
+        if(array[1].startsWith("PRIVMSG")) {
+            parsed = member_msgs_array[0].replace(":", "");
+            Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
+        } else {
+            parsed = "";
         }
         return parsed;
     }
