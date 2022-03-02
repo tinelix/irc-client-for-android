@@ -9,10 +9,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.DialogFragment;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -131,7 +135,11 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
             final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             LayoutInflater inflater = this.getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
-            dialogBuilder.setTitle(R.string.enter_the_pfn_title);
+            TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
+            dialog_title.setText(getString(R.string.enter_the_pfn_title));
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            dialogView.setMinimumWidth(metrics.widthPixels);
             dialogBuilder.setView(dialogView);
             dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
                 @Override
@@ -147,7 +155,32 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                 }
             });
             AlertDialog alertDialog = dialogBuilder.create();
+            alertDialog.getWindow().setGravity(Gravity.BOTTOM);
             alertDialog.show();
+
+            Button dialogButton;
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
         }
         return false;
     };
