@@ -6,4 +6,6 @@ Tinelix IRC Client for Android. <b>Alpha development state.</b>
 <br>2. Load the Android Studio project and wait for Gradle modules to finish downloading.
 
 <h3>System requirements</h3>
-<p><b>Operating system:</b> Android 4.0 ICS (with Android API level 14) and higher.
+<p><b>Operating system:</b> Android 2.2 Froyo (with Android API level 8) and higher.
+<h3>Links</h3>
+<a href="https://github.com/tinelix/irc-client-for-android/releases/tag/0.1.0-alpha-20220302">Download latest version</a>
