@@ -6,6 +6,7 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -168,6 +170,30 @@ public class CustomNicknamesActivity extends Activity {
             AlertDialog alertDialog = dialogBuilder.create();
             alertDialog.getWindow().setGravity(Gravity.BOTTOM);
             alertDialog.show();
+            Button dialogButton;
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
         }
         return false;
     };

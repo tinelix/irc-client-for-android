@@ -252,7 +252,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            EditText profile_name = dialogView.findViewById(R.id.profile_name_text);
+                            EditText profile_name = dialogView.findViewById(R.id.password_text);
                             onChangingValues(current_parameter, profile_name.getText().toString());
                         }
                     });
