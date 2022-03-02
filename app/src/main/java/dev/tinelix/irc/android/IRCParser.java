@@ -1,5 +1,6 @@
 package dev.tinelix.irc.android;
 
+import android.app.PendingIntent;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
@@ -59,7 +60,8 @@ public class IRCParser {
             if(array.length > 2) {
                 for(int index = 3; index < array.length; index++) {
                     if(index == 3) {
-                        stringBuilder.append(array[index].replace(":",""));
+                        stringBuilder.append(array[index].substring(1).replace("http//", "http://")
+                                .replace("https//", "https://").replace("ftp//", "ftp://"));
                     } else {
                         stringBuilder.append(" " + array[index]);
                     }
@@ -72,7 +74,7 @@ public class IRCParser {
         } else if(array[1].startsWith("PRIVMSG")) {
             for(int index = 3; index < array.length; index++) {
                 if(index == 3) {
-                    stringBuilder.append(array[index].replace(":","").replace("http//", "http://")
+                    stringBuilder.append(array[index].substring(1).replace("http//", "http://")
                             .replace("https//", "https://").replace("ftp//", "ftp://"));
                 } else {
                     stringBuilder.append(" " + array[index]);
@@ -97,7 +99,7 @@ public class IRCParser {
        if(array[1].startsWith("PRIVMSG")) {
           for(int index = 3; index < array.length; index++) {
                if(index == 3) {
-                  stringBuilder.append(array[index].replace(":","").replace("http//", "http://")
+                  stringBuilder.append(array[index].substring(1).replace("http//", "http://")
                        .replace("https//", "https://").replace("ftp//", "ftp://"));
                } else {
                   stringBuilder.append(" " + array[index]);
@@ -116,7 +118,7 @@ public class IRCParser {
         StringBuilder stringBuilder = new StringBuilder();
         String parsed = new String();
         if(array[1].startsWith("PRIVMSG")) {
-            parsed = member_msgs_array[0].replace(":", "");
+            parsed = member_msgs_array[0].substring(1);
             Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
         } else {
             parsed = "";

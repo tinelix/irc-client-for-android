@@ -3,8 +3,8 @@ package dev.tinelix.irc.android;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,8 +17,12 @@ public class AboutApplicationActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.about_application_activity);
         Button repoButton = findViewById(R.id.repo_button);
-        getActionBar().setHomeButtonEnabled(true);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            getActionBar().setHomeButtonEnabled(true);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         repoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -32,7 +36,7 @@ public class AboutApplicationActivity extends Activity {
     };
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if(id == android.R.id.home) {
             onBackPressed();

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:onClick="selectProfile"
+    android:baselineAligned="false">
+
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/profile_item_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="9dp"
+            android:text="Profile Item"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="16dp" />
+
+        <TextView
+            android:id="@+id/profile_server_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="8dp"
+            android:text="Server"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="144dp"
+        android:layout_height="match_parent">
+
+        <ImageButton
+            android:id="@+id/edit_btn"
+            style="@android:style/Widget.Holo.Button.Borderless"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:onClick="editProfile"
+            android:src="@drawable/ic_menu_edit"
+            android:visibility="visible" />
+
+        <ImageButton
+            android:id="@+id/delete_btn"
+            style="@android:style/Widget.Holo.Button.Borderless"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="48dp"
+            android:onClick="deleteProfile"
+            android:src="@drawable/ic_menu_delete"
+            android:visibility="visible"
+            android:layout_marginStart="48dp" />
+
+        <ImageButton
+            android:id="@+id/connect_btn"
+            style="@android:style/Widget.Holo.Button.Borderless"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="96dp"
+            android:onClick="connectProfile"
+            android:src="@drawable/ic_menu_send"
+            android:visibility="visible"
+            android:layout_marginStart="96dp" />
+    </FrameLayout>
+
+</LinearLayout>

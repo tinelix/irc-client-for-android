@@ -1,15 +1,25 @@
 package dev.tinelix.irc.android;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +37,9 @@ public class CustomNicknamesActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.custom_nicknames_activity);
-        getActionBar().setHomeButtonEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            getActionBar().setHomeButtonEnabled(true);
+        }
         current_parameter = "creating_nickname";
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -48,6 +60,15 @@ public class CustomNicknamesActivity extends Activity {
         ListView nicknamesList = findViewById(R.id.nicknames_list);
         ArrayAdapter<String> nicknamesAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, nicknamesArray);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            LinearLayout add_item_ll = findViewById(R.id.create_item_layout2);
+            add_item_ll.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showEnterTextDialog();
+                }
+            });
+        }
 
         nicknamesList.setAdapter(nicknamesAdapter);
     }
@@ -116,8 +137,38 @@ public class CustomNicknamesActivity extends Activity {
     }
 
     public boolean showEnterTextDialog() {
-        DialogFragment enterTextDialogFragm = new EnterTextDialogFragm3();
-        enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            DialogFragment enterTextDialogFragm = new EnterTextDialogFragm3();
+            enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
+        } else {
+            final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(CustomNicknamesActivity.this);
+            LayoutInflater inflater = getLayoutInflater();
+            final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            dialogView.setMinimumWidth(metrics.widthPixels);
+            dialogBuilder.setView(dialogView);
+            dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    EditText profile_name = dialogView.findViewById(R.id.profile_name_text);
+                    onCreatingNicknames(current_parameter, profile_name.getText().toString());
+                }
+            });
+            dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            });
+            TextView textAreaTitle = dialogView.findViewById(R.id.profile_name_label);
+            textAreaTitle.setText(R.string.your_nickname);
+            TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
+            dialog_title.setText(getString(R.string.enter_the_nick_title));
+            AlertDialog alertDialog = dialogBuilder.create();
+            alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+            alertDialog.show();
+        }
         return false;
     };
 }

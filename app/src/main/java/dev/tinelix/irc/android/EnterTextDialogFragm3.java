@@ -1,5 +1,6 @@
 package dev.tinelix.irc.android;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+@SuppressLint("NewApi")
 public class EnterTextDialogFragm3 extends DialogFragment {
 
     public String current_parameter;
@@ -21,7 +23,7 @@ public class EnterTextDialogFragm3 extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         if(current_parameter == "creating_nickname") {
             LayoutInflater inflater = getActivity().getLayoutInflater();
-            View view = inflater.inflate(R.layout.enter_text_activity, null);
+            final View view = inflater.inflate(R.layout.enter_text_activity, null);
             TextView text_area_title = view.findViewById(R.id.profile_name_label);
             text_area_title.setText(R.string.your_nickname);
             builder.setView(view);

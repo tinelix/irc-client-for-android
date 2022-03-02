@@ -1,5 +1,6 @@
 package dev.tinelix.irc.android;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+@SuppressLint("NewApi")
 public class EnterPasswordDialogFragm extends DialogFragment {
 
     public String current_parameter;
@@ -20,7 +22,7 @@ public class EnterPasswordDialogFragm extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         if(current_parameter == "setting_password") {
             LayoutInflater inflater = getActivity().getLayoutInflater();
-            View view = inflater.inflate(R.layout.enter_password_activity, null);
+            final View view = inflater.inflate(R.layout.enter_password_activity, null);
             builder.setView(view);
             builder.setTitle(R.string.enter_the_password_title);
             builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {

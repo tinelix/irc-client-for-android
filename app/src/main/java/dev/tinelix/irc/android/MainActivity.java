@@ -1,15 +1,18 @@
 package dev.tinelix.irc.android;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+
+import android.content.Intent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -38,7 +41,34 @@ public class MainActivity extends Activity {
                 }
             }
         });
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            ImageButton menu_button = findViewById(R.id.menu_button);
+            menu_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openOptionsMenu();
+                }
+            });
+        }
 
+    }
+
+    private void showAboutApplication() {
+        Intent intent = new Intent(this, AboutApplicationActivity.class);
+        startActivity(intent);
+    }
+
+    private void showConnectionManager() {
+        Intent intent = new Intent(this, ConnectionManagerActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
     }
 
     @Override
@@ -49,27 +79,12 @@ public class MainActivity extends Activity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.about_item) {
+        if (id == R.id.about_application_item) {
             showAboutApplication();
-            return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void showAboutApplication() {
-        Intent intent = new Intent(this, AboutApplicationActivity.class);
-        startActivity(intent);
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    private void showConnectionManager() {
-        Intent intent = new Intent(this, ConnectionManagerActivity.class);
-        startActivity(intent);
-    }
 }

@@ -7,5 +7,5 @@
         android:icon="@drawable/ic_menu_btn_add"
         android:title="@string/connection_manager_add_item"
         android:visible="true"
-        app:showAsAction="always" />
+        android:showAsAction="always"/>
 </menu>

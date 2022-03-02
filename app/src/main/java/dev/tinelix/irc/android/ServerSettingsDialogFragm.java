@@ -1,8 +1,10 @@
 package dev.tinelix.irc.android;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +16,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+@SuppressLint("NewApi")
 public class ServerSettingsDialogFragm extends DialogFragment {
 
     public String current_parameter;
@@ -26,8 +29,14 @@ public class ServerSettingsDialogFragm extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         if(current_parameter == "setting_server") {
             LayoutInflater inflater = getActivity().getLayoutInflater();
-            View view = inflater.inflate(R.layout.enter_server_activity, null);
-            Spinner encoding_spinner = view.findViewById(R.id.encoding_spinner);
+            final View view = inflater.inflate(R.layout.enter_server_activity, null);
+            final Spinner encoding_spinner = view.findViewById(R.id.encoding_spinner);
+            Context context = view.getContext();
+            ArrayAdapter<?> adapter =
+                    ArrayAdapter.createFromResource(context, R.array.encoding_array,
+                            android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            encoding_spinner.setAdapter(adapter);
             builder.setView(view);
             builder.setTitle(R.string.server_settings);
             builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {

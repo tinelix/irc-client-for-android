@@ -6,20 +6,30 @@ import android.app.DialogFragment;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.NotificationCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -39,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.zip.Inflater;
 
 public class ThreadActivity extends Activity {
 
@@ -53,6 +64,7 @@ public class ThreadActivity extends Activity {
     public String realname;
     public StringBuilder msg;
     public int received_bytes;
+    public int sended_bytes;
     public List<String> channelsArray = new ArrayList<String>();
     public List<String> outputMsgArray = new ArrayList<String>();
     public byte[] socket_data_bytes;
@@ -79,10 +91,12 @@ public class ThreadActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.thread_activity);
-        getActionBar().setHomeButtonEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            getActionBar().setHomeButtonEnabled(true);
+        }
         socks_msg_text = findViewById(R.id.sock_msg_text);
         socks_msg_text.setKeyListener(null);
-        EditText output_msg_text = findViewById(R.id.output_msg_text);
+        final EditText output_msg_text = findViewById(R.id.output_msg_text);
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if(extras == null) {
@@ -100,11 +114,13 @@ public class ThreadActivity extends Activity {
         updateUITask = new UpdateUITask();
         sendingMsgText = new String();
 
-        Context context = getApplicationContext();
+        final Context context = getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(profile_name, 0);
         server = prefs.getString("server", "");
         port = prefs.getInt("port", 0);
-        getActionBar().setSubtitle(server + ":" + port);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            getActionBar().setSubtitle(server + ":" + port);
+        }
         nicknames = prefs.getString("nicknames", "");
         auth_method = prefs.getString("auth_method", "");
         password = prefs.getString("password", "");
@@ -119,7 +135,7 @@ public class ThreadActivity extends Activity {
             realname = "Member";
         }
         new Thread(new ircThread()).start();
-        Button send_btn = findViewById(R.id.send_button);
+        ImageButton send_btn = findViewById(R.id.send_button);
         send_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -135,11 +151,26 @@ public class ThreadActivity extends Activity {
                 }
             }
         });
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            ImageButton menu_button = findViewById(R.id.menu_button);
+            menu_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openOptionsMenu();
+                }
+            });
+        }
     }
 
     @Override
     public void onBackPressed() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog alertDialog;
+        AlertDialog.Builder builder;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            builder = new AlertDialog.Builder(this);
+        } else {
+            builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.IRCClient));
+        }
         builder.setTitle(R.string.quit_session_title);
         builder.setMessage(R.string.quit_session_msg);
         builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
@@ -160,7 +191,34 @@ public class ThreadActivity extends Activity {
                 return;
             }
         });
-        builder.show();
+        alertDialog = builder.create();
+        alertDialog.show();
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            Button dialogButton;
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+        }
     }
 
     @Override
@@ -200,8 +258,87 @@ public class ThreadActivity extends Activity {
     }
 
     private void showStatisticsDialog() {
-        DialogFragment enterTextDialogFragm = new StatisticsFragm();
-        enterTextDialogFragm.show(getFragmentManager(), "stats_dialog");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            DialogFragment statsDialogFragm = new StatisticsFragm();
+            statsDialogFragm.show(getFragmentManager(), "stats_dialog");
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.IRCClient));
+            LayoutInflater inflater = getLayoutInflater();
+            final View dialogView = inflater.inflate(R.layout.statistics_activity, null);
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            dialogView.setMinimumWidth(metrics.widthPixels);
+            builder.setView(dialogView);
+            builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            });
+            sended_bytes = getSendedBytes();
+            received_bytes = getReceivedBytes();
+            int total_bytes = sended_bytes + received_bytes;
+            TextView sended_bytes_label = dialogView.findViewById(R.id.sended_label2);
+            TextView received_bytes_label = dialogView.findViewById(R.id.received_label2);
+            TextView total_bytes_label = dialogView.findViewById(R.id.total_label2);
+            TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
+            dialog_title.setText(getString(R.string.statistics_item));
+            if (sended_bytes > 1073741824) {
+                sended_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (float)(sended_bytes / 1073741824))));
+            } else if(sended_bytes > 1048576) {
+                sended_bytes_label.setText(getString(R.string.mbytes_stats, String.format("%.2f", (float)(sended_bytes / 1048576))));
+            } else if(sended_bytes > 1024) {
+                sended_bytes_label.setText(getString(R.string.kbytes_stats, String.format("%.2f", (float)(sended_bytes / 1024))));
+            } else {
+                sended_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(sended_bytes)));
+            }
+            if (received_bytes > 1073741824) {
+                received_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (float)(received_bytes / 1073741824))));
+            } else if(received_bytes > 1048576) {
+                received_bytes_label.setText(getString(R.string.mbytes_stats, String.format("%.2f", (float)(received_bytes / 1048576))));
+            } else if(received_bytes > 1024) {
+                received_bytes_label.setText(getString(R.string.kbytes_stats, String.format("%.2f", (float)(received_bytes / 1024))));
+            } else {
+                received_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(received_bytes)));
+            }
+            if (total_bytes > 1073741824) {
+                total_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (double)(total_bytes / 1073741824))));
+            } else if(total_bytes > 1048576) {
+                total_bytes_label.setText(getString(R.string.mbytes_stats, String.format("%.2f", (double)(total_bytes / 1048576))));
+            } else if(total_bytes > 1024) {
+                total_bytes_label.setText(getString(R.string.kbytes_stats, String.format("%.2f", (double)(total_bytes / 1024))));
+            } else {
+                total_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(total_bytes)));
+            }
+            AlertDialog statisticsDlg = builder.create();
+            statisticsDlg.getWindow().setGravity(Gravity.BOTTOM);
+            statisticsDlg.show();
+
+            Button dialogButton;
+            dialogButton = statisticsDlg.getButton(DialogInterface.BUTTON_POSITIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = statisticsDlg.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = statisticsDlg.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+        }
     }
 
     public int getSendedBytes() {
@@ -217,8 +354,10 @@ public class ThreadActivity extends Activity {
         public void run() {
             try {
                 socket = new Socket();
+                Log.d("Client", "Getting IP address from " + server + ":" + port + "...");
                 InetAddress serverAddr = InetAddress.getByName(server);
                 SocketAddress socketAddress = new InetSocketAddress(serverAddr, port);
+                Log.d("Client", "Connecting to " + server + ":" + port + "...");
                 socket.connect(socketAddress);
                 input = socket.getInputStream();
                 socket.getOutputStream().write(("USER " + nicknames.split(", ")[0] + " " +
@@ -372,24 +511,19 @@ public class ThreadActivity extends Activity {
                             socks_msg_text.setSelection(socks_msg_text.getText().length());
                             socket_data_string = "";
                             Context context = getApplicationContext();
-                            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                            NotificationCompat.Builder builder = null;
-                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                                int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                                NotificationChannel notificationChannel = new NotificationChannel("ID", "Name", importance);
-                                notificationManager.createNotificationChannel(notificationChannel);
-                                builder = new NotificationCompat.Builder(getApplicationContext(), notificationChannel.getId());
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                                Notification.Builder notificationBuilder = null;
+                                notificationBuilder = new Notification.Builder(context);
+                                notificationBuilder
+                                        .setSmallIcon(R.drawable.ic_notification_icon)
+                                        .setWhen(System.currentTimeMillis())
+                                        .setContentTitle(getString(R.string.mention_notification_title, messageAuthor))
+                                        .setContentText(messageBody);
+                                notificationManager.notify(1, notificationBuilder.build());
                             } else {
-                                builder = new NotificationCompat.Builder(getApplicationContext());
+                                Toast.makeText(context, getString(R.string.mention_notification_title, messageAuthor) + ":" + messageBody, Toast.LENGTH_LONG).show();
                             }
-
-                            builder = builder
-                                    .setSmallIcon(R.drawable.full_application_icon)
-                                    .setContentTitle(getString(R.string.mention_notification_title, messageAuthor))
-                                    .setContentText(messageBody)
-                                    .setDefaults(Notification.DEFAULT_ALL)
-                                    .setAutoCancel(true);
-                            notificationManager.notify(1, builder.build());
                         }
                     } else if(state == "disconnected") {
                         socks_msg_text.setSelection(socks_msg_text.getText().length());

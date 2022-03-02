@@ -1,37 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/app_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/title_v11_transparent">
+
+        <ImageView
+            android:id="@+id/app_icon_view"
+            android:layout_width="26dp"
+            android:layout_height="25dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/full_application_icon" />
+
+        <TextView
+            android:id="@+id/app_title_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_weight="1"
+            android:text="@string/nicknames_manager_title"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/menu_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="@color/title_v11_full_transparent"
+            android:src="@drawable/ic_menu_moreoverflow_normal_holo_dark" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/create_item_layout2"
-        android:layout_width="fill_parent"
-        android:layout_height="58dp"
-        android:layout_marginBottom="2dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/nicknames_list"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal">
 
-        <fragment
-            android:id="@+id/create_item_fragm2"
-            android:name="dev.tinelix.irc.android.CreateItemFragm2"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_menu_btn_add" />
+
+        <TextView
+            android:id="@+id/create_item_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:layout_marginRight="14dp"
             android:layout_weight="1"
-            tools:layout="@layout/create_item" />
+            android:text="@string/add_nickname_item"
+            android:textAllCaps="true"
+            android:textColor="@color/orange"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <ListView
         android:id="@+id/nicknames_list"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/create_item_layout2" />
-</android.support.constraint.ConstraintLayout>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="0dp" />
+
+</LinearLayout>

@@ -5,7 +5,7 @@
         android:id="@+id/add_nickname_item"
         android:icon="@drawable/ic_menu_btn_add"
         android:title="@string/connection_manager_add_item"
-        app:showAsAction="always" />
+        android:showAsAction="always" />
     <item
         android:id="@+id/clear_nicknames_item"
         android:title="@string/clear_nicknames_btn" />

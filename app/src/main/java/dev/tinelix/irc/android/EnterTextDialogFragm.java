@@ -1,5 +1,6 @@
 package dev.tinelix.irc.android;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -9,12 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+@SuppressLint("NewApi")
 public class EnterTextDialogFragm extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.enter_text_activity, null);
+        final View view = inflater.inflate(R.layout.enter_text_activity, null);
         builder.setView(view);
         builder.setTitle(R.string.enter_the_pfn_title);
         builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {

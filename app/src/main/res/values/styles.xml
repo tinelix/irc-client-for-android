@@ -1,4 +1,32 @@
 <resources>
-
+    <style name="IRCClient" parent="@android:style/Theme.NoTitleBar">
+        <item name="android:alertDialogStyle">@style/IRCClient.Dialog</item>
+    </style>
+    <style name="IRCClient.Button" parent="@android:style/Widget.Button">
+        <item name="android:background">#00000000</item>
+        <item name="android:color">#ffffff</item>
+    </style>
+    <style name="IRCClient.TextArea" parent="@android:style/Widget.EditText">
+        <item name="android:background">#2f2f2f</item>
+        <item name="android:color">#ffffff</item>
+        <item name="android:padding">6dp</item>
+    </style>
+    <style name="IRCClient.Spinner">
+        <item name="android:clickable">true</item>
+    </style>
+    <style name="IRCClient.Dialog" parent="@android:style/Theme.Dialog">
+        <item name="android:layout_margin">0px</item>
+        <item name="android:bottomBright">@android:color/white</item>
+        <item name="android:bottomDark">@color/gray_v2</item>
+        <item name="android:bottomMedium">@color/gray_v2</item>
+        <item name="android:centerBright">@android:color/white</item>
+        <item name="android:centerDark">@color/gray_v2</item>
+        <item name="android:centerMedium">@android:color/white</item>
+        <item name="android:fullBright">@color/gray_v2</item>
+        <item name="android:fullDark">@color/gray_v2</item>
+        <item name="android:topDark">@color/gray_v2</item>
+        <item name="android:textAppearance">@android:color/white</item>
+        <item name="android:buttonStyle">@color/title_v11_full_transparent</item>
+    </style>
 
 </resources>

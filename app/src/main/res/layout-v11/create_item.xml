@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AbsoluteLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="60dp">
+
+    <Button
+        android:id="@+id/create_item_button"
+        style="@android:style/Widget.Holo.Button.Borderless"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_x="0dp"
+        android:layout_y="0dp" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_x="14dp"
+        android:layout_y="14dp"
+        android:src="@drawable/ic_menu_btn_add" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_x="52dp"
+        android:layout_y="21dp"
+        android:text="@string/create_profile_item"
+        android:textAllCaps="true"
+        android:textColor="@android:color/holo_blue_bright"
+        android:textStyle="bold"
+        tools:layout_editor_absoluteX="41dp"
+        tools:layout_editor_absoluteY="16dp" tools:targetApi="ice_cream_sandwich" />
+</AbsoluteLayout>

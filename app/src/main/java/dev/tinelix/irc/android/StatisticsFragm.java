@@ -1,5 +1,6 @@
 package dev.tinelix.irc.android;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
+@SuppressLint("NewApi")
 public class StatisticsFragm extends DialogFragment {
     public int sended_bytes;
     public int received_bytes;
@@ -64,7 +66,7 @@ public class StatisticsFragm extends DialogFragment {
         } else {
             total_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(total_bytes)));
         }
-        Handler updateHandler = new Handler();
+        final Handler updateHandler = new Handler();
         statsTimer = new Timer();
         statsTimer.schedule(new TimerTask() {
             @Override

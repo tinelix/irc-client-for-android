@@ -6,29 +6,28 @@ import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.app.DialogFragment;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -60,14 +59,14 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                 }
                 ;
             }
-            ListView profilesList = findViewById(R.id.profile_list);
+            ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
             profilesList.setAdapter(profilesAdapter);
             profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Toast.makeText(context, ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
                 }
             });
         } catch(Exception ex) {
@@ -75,19 +74,35 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.registerOnSharedPreferenceChangeListener(this);
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        CreateItemFragm ci_fragment = new CreateItemFragm();
-        fragmentTransaction.add(R.id.create_item_layout, ci_fragment);
-        fragmentTransaction.commit();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+            FragmentManager fragmentManager = null;
+            fragmentManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = null;
+            fragmentTransaction = fragmentManager.beginTransaction();
+            CreateItemFragm ci_fragment = new CreateItemFragm();
+            fragmentTransaction.add(R.id.create_item_layout2, ci_fragment);
+            fragmentTransaction.commit();
+        } else {
+            LinearLayout add_item_ll = findViewById(R.id.add_item_ll);
+            add_item_ll.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showEnterTextDialog();
+                }
+            });
+        }
     };
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.connection_manager_menu, menu);
-        getActionBar().setHomeButtonEnabled(true);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            getActionBar().setHomeButtonEnabled(true);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         return true;
     }
 
@@ -109,8 +124,31 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
     }
 
     public boolean showEnterTextDialog() {
-        DialogFragment enterTextDialogFragm = new EnterTextDialogFragm();
-        enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            DialogFragment enterTextDialogFragm = new EnterTextDialogFragm();
+            enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
+        } else {
+            final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            LayoutInflater inflater = this.getLayoutInflater();
+            final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
+            dialogBuilder.setTitle(R.string.enter_the_pfn_title);
+            dialogBuilder.setView(dialogView);
+            dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    EditText profile_name = dialogView.findViewById(R.id.profile_name_text);
+                    profileNameOkClicked(profile_name.getText().toString());
+                }
+            });
+            dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            });
+            AlertDialog alertDialog = dialogBuilder.create();
+            alertDialog.show();
+        }
         return false;
     };
 
@@ -136,14 +174,14 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                 }
                 ;
             }
-            ListView profilesList = findViewById(R.id.profile_list);
+            ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
             profilesList.setAdapter(profilesAdapter);
             profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Toast.makeText(context, ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
                 }
             });
         } catch(Exception ex) {
@@ -222,14 +260,14 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                 }
                 ;
             }
-            ListView profilesList = findViewById(R.id.profile_list);
+            ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
             profilesList.setAdapter(profilesAdapter);
             profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Toast.makeText(context, ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
                 }
             });
         } catch(Exception ex) {

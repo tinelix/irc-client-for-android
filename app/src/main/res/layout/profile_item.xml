@@ -1,114 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="56dp"
-    android:onClick="selectProfile">
+    android:onClick="selectProfile"
+    android:baselineAligned="false">
 
 
-    <Button
-        android:id="@+id/delete_btn"
-        style="@android:style/Widget.Holo.Button.Borderless"
-        android:layout_width="56dp"
-        android:layout_height="0dp"
-        android:onClick="deleteProfile"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/connect_btn"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        tools:ignore="SpeakableTextPresentCheck" />
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/delete_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="delete"
-        android:src="@drawable/ic_menu_delete"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/delete_btn"
-        app:layout_constraintStart_toStartOf="@+id/delete_btn"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/profile_item_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="9dp"
+            android:text="Profile Item"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="16dp" />
 
-    <Button
-        android:id="@+id/edit_btn"
-        style="@android:style/Widget.Holo.Button.Borderless"
-        android:layout_width="56dp"
-        android:layout_height="0dp"
-        android:onClick="editProfile"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/delete_btn"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        tools:ignore="SpeakableTextPresentCheck" />
+        <TextView
+            android:id="@+id/profile_server_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="8dp"
+            android:text="Server"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
 
-    <ImageView
-        android:id="@+id/edit_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginLeft="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginRight="12dp"
-        android:contentDescription="edit"
-        android:src="@drawable/ic_menu_edit"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/edit_btn"
-        app:layout_constraintStart_toStartOf="@+id/edit_btn"
-        app:layout_constraintTop_toTopOf="parent" />
+    <LinearLayout
+        android:layout_width="144dp"
+        android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/connect_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="connect"
-        android:src="@drawable/ic_menu_send"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/connect_btn"
-        app:layout_constraintStart_toStartOf="@+id/connect_btn"
-        app:layout_constraintTop_toTopOf="parent" />
+        <ImageButton
+            android:id="@+id/edit_btn"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:background="@color/title_v11_full_transparent"
+            android:contentDescription="TODO"
+            android:onClick="editProfile"
+            android:src="@drawable/ic_menu_edit"
+            android:visibility="visible" />
 
-    <TextView
-        android:id="@+id/profile_item_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="Profile Item"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        <ImageButton
+            android:id="@+id/delete_btn"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:background="@color/title_v11_full_transparent"
+            android:onClick="deleteProfile"
+            android:src="@drawable/ic_menu_delete"
+            android:visibility="visible" />
 
-    <TextView
-        android:id="@+id/profile_server_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:text="Server"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profile_item_label" />
+        <ImageButton
+            android:id="@+id/connect_btn"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:background="@color/title_v11_full_transparent"
+            android:contentDescription="TODO"
+            android:onClick="connectProfile"
+            android:src="@drawable/ic_menu_send"
+            android:visibility="visible" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/connect_btn"
-        style="@android:style/Widget.Holo.Button.Borderless"
-        android:layout_width="56dp"
-        android:layout_height="0dp"
-        android:onClick="connectProfile"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="SpeakableTextPresentCheck" />
-
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>

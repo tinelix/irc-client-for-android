@@ -1,15 +1,18 @@
 package dev.tinelix.irc.android;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+@SuppressLint("NewApi")
 public class EnterTextDialogFragm2 extends DialogFragment {
 
     public String current_parameter;
@@ -22,7 +25,7 @@ public class EnterTextDialogFragm2 extends DialogFragment {
         if(current_parameter == "changing_profile_name") {
             current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(current_parameter);
             LayoutInflater inflater = getActivity().getLayoutInflater();
-            View view = inflater.inflate(R.layout.enter_text_activity, null);
+            final View view = inflater.inflate(R.layout.enter_text_activity, null);
             builder.setView(view);
             builder.setTitle(R.string.enter_the_pfn_title);
             builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
@@ -44,7 +47,7 @@ public class EnterTextDialogFragm2 extends DialogFragment {
             current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(current_parameter);
             String[] auth_methods = getResources().getStringArray(R.array.auth_method);
             builder.setTitle(R.string.auth_method);
-            if(current_value == "NickServ") {
+            if(current_value.contains("NickServ")) {
                 builder.setSingleChoiceItems(auth_methods, 1,
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -86,7 +89,7 @@ public class EnterTextDialogFragm2 extends DialogFragment {
         } else if(current_parameter == "changing_realname") {
             current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(current_parameter);
             LayoutInflater inflater = getActivity().getLayoutInflater();
-            View view = inflater.inflate(R.layout.enter_text_activity, null);
+            final View view = inflater.inflate(R.layout.enter_text_activity, null);
             builder.setView(view);
             builder.setTitle(R.string.enter_the_realname_title);
             TextView realname_label = view.findViewById(R.id.profile_name_label);
@@ -109,7 +112,7 @@ public class EnterTextDialogFragm2 extends DialogFragment {
         } else if(current_parameter == "changing_hostname") {
             current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(current_parameter);
             LayoutInflater inflater = getActivity().getLayoutInflater();
-            View view = inflater.inflate(R.layout.enter_text_activity, null);
+            final View view = inflater.inflate(R.layout.enter_text_activity, null);
             builder.setView(view);
             builder.setTitle(R.string.enter_the_hostname_title);
             TextView realname_label = view.findViewById(R.id.profile_name_label);

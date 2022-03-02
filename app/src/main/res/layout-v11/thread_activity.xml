@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/sock_msg_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="2dp"
+        android:layout_weight="1"
+        android:cursorVisible="true"
+        android:ems="10"
+        android:enabled="true"
+        android:focusable="true"
+        android:fontFamily="monospace"
+        android:gravity="start|top"
+        android:inputType="textMultiLine"
+        android:maxLength="524288"
+        android:scrollbars="vertical"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/output_msg_text"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="@string/message_text_hint"
+            android:inputType="textPersonName"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <ImageButton
+            android:id="@+id/send_button"
+            android:layout_width="48dp"
+            android:layout_height="40dp"
+            android:background="@color/title_v11_full_transparent"
+            android:foregroundGravity="center"
+            android:src="@drawable/ic_menu_send"
+            android:textAllCaps="true"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:ignore="SpeakableTextPresentCheck" />
+    </LinearLayout>
+
+</LinearLayout>
