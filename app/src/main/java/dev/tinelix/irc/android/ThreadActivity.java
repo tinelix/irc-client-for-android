@@ -483,6 +483,8 @@ public class ThreadActivity extends Activity {
                     try {
                         socket.getOutputStream().write((sendingMsgText).getBytes(encoding));
                         socket.getOutputStream().flush();
+                        state = "sended_message";
+                        updateUITask.run();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

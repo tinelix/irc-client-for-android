@@ -597,6 +597,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
             prof_name.setSummary(old_profile_name);
         } else if(parameter == "changing_auth_method") {
             Preference auth_method = (Preference) findPreference("auth_method");
+            Preference password = (Preference) findPreference("password");
             Context context = getApplicationContext();
             SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
             SharedPreferences.Editor editor = prefs.edit();
@@ -604,8 +605,10 @@ public class ProfileSettingsActivity extends PreferenceActivity
             editor.putString("auth_method", value);
             if(value == "Disabled") {
                 auth_method.setSummary(auth_methods[0]);
+                password.setEnabled(false);
             } else {
                 auth_method.setSummary(value);
+                password.setEnabled(true);
             }
             editor.commit();
         } else if (parameter == "changing_nicknames") {

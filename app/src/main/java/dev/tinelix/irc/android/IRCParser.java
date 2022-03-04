@@ -57,9 +57,9 @@ public class IRCParser {
             parsed = member_msgs_array[0].replace(":", "") + " left the " + array[2].replace(":", "") + " channel.";
             Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
         } else if(array[1].startsWith("QUIT")) {
-            if(array.length > 2) {
-                for(int index = 3; index < array.length; index++) {
-                    if(index == 3) {
+            if(array.length > 3) {
+                for(int index = 2; index < array.length; index++) {
+                    if(index == 2) {
                         stringBuilder.append(array[index].substring(1).replace("http//", "http://")
                                 .replace("https//", "https://").replace("ftp//", "ftp://"));
                     } else {

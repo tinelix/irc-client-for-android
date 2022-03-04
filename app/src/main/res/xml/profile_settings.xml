@@ -21,6 +21,7 @@
         android:title="@string/nicknames" />
     <Preference
         android:id="@+id/password"
+        android:enabled="false"
         android:key="password"
         android:selectAllOnFocus="true"
         android:title="@string/password_label" />
