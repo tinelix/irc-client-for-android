@@ -132,6 +132,29 @@ public class EnterTextDialogFragm2 extends DialogFragment {
                     return;
                 }
             });
+        } else if(current_parameter == "changing_quitmsg") {
+            current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(current_parameter);
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            final View view = inflater.inflate(R.layout.enter_text_activity, null);
+            builder.setView(view);
+            builder.setTitle(R.string.enter_the_quiting_message);
+            TextView quitmsgname_label = view.findViewById(R.id.profile_name_label);
+            quitmsgname_label.setText(R.string.quit_message);
+            EditText quitmsgname_text = view.findViewById(R.id.profile_name_text);
+            quitmsgname_text.setText(current_value);
+            builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    EditText profile_name = view.findViewById(R.id.profile_name_text);
+                    ((ProfileSettingsActivity) getActivity()).onChangingValues(current_parameter, profile_name.getText().toString());
+                }
+            });
+            builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    return;
+                }
+            });
         }
         return builder.create();
     }

@@ -45,6 +45,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
     public int server_port;
     public String realname_string;
     public String hostname_string;
+    public String quitmsg_string;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -431,6 +432,9 @@ public class ProfileSettingsActivity extends PreferenceActivity
             {
                 setResult(Activity.RESULT_OK);
                 current_parameter = "changing_realname";
+                Context context = getApplicationContext();
+                SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+                realname_string = prefs.getString("realname", "");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
@@ -457,6 +461,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     });
                     TextView textAreaTitle = dialogView.findViewById(R.id.profile_name_label);
                     TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
+                    EditText dialog_value = dialogView.findViewById(R.id.profile_name_text);
+                    dialog_value.setText(realname_string);
                     dialog_title.setText(getString(R.string.enter_the_realname_title));
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
@@ -496,6 +502,9 @@ public class ProfileSettingsActivity extends PreferenceActivity
             {
                 setResult(Activity.RESULT_OK);
                 current_parameter = "changing_hostname";
+                Context context = getApplicationContext();
+                SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+                hostname_string = prefs.getString("hostname", "");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
@@ -524,6 +533,79 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     textAreaTitle.setText(R.string.hostname);
                     TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
                     dialog_title.setText(getString(R.string.enter_the_hostname_title));
+                    EditText dialog_value = dialogView.findViewById(R.id.profile_name_text);
+                    dialog_value.setText(hostname_string);
+                    AlertDialog alertDialog = dialogBuilder.create();
+                    alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+                    alertDialog.show();
+                    Button dialogButton;
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+                }
+                return true;
+            }
+        });
+        Preference quit_msg = (Preference) findPreference("quit_message");
+        quit_msg.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            public boolean onPreferenceClick(Preference pref)
+            {
+                setResult(Activity.RESULT_OK);
+                current_parameter = "changing_quitmsg";
+                Context context = getApplicationContext();
+                SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+                quitmsg_string = prefs.getString("quit_message", "");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
+                    enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
+                } else {
+                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                    LayoutInflater inflater = getLayoutInflater();
+                    final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
+                    DisplayMetrics metrics = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                    dialogView.setMinimumWidth(metrics.widthPixels);
+                    dialogBuilder.setView(dialogView);
+                    dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            EditText profile_name = dialogView.findViewById(R.id.profile_name_text);
+                            onChangingValues(current_parameter, profile_name.getText().toString());
+                        }
+                    });
+                    dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                        }
+                    });
+                    TextView textAreaTitle = dialogView.findViewById(R.id.profile_name_label);
+                    textAreaTitle.setText(R.string.quit_message);
+                    TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
+                    dialog_title.setText(getString(R.string.enter_the_quiting_message));
+                    EditText dialog_value = dialogView.findViewById(R.id.profile_name_text);
+                    dialog_value.setText(quitmsg_string);
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
@@ -558,11 +640,13 @@ public class ProfileSettingsActivity extends PreferenceActivity
         Context context = getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
         auth_method_string = prefs.getString("auth_method", "");
-        if(auth_method_string == "NickServ") {
+        if(auth_method_string.contains("NickServ")) {
             auth_method.setSummary("NickServ");
+            password.setEnabled(true);
         } else {
             String[] auth_methods = getResources().getStringArray(R.array.auth_method);
             auth_method.setSummary(auth_methods[0]);
+            password.setEnabled(false);
         };
         server_name = prefs.getString("server", "");
         server_port = prefs.getInt("port", 0);
@@ -571,8 +655,10 @@ public class ProfileSettingsActivity extends PreferenceActivity
         };
         realname_string = prefs.getString("realname", "");
         hostname_string = prefs.getString("hostname", "");
+        quitmsg_string = prefs.getString("quit_message", "");
         realname.setSummary(realname_string);
         hostname.setSummary(hostname_string);
+        quit_msg.setSummary(quitmsg_string);
     }
 
     private void showNicknamesActivity(String profile_name) {
@@ -640,6 +726,14 @@ public class ProfileSettingsActivity extends PreferenceActivity
             editor.putString("hostname", value);
             editor.commit();
             hostname.setSummary(value);
+        } else if (parameter == "changing_quitmsg") {
+            Preference quit_msg = (Preference) findPreference("quit_message");
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("quit_message", value);
+            editor.commit();
+            quit_msg.setSummary(value);
         }
     }
 
@@ -681,6 +775,10 @@ public class ProfileSettingsActivity extends PreferenceActivity
             Context context = getApplicationContext();
             SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
             value = prefs.getString("hide_ip", "");
+        } else if(parameter == "changing_quitmsg") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            value = prefs.getString("quit_message", "");
         } else {
             value = "";
         };

@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.app.DialogFragment;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -59,7 +60,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                 file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
                 if (file_extension.contains(".xml") && file_extension.length() == 4) {
                     profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                            prefs.getString("server", ""), prefs.getInt("port", 0), false));
+                            prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
                 }
                 ;
             }
@@ -203,20 +204,14 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                 file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
                 if (file_extension.contains(".xml") && file_extension.length() == 4) {
                     profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                            prefs.getString("server", ""), prefs.getInt("port", 0), false));
+                            prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
                 }
                 ;
             }
-            ListView profilesList = findViewById(R.id.nicknames_list);
+            final ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
             profilesList.setAdapter(profilesAdapter);
-            profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Toast.makeText(getApplicationContext(), ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
-                }
-            });
         } catch(Exception ex) {
             ex.printStackTrace();
         }
@@ -236,6 +231,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         editor.putString("name", profile_name);
         editor.putString("auth_method", "Disabled");
         editor.putString("hide_ip", "Disabled");
+        editor.putString("quit_message", getString(R.string.default_quit_msg));
         editor.commit();
         Intent intent = new Intent(this, ProfileSettingsActivity.class);
         intent.putExtra("profile_name", profile_name);
@@ -246,32 +242,34 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
     public void selectProfile(View v) {
     }
 
-    public void connectProfile(View v) {
+    public void connectProfile(int position) {
         Context context = getApplicationContext();
         Intent intent = new Intent(context, ThreadActivity.class);
-        TextView profile_name = v.getRootView().findViewById(R.id.profile_item_label);
-        intent.putExtra("profile_name", profile_name.getText());
+        Profile profile_item = null;
+        profile_item = (Profile) profilesAdapter.getItem(position);
+        intent.putExtra("profile_name", profile_item.name);
         startActivity(intent);
         finish();
     }
 
-    public void editProfile(View v) {
+    public void editProfile(int position) {
         Context context = getApplicationContext();
         Intent intent = new Intent(context, ProfileSettingsActivity.class);
-        TextView profile_name = v.getRootView().findViewById(R.id.profile_item_label);
-        intent.putExtra("profile_name", profile_name.getText());
+        Profile profile_item = null;
+        profile_item = (Profile) profilesAdapter.getItem(position);
+        intent.putExtra("profile_name", profile_item.name);
         intent.putExtra("package_name", getApplicationContext().getPackageName());
         startActivity(intent);
     }
 
-    public void deleteProfile(View v) {
-        profilesArray.clear();
-        profilesList.clear();
+    public void deleteProfile(int position) {
         profilesAdapter = new ProfileAdapter(this, profilesList);
         String package_name = getApplicationContext().getPackageName();
-        TextView profile_name = v.getRootView().findViewById(R.id.profile_item_label);
-        TextView server_text = v.getRootView().findViewById(R.id.profile_server_label);
-        String profile_path = "/data/data/" + package_name + "/shared_prefs/" + profile_name.getText() + ".xml";
+        Profile profile_item = null;
+        profile_item = (Profile) profilesAdapter.getItem(position);
+        profilesArray.clear();
+        profilesList.clear();
+        String profile_path = "/data/data/" + package_name + "/shared_prefs/" + profile_item.name + ".xml";
         File file = new File(profile_path);
         file.delete();
         profilesAdapter = new ProfileAdapter(this, profilesList);
@@ -289,7 +287,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                 file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
                 if (file_extension.contains(".xml") && file_extension.length() == 4) {
                     profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                            prefs.getString("server", ""), prefs.getInt("port", 0), false));
+                            prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
                 }
                 ;
             }

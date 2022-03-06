@@ -17,7 +17,7 @@ public class AboutApplicationActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.about_application_activity);
         Button repoButton = findViewById(R.id.repo_button);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getActionBar().setHomeButtonEnabled(true);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -42,5 +42,10 @@ public class AboutApplicationActivity extends Activity {
             onBackPressed();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 }

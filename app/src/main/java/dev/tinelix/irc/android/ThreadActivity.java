@@ -1,6 +1,7 @@
 package dev.tinelix.irc.android;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Notification;
@@ -16,10 +17,14 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.method.KeyListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +34,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +57,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.zip.Inflater;
 
+import static java.lang.Thread.sleep;
+
 public class ThreadActivity extends Activity {
 
     public Socket socket;
@@ -70,6 +78,7 @@ public class ThreadActivity extends Activity {
     public byte[] socket_data_bytes;
     public int port;
     private EditText socks_msg_text;
+    public EditText output_msg_text;
     public byte[] socket_data = new byte[1<<12];
     public String socket_data_string;
     private Timer timer;
@@ -80,12 +89,14 @@ public class ThreadActivity extends Activity {
     public String password;
     public String auth_method;
     public String hide_ip;
+    public String quit_msg;
     public int sended_bytes_count;
     public int received_bytes_count;
     public String messageAuthor;
     public String messageBody;
     public boolean isMentioned;
     public String sendingMsgText;
+    public AlertDialog connectionDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +107,9 @@ public class ThreadActivity extends Activity {
         }
         socks_msg_text = findViewById(R.id.sock_msg_text);
         socks_msg_text.setKeyListener(null);
-        final EditText output_msg_text = findViewById(R.id.output_msg_text);
+        socks_msg_text.setLongClickable(true);
+        socks_msg_text.setTypeface(Typeface.MONOSPACE);
+        output_msg_text = findViewById(R.id.output_msg_text);
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if(extras == null) {
@@ -109,6 +122,11 @@ public class ThreadActivity extends Activity {
         };
         if (timer != null) {
             timer.cancel();
+        }
+        if(profile_name == null) {
+            socket = null;
+            finish();
+            return;
         }
 
         updateUITask = new UpdateUITask();
@@ -128,6 +146,7 @@ public class ThreadActivity extends Activity {
         realname = prefs.getString("realname", "");
         encoding = prefs.getString("encoding", "");
         hide_ip = prefs.getString("hide_ip", "");
+        quit_msg = prefs.getString("quit_message", "");
         if(hostname.length() <= 2) {
             hostname = nicknames.split(", ")[0];
         }
@@ -160,6 +179,54 @@ public class ThreadActivity extends Activity {
                 }
             });
         }
+        AlertDialog.Builder builder;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            builder = new AlertDialog.Builder(this);
+        } else {
+            builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.IRCClient));
+        }
+        LayoutInflater inflater = getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.progress_activity, null);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            dialogView.setMinimumWidth(metrics.widthPixels);
+        }
+        TextView progressText = dialogView.findViewById(R.id.progress_text);
+        progressText.setText(getString(R.string.connection_progress, server + ":" + port));
+        builder.setView(dialogView);
+        connectionDialog = builder.create();
+        connectionDialog.setCancelable(false);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            connectionDialog.getWindow().setGravity(Gravity.BOTTOM);
+        }
+        connectionDialog.show();
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            Button dialogButton;
+            dialogButton = connectionDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = connectionDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = connectionDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+        }
     }
 
     @Override
@@ -176,13 +243,7 @@ public class ThreadActivity extends Activity {
         builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                socket = null;
-                finish();
+                sendQuitMessage();
             }
         });
         builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
@@ -221,6 +282,13 @@ public class ThreadActivity extends Activity {
         }
     }
 
+    private void sendQuitMessage() {
+        output_msg_text.setText("/quit");
+        sendingMsgText = "/quit";
+        state = "sending_message";
+        new Thread(new SendSocketMsg()).start();
+    }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -254,6 +322,7 @@ public class ThreadActivity extends Activity {
 
     private void showAboutApplication() {
         Intent intent = new Intent(this, AboutApplicationActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
@@ -358,7 +427,11 @@ public class ThreadActivity extends Activity {
                 InetAddress serverAddr = InetAddress.getByName(server);
                 SocketAddress socketAddress = new InetSocketAddress(serverAddr, port);
                 Log.d("Client", "Connecting to " + server + ":" + port + "...");
-                socket.connect(socketAddress);
+                socket.connect(socketAddress, 30000);
+                if(socket.isConnected() == true) {
+                    state = "connected";
+                    updateUITask.run();
+                }
                 input = socket.getInputStream();
                 socket.getOutputStream().write(("USER " + nicknames.split(", ")[0] + " " +
                         hostname + " " + nicknames.split(", ")[0] + " :" +
@@ -455,7 +528,7 @@ public class ThreadActivity extends Activity {
                 }
                 socket = null;
             } catch (IOException ioEx) {
-                Log.e("Socket", "IOException");
+                ioEx.printStackTrace();
             } catch (Exception ex) {
                 try {
                     if(socket != null) {
@@ -478,11 +551,22 @@ public class ThreadActivity extends Activity {
                 state = "sending_message";
                 while(state == "sending_message") {
                     updateUITask.run();
+                    try {
+                        sleep(50);
+                        state = "finishing_sending_message";
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
                 if(sendingMsgText.length() > 0) {
                     try {
                         socket.getOutputStream().write((sendingMsgText).getBytes(encoding));
                         socket.getOutputStream().flush();
+                        if(sendingMsgText.startsWith("QUIT")) {
+                            socket.close();
+                            socket = null;
+                            finish();
+                        }
                         state = "sended_message";
                         updateUITask.run();
                     } catch (IOException e) {
@@ -524,19 +608,40 @@ public class ThreadActivity extends Activity {
                                         .setContentText(messageBody);
                                 notificationManager.notify(1, notificationBuilder.build());
                             } else {
-                                Toast.makeText(context, getString(R.string.mention_notification_title, messageAuthor) + ":" + messageBody, Toast.LENGTH_LONG).show();
+                                Notification notification = new Notification(R.drawable.ic_notification_icon, getString(R.string.mention_notification_title, messageAuthor), System.currentTimeMillis());
+                                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                                RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_activity);
+                                contentView.setTextViewText(R.id.notification_title, getString(R.string.mention_notification_title, messageAuthor));
+                                contentView.setTextViewText(R.id.notification_text, messageBody);
+                                DisplayMetrics metrics = new DisplayMetrics();
+                                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                                notification.contentView = contentView;
+                                ActivityManager am = (ActivityManager)getSystemService(ACTIVITY_SERVICE);
+                                List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
+                                ActivityManager.RunningTaskInfo task = tasks.get(0); // Should be my task
+                                Intent notificationIntent = new Intent(context, ThreadActivity.class);
+                                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                notificationIntent.setAction(Intent.ACTION_MAIN);
+                                notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+                                notification.flags |= Notification.FLAG_AUTO_CANCEL;
+                                PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
+                                notification.contentIntent = contentIntent;
+                                notificationManager.notify(R.layout.notification_activity, notification);
                             }
                         }
                     } else if(state == "disconnected") {
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
+                        connectionDialog.cancel();
                         finish();
                     } else if(state == "connection_lost") {
                         Toast.makeText(getApplicationContext(), R.string.connection_lost_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
+                        connectionDialog.cancel();
                         finish();
                     }else if(state == "timeout") {
                         Toast.makeText(getApplicationContext(), R.string.connection_timeout_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
+                        connectionDialog.cancel();
                         finish();
                     } else if(state == "no_connection") {
                         Toast.makeText(getApplicationContext(), R.string.no_connection_msg, Toast.LENGTH_SHORT).show();
@@ -546,6 +651,7 @@ public class ThreadActivity extends Activity {
                         if (socket != null) {
                             EditText output_msg_text = findViewById(R.id.output_msg_text);
                             outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
+                            Log.i("Client", "\r\nSending message...\r\n\r\nMESSAGE: " + output_msg_text.getText().toString());
                             if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
                                 try {
                                     channelsArray.add(outputMsgArray.get(1));
@@ -584,6 +690,13 @@ public class ThreadActivity extends Activity {
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
+                            } else if (outputMsgArray.get(0).startsWith("/quit")) {
+                                try {
+                                    sendingMsgText = ("QUIT :" + quit_msg + "\r\n");
+                                    sended_bytes_count += ("QUIT :" + quit_msg + "\r\n").getBytes(encoding).length;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             } else if (outputMsgArray.get(0).startsWith("/")) {
                                 try {
                                     StringBuilder message_sb = new StringBuilder();
@@ -610,11 +723,11 @@ public class ThreadActivity extends Activity {
                                 }
                             }
                             output_msg_text.setText("");
-                            Log.i("Client", "Message: [" + sendingMsgText + "]");
-                            state = "finishing_sending_message";
                         } else {
                             Log.e("Socket", "Socket not created");
                         }
+                    } else if(state == "connected") {
+                        connectionDialog.cancel();
                     }
                 }
             });
