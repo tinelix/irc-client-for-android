@@ -7,7 +7,7 @@ android {
         minSdkVersion 8
         targetSdkVersion 32
         versionCode 1
-        versionName '0.1.1-alpha_20220304'
+        versionName '0.1.3-alpha_20220306'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
