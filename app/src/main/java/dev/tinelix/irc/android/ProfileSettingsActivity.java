@@ -7,11 +7,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 public class ProfileSettingsActivity extends PreferenceActivity
 {
@@ -50,6 +53,9 @@ public class ProfileSettingsActivity extends PreferenceActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        setCustomTheme(global_prefs);
+        setColorStyle(global_prefs);
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.profile_settings);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -84,7 +90,20 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                    final AlertDialog.Builder dialogBuilder;
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        }
+                    } else {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        }
+                    }
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -109,30 +128,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton;
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
+                    Button dialogButton = null;
+                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
                 }
                 return true;
             }
@@ -148,7 +145,20 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                    final AlertDialog.Builder dialogBuilder;
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        }
+                    } else {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        }
+                    }
                     String current_value = getCurrentValue(current_parameter);
                     String[] auth_methods = getResources().getStringArray(R.array.auth_method);
                     dialogBuilder.setTitle(R.string.auth_method);
@@ -195,30 +205,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton;
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
+                    Button dialogButton = null;
+                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
                 }
                 return true;
             }
@@ -243,7 +231,20 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment enterPasswordDialogFragm = new EnterPasswordDialogFragm();
                     enterPasswordDialogFragm.show(getFragmentManager(), "enter_password_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                    final AlertDialog.Builder dialogBuilder;
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        }
+                    } else {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        }
+                    }
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_password_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -268,30 +269,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton;
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
+                    Button dialogButton = null;
+                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
                 }
                 return true;
             }
@@ -307,7 +286,20 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment serverSettingsDialogFragm = new ServerSettingsDialogFragm();
                     serverSettingsDialogFragm.show(getFragmentManager(), "server_settings_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                    final AlertDialog.Builder dialogBuilder;
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        }
+                    } else {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        }
+                    }
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_server_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -397,30 +389,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton;
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
+                    Button dialogButton = null;
+                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
                 }
                 return true;
             }
@@ -439,7 +409,20 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                    final AlertDialog.Builder dialogBuilder;
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        }
+                    } else {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        }
+                    }
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -467,30 +450,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton;
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
+                    Button dialogButton = null;
+                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
                 }
                 return true;
             }
@@ -509,7 +470,20 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                    final AlertDialog.Builder dialogBuilder;
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        }
+                    } else {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        }
+                    }
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -538,30 +512,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton;
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
+                    Button dialogButton = null;
+                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
                 }
                 return true;
             }
@@ -580,7 +532,20 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                    final AlertDialog.Builder dialogBuilder;
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        }
+                    } else {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
+                        }
+                    }
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -609,30 +574,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton;
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
-
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                    if(dialogButton != null) {
-                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                        dialogButton.setTextColor(getResources().getColor(R.color.white));
-                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                    }
+                    Button dialogButton = null;
+                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
                 }
                 return true;
             }
@@ -659,6 +602,156 @@ public class ProfileSettingsActivity extends PreferenceActivity
         realname.setSummary(realname_string);
         hostname.setSummary(hostname_string);
         quit_msg.setSummary(quitmsg_string);
+    }
+
+    private void setCustomTheme(SharedPreferences global_prefs) {
+        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            }
+        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            }
+        }
+        if (global_prefs.getString("theme", "Light").contains("Light")) {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                setTheme(R.style.IRCClient_Light);
+            } else {
+                setTheme(R.style.IRCClient);
+            }
+        } else {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                setTheme(R.style.IRCClient);
+            } else {
+                setTheme(R.style.IRCClient_Light);
+            }
+        }
+    }
+
+    private void customizeDialogStyle(Button dialogButton, SharedPreferences global_prefs, AlertDialog alertDialog) {
+        if(global_prefs.getString("theme", "Dark").contains("Light")) {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            } else {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            }
+        } else {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            } else {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            }
+        }
     }
 
     private void showNicknamesActivity(String profile_name) {
@@ -799,6 +892,31 @@ public class ProfileSettingsActivity extends PreferenceActivity
         editor.putString("hide_ip", hide_ip);
         editor.commit();
     }
+
+    public void setColorStyle(SharedPreferences global_prefs) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    getListView().setBackgroundColor(getResources().getColor(R.color.white));
+                    getListView().setCacheColorHint(getResources().getColor(R.color.white));
+                } else {
+                    getListView().setBackgroundColor(getResources().getColor(R.color.black));
+                    getListView().setCacheColorHint(getResources().getColor(R.color.black));
+                }
+            } else {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    getListView().setBackgroundColor(getResources().getColor(R.color.black));
+                    getListView().setCacheColorHint(getResources().getColor(R.color.black));
+                } else {
+                    getListView().setBackgroundColor(getResources().getColor(R.color.white));
+                    getListView().setCacheColorHint(getResources().getColor(R.color.white));
+                }
+            }
+        }
+    }
+
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

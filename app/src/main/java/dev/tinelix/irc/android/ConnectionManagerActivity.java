@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -35,6 +37,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 public class ConnectionManagerActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
     public List<String> profilesArray = new ArrayList<String>();
@@ -45,7 +48,10 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        setCustomTheme(global_prefs);
         setContentView(R.layout.activity_connection_manager);
+        setColorStyle(global_prefs);
         profilesAdapter = new ProfileAdapter(this, profilesList);
         String package_name = getApplicationContext().getPackageName();
         String profile_path = "/data/data/" + package_name + "/shared_prefs";
@@ -56,13 +62,16 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         Context context = getApplicationContext();
         try {
             for (int i = 0; i < prefs_files.length; i++) {
-                SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
-                file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
-                if (file_extension.contains(".xml") && file_extension.length() == 4) {
-                    profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                            prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
+                if(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)).startsWith(getApplicationInfo().packageName + "_preferences"))
+                {
+                } else {
+                    SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
+                    file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
+                    if (file_extension.contains(".xml") && file_extension.length() == 4) {
+                        profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
+                                prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
+                    }
                 }
-                ;
             }
             ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
@@ -78,7 +87,6 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
             ex.printStackTrace();
         }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.registerOnSharedPreferenceChangeListener(this);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
             FragmentManager fragmentManager = null;
             fragmentManager = getFragmentManager();
@@ -161,27 +169,8 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
 
             Button dialogButton;
             dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
-
-            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
-
-            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
+            final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            customizeDialogStyle(dialogButton, global_prefs, alertDialog);
         }
         return false;
     };
@@ -200,13 +189,16 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         Context context = getApplicationContext();
         try {
             for (int i = 0; i < prefs_files.length; i++) {
-                SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
-                file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
-                if (file_extension.contains(".xml") && file_extension.length() == 4) {
-                    profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                            prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
+                if(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)).startsWith(getApplicationInfo().packageName + "_preferences"))
+                {
+                } else {
+                    SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
+                    file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
+                    if (file_extension.contains(".xml") && file_extension.length() == 4) {
+                        profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
+                                prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
+                    }
                 }
-                ;
             }
             final ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
@@ -232,6 +224,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         editor.putString("auth_method", "Disabled");
         editor.putString("hide_ip", "Disabled");
         editor.putString("quit_message", getString(R.string.default_quit_msg));
+        editor.putBoolean("connected", false);
         editor.commit();
         Intent intent = new Intent(this, ProfileSettingsActivity.class);
         intent.putExtra("profile_name", profile_name);
@@ -245,9 +238,19 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
     public void connectProfile(int position) {
         Context context = getApplicationContext();
         Intent intent = new Intent(context, ThreadActivity.class);
+        Intent parentIntent = new Intent();
         Profile profile_item = null;
         profile_item = (Profile) profilesAdapter.getItem(position);
         intent.putExtra("profile_name", profile_item.name);
+        SharedPreferences prefs = context.getSharedPreferences(profile_item.name, 0);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("connected", true);
+        editor.commit();
+        SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        editor = global_prefs.edit();
+        editor.putBoolean("connected", true);
+        editor.commit();
+        setResult(RESULT_OK, parentIntent);
         startActivity(intent);
         finish();
     }
@@ -283,13 +286,16 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         Context context = getApplicationContext();
         try {
             for (int i = 0; i < prefs_files.length; i++) {
-                SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
-                file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
-                if (file_extension.contains(".xml") && file_extension.length() == 4) {
-                    profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                            prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
+                if(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)).startsWith(getApplicationInfo().packageName + "_preferences"))
+                {
+                } else {
+                    SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
+                    file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
+                    if (file_extension.contains(".xml") && file_extension.length() == 4) {
+                        profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
+                                prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
+                    }
                 }
-                ;
             }
             ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
@@ -308,5 +314,202 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 
+    }
+
+    private void setColorStyle(SharedPreferences global_prefs) {
+        if (global_prefs.getString("theme", "Light").contains("Light")) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
+                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    TextView app_title = findViewById(R.id.app_title_label);
+                    app_title.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    ImageView app_icon = findViewById(R.id.app_icon_view);
+                    app_icon.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
+                    activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
+                } else {
+                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
+                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.title_v11_transparent));
+                    TextView app_title = findViewById(R.id.app_title_label);
+                    app_title.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    ImageView app_icon = findViewById(R.id.app_icon_view);
+                    app_icon.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
+                    activity_ll.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                }
+            }
+        } else {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
+                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.title_v11_transparent));
+                    TextView app_title = findViewById(R.id.app_title_label);
+                    app_title.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    ImageView app_icon = findViewById(R.id.app_icon_view);
+                    app_icon.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
+                    activity_ll.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                } else {
+                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
+                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    TextView app_title = findViewById(R.id.app_title_label);
+                    app_title.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    ImageView app_icon = findViewById(R.id.app_icon_view);
+                    app_icon.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
+                    activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
+                }
+            }
+        }
+    }
+
+    private void setCustomTheme(SharedPreferences global_prefs) {
+        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            }
+        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            }
+        }
+        if (global_prefs.getString("theme", "Light").contains("Light")) {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                setTheme(R.style.IRCClient_Light);
+            } else {
+                setTheme(R.style.IRCClient);
+            }
+        } else {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                setTheme(R.style.IRCClient);
+            } else {
+                setTheme(R.style.IRCClient_Light);
+            }
+        }
+    }
+    private void customizeDialogStyle(Button dialogButton, SharedPreferences global_prefs, AlertDialog alertDialog) {
+        if(global_prefs.getString("theme", "Dark").contains("Light")) {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            } else {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            }
+        } else {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            } else {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            }
+        }
     }
 }

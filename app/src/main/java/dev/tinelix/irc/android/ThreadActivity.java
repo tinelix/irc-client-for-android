@@ -12,16 +12,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.Editable;
+import android.text.Html;
 import android.text.InputType;
 import android.text.method.KeyListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -34,6 +38,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,6 +48,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -53,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.zip.Inflater;
@@ -101,7 +109,10 @@ public class ThreadActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        setCustomTheme(global_prefs);
         setContentView(R.layout.thread_activity);
+        setColorStyle(global_prefs);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getActionBar().setHomeButtonEnabled(true);
         }
@@ -109,6 +120,9 @@ public class ThreadActivity extends Activity {
         socks_msg_text.setKeyListener(null);
         socks_msg_text.setLongClickable(true);
         socks_msg_text.setTypeface(Typeface.MONOSPACE);
+        if(global_prefs.getInt("font_size", 0) >= 12) {
+            socks_msg_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, global_prefs.getInt("font_size", 0));
+        }
         output_msg_text = findViewById(R.id.output_msg_text);
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -120,6 +134,7 @@ public class ThreadActivity extends Activity {
         } else {
             profile_name = (String) savedInstanceState.getSerializable("profile_name");
         };
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(profile_name, 0);
         if (timer != null) {
             timer.cancel();
         }
@@ -133,11 +148,12 @@ public class ThreadActivity extends Activity {
         sendingMsgText = new String();
 
         final Context context = getApplicationContext();
-        SharedPreferences prefs = context.getSharedPreferences(profile_name, 0);
         server = prefs.getString("server", "");
         port = prefs.getInt("port", 0);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             getActionBar().setSubtitle(server + ":" + port);
+        } else {
+            Log.i("Client", "\r\nProfile Info:\r\n\r\nPROFILE NAME: [" + profile_name + "]\r\nSERVER: [" + server + "]\r\nPORT: " + port);
         }
         nicknames = prefs.getString("nicknames", "");
         auth_method = prefs.getString("auth_method", "");
@@ -183,7 +199,19 @@ public class ThreadActivity extends Activity {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             builder = new AlertDialog.Builder(this);
         } else {
-            builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.IRCClient));
+            if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                }
+            } else {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                }
+            }
         }
         LayoutInflater inflater = getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.progress_activity, null);
@@ -229,17 +257,69 @@ public class ThreadActivity extends Activity {
         }
     }
 
+    private void setColorStyle(SharedPreferences global_prefs) {
+        if (global_prefs.getString("theme", "Light").contains("Light")) {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                EditText socks_msg_text = findViewById(R.id.sock_msg_text);
+                socks_msg_text.setTextColor(getResources().getColor(R.color.black));
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
+                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    TextView app_title = findViewById(R.id.app_title_label);
+                    app_title.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    ImageView app_icon = findViewById(R.id.app_icon_view);
+                    app_icon.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
+                    activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
+                    socks_msg_text.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    EditText sended_msg_area = findViewById(R.id.output_msg_text);
+                    sended_msg_area.setTextColor(getResources().getColor(R.color.black));
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if(global_prefs.getInt("font_size", 0) >= 12) {
+            socks_msg_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, global_prefs.getInt("font_size", 0));
+        }
+        super.onResume();
+    }
+
     @Override
     public void onBackPressed() {
         AlertDialog alertDialog;
         AlertDialog.Builder builder;
+        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             builder = new AlertDialog.Builder(this);
+            builder.setTitle(getResources().getString(R.string.quit_session_title));
+            builder.setMessage(getResources().getString(R.string.quit_session_msg));
         } else {
-            builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.IRCClient));
+            if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                    builder.setTitle(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_title) + "</html>"));
+                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</html>"));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                    builder.setTitle(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_title) + "</html>"));
+                    builder.setMessage(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_msg) + "</html>"));
+                }
+            } else {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                    builder.setTitle(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_title) + "</html>"));
+                    builder.setMessage(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_msg) + "</html>"));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                    builder.setTitle(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_title) + "</html>"));
+                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</html>"));
+                }
+            }
         }
-        builder.setTitle(R.string.quit_session_title);
-        builder.setMessage(R.string.quit_session_msg);
         builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -255,30 +335,8 @@ public class ThreadActivity extends Activity {
         alertDialog = builder.create();
         alertDialog.show();
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            Button dialogButton;
-            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
-
-            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
-
-            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
+            Button dialogButton = null;
+            customizeDialogStyle(dialogButton, global_prefs, alertDialog);
         }
     }
 
@@ -286,6 +344,9 @@ public class ThreadActivity extends Activity {
         output_msg_text.setText("/quit");
         sendingMsgText = "/quit";
         state = "sending_message";
+        PackageManager pm = getApplicationContext().getPackageManager();
+        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
+        getApplicationContext().startActivity(intent);
         new Thread(new SendSocketMsg()).start();
     }
 
@@ -313,6 +374,10 @@ public class ThreadActivity extends Activity {
             return true;
         } else if (id == R.id.about_application_item) {
             showAboutApplication();
+        } else if (id == R.id.connection_manager_item) {
+            showConnectionManager();
+        } else if (id == R.id.settings_item) {
+            showMainSettings();
         } else if(id == R.id.disconnect_item) {
             onBackPressed();
         }
@@ -320,8 +385,14 @@ public class ThreadActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void showConnectionManager() {
+        Intent intent = new Intent(ThreadActivity.this, ConnectionManagerActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
     private void showAboutApplication() {
-        Intent intent = new Intent(this, AboutApplicationActivity.class);
+        Intent intent = new Intent(ThreadActivity.this, AboutApplicationActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
@@ -331,7 +402,21 @@ public class ThreadActivity extends Activity {
             DialogFragment statsDialogFragm = new StatisticsFragm();
             statsDialogFragm.show(getFragmentManager(), "stats_dialog");
         } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.IRCClient));
+            final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            AlertDialog.Builder builder;
+            if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                }
+            } else {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                }
+            }
             LayoutInflater inflater = getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.statistics_activity, null);
             DisplayMetrics metrics = new DisplayMetrics();
@@ -383,31 +468,179 @@ public class ThreadActivity extends Activity {
             statisticsDlg.getWindow().setGravity(Gravity.BOTTOM);
             statisticsDlg.show();
 
-            Button dialogButton;
-            dialogButton = statisticsDlg.getButton(DialogInterface.BUTTON_POSITIVE);
+            Button dialogButton = null;
+            customizeDialogStyle(dialogButton, global_prefs, statisticsDlg);
+        }
+    }
 
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+    private void setCustomTheme(SharedPreferences global_prefs) {
+        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
             }
-
-            dialogButton = statisticsDlg.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
-
-            dialogButton = statisticsDlg.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getApplicationContext().getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
             }
         }
+        if (global_prefs.getString("theme", "Light").contains("Light")) {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                setTheme(R.style.IRCClient_Light);
+            } else {
+                setTheme(R.style.IRCClient);
+            }
+        } else {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                setTheme(R.style.IRCClient);
+            } else {
+                setTheme(R.style.IRCClient_Light);
+            }
+        }
+    }
+
+    private void customizeDialogStyle(Button dialogButton, SharedPreferences global_prefs, AlertDialog alertDialog) {
+        if(global_prefs.getString("theme", "Dark").contains("Light")) {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            } else {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            }
+        } else {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            } else {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            }
+        }
+    }
+
+    private void showMainSettings() {
+        Intent intent = new Intent(ThreadActivity.this, MainSettingsActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(profile_name != null) {
+            SharedPreferences prefs = getApplicationContext().getSharedPreferences(profile_name, 0);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("connected", false);
+            editor.commit();
+            SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            editor = global_prefs.edit();
+            editor.putBoolean("connected", false);
+            editor.commit();
+        }
+        super.onDestroy();
     }
 
     public int getSendedBytes() {
@@ -423,14 +656,17 @@ public class ThreadActivity extends Activity {
         public void run() {
             try {
                 socket = new Socket();
+                state = "connecting";
                 Log.d("Client", "Getting IP address from " + server + ":" + port + "...");
                 InetAddress serverAddr = InetAddress.getByName(server);
                 SocketAddress socketAddress = new InetSocketAddress(serverAddr, port);
                 Log.d("Client", "Connecting to " + server + ":" + port + "...");
                 socket.connect(socketAddress, 30000);
-                if(socket.isConnected() == true) {
-                    state = "connected";
-                    updateUITask.run();
+                while(state == "connecting") {
+                    if (socket.isConnected()) {
+                        updateUITask.run();
+                        sleep(50);
+                    }
                 }
                 input = socket.getInputStream();
                 socket.getOutputStream().write(("USER " + nicknames.split(", ")[0] + " " +
@@ -519,6 +755,8 @@ public class ThreadActivity extends Activity {
                     e.printStackTrace();
                 }
                 socket = null;
+                state = "no_connection";
+                updateUITask.run();
             } catch (IllegalArgumentException iaEx) {
                 Log.e("Socket", "IllegalArgumentException");
                 try {
@@ -527,6 +765,18 @@ public class ThreadActivity extends Activity {
                     e.printStackTrace();
                 }
                 socket = null;
+                state = "no_connection";
+                updateUITask.run();
+            } catch (ConnectException Ex) {
+                Log.e("Socket", "ConnectException");
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                socket = null;
+                state = "no_connection";
+                updateUITask.run();
             } catch (IOException ioEx) {
                 ioEx.printStackTrace();
             } catch (Exception ex) {
@@ -597,55 +847,70 @@ public class ThreadActivity extends Activity {
                             socks_msg_text.setSelection(socks_msg_text.getText().length());
                             socket_data_string = "";
                             Context context = getApplicationContext();
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                                Notification.Builder notificationBuilder = null;
-                                notificationBuilder = new Notification.Builder(context);
-                                notificationBuilder
-                                        .setSmallIcon(R.drawable.ic_notification_icon)
-                                        .setWhen(System.currentTimeMillis())
-                                        .setContentTitle(getString(R.string.mention_notification_title, messageAuthor))
-                                        .setContentText(messageBody);
-                                notificationManager.notify(1, notificationBuilder.build());
-                            } else {
-                                Notification notification = new Notification(R.drawable.ic_notification_icon, getString(R.string.mention_notification_title, messageAuthor), System.currentTimeMillis());
-                                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                                RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_activity);
-                                contentView.setTextViewText(R.id.notification_title, getString(R.string.mention_notification_title, messageAuthor));
-                                contentView.setTextViewText(R.id.notification_text, messageBody);
-                                DisplayMetrics metrics = new DisplayMetrics();
-                                getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                                notification.contentView = contentView;
-                                ActivityManager am = (ActivityManager)getSystemService(ACTIVITY_SERVICE);
-                                List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
-                                ActivityManager.RunningTaskInfo task = tasks.get(0); // Should be my task
-                                Intent notificationIntent = new Intent(context, ThreadActivity.class);
-                                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                notificationIntent.setAction(Intent.ACTION_MAIN);
-                                notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-                                notification.flags |= Notification.FLAG_AUTO_CANCEL;
-                                PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
-                                notification.contentIntent = contentIntent;
-                                notificationManager.notify(R.layout.notification_activity, notification);
+                            if(messageBody.length() > 0 && nicknames.split(", ")[0].length() > 0) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                                    Notification.Builder notificationBuilder = null;
+                                    notificationBuilder = new Notification.Builder(context);
+                                    notificationBuilder
+                                            .setSmallIcon(R.drawable.ic_notification_icon)
+                                            .setWhen(System.currentTimeMillis())
+                                            .setContentTitle(getString(R.string.mention_notification_title, messageAuthor))
+                                            .setContentText(messageBody);
+                                    notificationManager.notify(1, notificationBuilder.build());
+                                } else {
+                                    Notification notification = new Notification(R.drawable.ic_notification_icon, getString(R.string.mention_notification_title, messageAuthor), System.currentTimeMillis());
+                                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                                    RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_activity);
+                                    contentView.setTextViewText(R.id.notification_title, getString(R.string.mention_notification_title, messageAuthor));
+                                    contentView.setTextViewText(R.id.notification_text, messageBody);
+                                    DisplayMetrics metrics = new DisplayMetrics();
+                                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                                    notification.contentView = contentView;
+                                    ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+                                    List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
+                                    ActivityManager.RunningTaskInfo task = tasks.get(0); // Should be my task
+                                    Intent notificationIntent = new Intent(context, ThreadActivity.class);
+                                    notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    notificationIntent.setAction(Intent.ACTION_MAIN);
+                                    notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+                                    notification.flags |= Notification.FLAG_AUTO_CANCEL;
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
+                                    notification.contentIntent = contentIntent;
+                                    notificationManager.notify(R.layout.notification_activity, notification);
+                                }
                             }
                         }
                     } else if(state == "disconnected") {
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         connectionDialog.cancel();
+                        PackageManager pm = getApplicationContext().getPackageManager();
+                        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
+                        getApplicationContext().startActivity(intent);
                         finish();
                     } else if(state == "connection_lost") {
                         Toast.makeText(getApplicationContext(), R.string.connection_lost_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         connectionDialog.cancel();
+                        PackageManager pm = getApplicationContext().getPackageManager();
+                        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
+                        getApplicationContext().startActivity(intent);
                         finish();
-                    }else if(state == "timeout") {
+                    } else if(state == "timeout") {
                         Toast.makeText(getApplicationContext(), R.string.connection_timeout_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         connectionDialog.cancel();
+                        PackageManager pm = getApplicationContext().getPackageManager();
+                        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
+                        getApplicationContext().startActivity(intent);
                         finish();
                     } else if(state == "no_connection") {
                         Toast.makeText(getApplicationContext(), R.string.no_connection_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
+                        connectionDialog.cancel();
+                        PackageManager pm = getApplicationContext().getPackageManager();
+                        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
+                        getApplicationContext().startActivity(intent);
                         finish();
                     } else if(state == "sending_message") {
                         if (socket != null) {
@@ -726,8 +991,9 @@ public class ThreadActivity extends Activity {
                         } else {
                             Log.e("Socket", "Socket not created");
                         }
-                    } else if(state == "connected") {
+                    } else if(state == "connecting") {
                         connectionDialog.cancel();
+                        state = "connected";
                     }
                 }
             });

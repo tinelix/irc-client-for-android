@@ -2,6 +2,8 @@ package dev.tinelix.irc.android;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,6 +61,30 @@ public class ProfileAdapter extends BaseAdapter {
 
         Profile p = getProfile(position);
         ((TextView) view.findViewById(R.id.profile_item_label)).setText(p.name);
+        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
+        if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    ((TextView) view.findViewById(R.id.profile_item_label)).setTextColor(view.getResources().getColor(R.color.black));
+                } else {
+                    ((TextView) view.findViewById(R.id.profile_item_label)).setTextColor(view.getResources().getColor(R.color.white));
+                }
+        } else {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                ((TextView) view.findViewById(R.id.profile_item_label)).setTextColor(view.getResources().getColor(R.color.white));
+            } else {
+                ((TextView) view.findViewById(R.id.profile_item_label)).setTextColor(view.getResources().getColor(R.color.black));
+            }
+        }
+        SharedPreferences prefs = view.getContext().getSharedPreferences(p.name, 0);
+        if(prefs.getBoolean("connected", false) == true) {
+            view.findViewById(R.id.state_indicator).setVisibility(View.VISIBLE);
+            ImageButton edit_btn = view.findViewById(R.id.edit_btn);
+            edit_btn.setVisibility(View.GONE);
+            ImageButton delete_btn = view.findViewById(R.id.delete_btn);
+            delete_btn.setVisibility(View.GONE);
+        } else {
+            view.findViewById(R.id.state_indicator).setVisibility(View.GONE);
+        }
         ((TextView) view.findViewById(R.id.profile_server_label)).setText(p.server + ":" + p.port);
         ImageButton edit_btn = view.findViewById(R.id.edit_btn);
         edit_btn.setTag(position);
@@ -98,6 +124,7 @@ public class ProfileAdapter extends BaseAdapter {
                 for (int pos = 0; pos < getCount(); pos++) {
                     if(pos == position) {
                         ((Profile) getItem(pos)).isSelected = true;
+                        ((Profile) getItem(pos)).isConnected = true;
                         ((ConnectionManagerActivity) ctx).connectProfile(pos);
                     } else {
                         ((Profile) getItem(pos)).isSelected = false;
@@ -105,7 +132,6 @@ public class ProfileAdapter extends BaseAdapter {
                 }
             }
         });
-        ((TextView) view.findViewById(R.id.profile_server_label)).setTag(position);
         return view;
     }
 
