@@ -1,10 +1,5 @@
 <h1>Tinelix IRC Client for Android</h1>
-Tinelix IRC Client for Android. <b>Alpha development state.</b>
-
-<h3>How open Tinelix IRC Client project in Android Studio?</h3>
-<p>1. Copy <code>.gradle</code> and <code>.idea</code> from another Android Studio project, because this is hidden folders.
-<br>2. Load the Android Studio project and wait for Gradle modules to finish downloading.
-
+Tinelix IRC Client for Android. <b>Alpha development state.</b><p><p><img src="https://user-images.githubusercontent.com/76806170/157038143-467b9482-a303-4189-b5fe-1c6ccb247b44.png"></img>
 <h3>System requirements</h3>
 <p><b>Operating system:</b> Android 2.0 Eclair (with Android API level 5) and higher.
 <h3>Links</h3>
