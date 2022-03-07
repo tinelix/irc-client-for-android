@@ -35,6 +35,7 @@ public class IRCClientApp extends Application {
                 }
             }
         }
+        editor = global_prefs.edit();
         editor.putBoolean("connected", false);
         editor.putBoolean("theme_requires_restart", false);
         editor.putBoolean("language_requires_restart", false);
