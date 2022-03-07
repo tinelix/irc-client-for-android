@@ -48,7 +48,6 @@
             android:title="@string/hostname" />
     </PreferenceCategory>
     <Preference
-        android:defaultValue="Default value"
         android:key="quit_message"
         android:selectAllOnFocus="true"
         android:singleLine="true"

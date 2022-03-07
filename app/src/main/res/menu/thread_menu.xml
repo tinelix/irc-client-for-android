@@ -6,6 +6,12 @@
         android:id="@+id/statistics_item"
         android:title="@string/statistics_item" />
     <item
+        android:id="@+id/settings_item"
+        android:title="@string/settings_title" />
+    <item
+        android:id="@+id/connection_manager_item"
+        android:title="@string/connection_manager_title" />
+    <item
         android:id="@+id/about_application_item"
         android:title="@string/about_application_str" />
     <item

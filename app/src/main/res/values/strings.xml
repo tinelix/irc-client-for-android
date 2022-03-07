@@ -2,10 +2,12 @@
 <resources>
     <string-array name="main_menu_array">
         <item>Connection manager</item>
+        <item>Settings</item>
         <item>About application</item>
         <item>Quit</item>
     </string-array>
     <string name="app_name" translatable="false">Tinelix IRC Client</string>
+    <string name="short_app_name" translatable="false">Tinelix IRC</string>
     <string name="connection_manager_title">Connection manager</string>
     <string name="connection_manager_add_item">Add</string>
     <string name="connection_manager_connect_item">Connect</string>
@@ -45,7 +47,7 @@
     <string name="quit_session_title">Quit session</string>
     <string name="quit_session_msg">Disconnect from server?</string>
     <string name="about_application_str">About application</string>
-    <string name="version_str">Version 0.1.2 Alpha (March 5, 2022)</string>
+    <string name="version_str">Version 0.1.4 Alpha (March 7, 2022)</string>
     <string name="license_info">This is free software with open source, distributed under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License 3.0 (read license)</a>.\n\n<b>WITHOUT ANY WARRANTY, NOT EVEN FOR MERCHANTABILITY.</b></string>
     <string name="repo_button">Repository</string>
     <string name="copyright_str" translatable="false">Copyright © 2022 Dmitry Tretyakov (aka. Tinelix)</string>
@@ -66,6 +68,21 @@
     <string name="menu_button">Menu</string>
     <string name="connection_progress">Connecting to %1$s...</string>
     <string name="quit_message">Quiting message</string>
-    <string name="default_quit_msg" translatable="false">Tinelix IRC Client ver. 0.1.2 Alpha for Android (2022-03-05)</string>
+    <string name="quit_message_label">Quiting message:</string>
+    <string name="default_quit_msg" translatable="false">Tinelix IRC Client ver. 0.1.4 Alpha for Android (2022-03-07)</string>
     <string name="enter_the_quiting_message">Enter quiting message</string>
+    <string name="interface_category">Interface</string>
+    <string name="interface_language_item">Language</string>
+    <string name="interface_theme_item">Theme</string>
+    <string name="thread_category">Thread</string>
+    <string name="font_size_item">Font size</string>
+    <string name="font_size_label">Font size:</string>
+    <string name="preview_label">Preview:</string>
+    <string name="changing_font_label">Changing font size</string>
+    <string name="sample_preview_text" translatable="false">tinelix: Hello everyone (11:00:12)\nshortn: hello (11:00:13)\nlong_nick: hi\nsuper_long_nick: Hello, Dmitry! (11:00:13)\ntinelix: How are you? (11:00:16)</string>
+    <string name="settings_title">Settings</string>
+    <string name="value_in_px">%1$d px</string>
+    <string name="connected_state">CONNECTED</string>
+    <string name="website_button">Website</string>
+    <string name="need_to_restart">Application needs to be restarted</string>
 </resources>

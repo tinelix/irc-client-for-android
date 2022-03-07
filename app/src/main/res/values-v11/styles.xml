@@ -5,4 +5,7 @@
     <style name="IRCClient.Notification" parent="@android:style/Theme.Holo">
         <item name="android:textColor">#ffffff</item>
     </style>
+
+    <style name="IRCClient.Light" parent="@android:style/Theme.Holo.Light">
+    </style>
 </resources>
