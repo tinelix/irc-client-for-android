@@ -34,6 +34,12 @@ public class IRCClientApp extends Application {
         }
         SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = global_prefs.edit();
+        if(global_prefs.contains("theme") == false) {
+            editor.putString("theme", "Dark");
+        }
+        if(global_prefs.contains("language") == false) {
+            editor.putString("language", "OS dependent");
+        }
         editor.putBoolean("connected", false);
         editor.putBoolean("theme_requires_restart", false);
         editor.putBoolean("language_requires_restart", false);
