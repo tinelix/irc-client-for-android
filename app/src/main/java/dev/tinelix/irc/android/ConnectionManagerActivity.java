@@ -27,6 +27,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -52,11 +53,22 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         setCustomTheme(global_prefs);
         setContentView(R.layout.activity_connection_manager);
         setColorStyle(global_prefs);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            ImageButton menu_button = findViewById(R.id.menu_button);
+            menu_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openOptionsMenu();
+                }
+            });
+        }
         profilesAdapter = new ProfileAdapter(this, profilesList);
         String package_name = getApplicationContext().getPackageName();
         String profile_path = "/data/data/" + package_name + "/shared_prefs";
         File prefs_directory = new File(profile_path);
         File[] prefs_files = prefs_directory.listFiles();
+        ListView profilesListView = findViewById(R.id.profiles_list);
+        LinearLayout profilesLinearLayout = findViewById(R.id.empty_profiles_list_layout);
         profilesArray = new LinkedList<String>();
         String file_extension;
         Context context = getApplicationContext();
@@ -73,11 +85,17 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                     }
                 }
             }
-            ListView profilesList = findViewById(R.id.nicknames_list);
+            if(prefs_files == null || profilesList.size() == 0) {
+                profilesListView.setVisibility(View.GONE);
+                profilesLinearLayout.setVisibility(View.VISIBLE);
+            } else {
+                profilesListView.setVisibility(View.VISIBLE);
+                profilesLinearLayout.setVisibility(View.GONE);
+            }
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
-            profilesList.setAdapter(profilesAdapter);
-            profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            profilesListView.setAdapter(profilesAdapter);
+            profilesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Toast.makeText(getApplicationContext(), ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
@@ -187,6 +205,8 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         profilesArray.clear();
         String file_extension;
         Context context = getApplicationContext();
+        ListView profilesListView = findViewById(R.id.profiles_list);
+        LinearLayout profilesLinearLayout = findViewById(R.id.empty_profiles_list_layout);
         try {
             for (int i = 0; i < prefs_files.length; i++) {
                 if(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)).startsWith(getApplicationInfo().packageName + "_preferences"))
@@ -200,10 +220,16 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                     }
                 }
             }
-            final ListView profilesList = findViewById(R.id.nicknames_list);
+            if(prefs_files == null || profilesList.size() == 0) {
+                profilesListView.setVisibility(View.GONE);
+                profilesLinearLayout.setVisibility(View.VISIBLE);
+            } else {
+                profilesListView.setVisibility(View.VISIBLE);
+                profilesLinearLayout.setVisibility(View.GONE);
+            }
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
-            profilesList.setAdapter(profilesAdapter);
+            profilesListView.setAdapter(profilesAdapter);
         } catch(Exception ex) {
             ex.printStackTrace();
         }
@@ -247,11 +273,13 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         editor.putBoolean("connected", true);
         editor.commit();
         SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        editor = global_prefs.edit();
-        editor.putBoolean("connected", true);
-        editor.commit();
-        setResult(RESULT_OK, parentIntent);
-        startActivity(intent);
+        if(global_prefs.getBoolean("connected", false) == false) {
+            editor = global_prefs.edit();
+            editor.putBoolean("connected", true);
+            editor.commit();
+            setResult(RESULT_OK, parentIntent);
+            startActivity(intent);
+        }
         finish();
     }
 
@@ -284,6 +312,8 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         profilesArray.clear();
         String file_extension;
         Context context = getApplicationContext();
+        ListView profilesListView = findViewById(R.id.profiles_list);
+        LinearLayout profilesLinearLayout = findViewById(R.id.empty_profiles_list_layout);
         try {
             for (int i = 0; i < prefs_files.length; i++) {
                 if(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)).startsWith(getApplicationInfo().packageName + "_preferences"))
@@ -297,11 +327,17 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                     }
                 }
             }
-            ListView profilesList = findViewById(R.id.nicknames_list);
+            if(prefs_files == null || profilesList.size() == 0) {
+                profilesListView.setVisibility(View.GONE);
+                profilesLinearLayout.setVisibility(View.VISIBLE);
+            } else {
+                profilesListView.setVisibility(View.VISIBLE);
+                profilesLinearLayout.setVisibility(View.GONE);
+            }
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
-            profilesList.setAdapter(profilesAdapter);
-            profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            profilesListView.setAdapter(profilesAdapter);
+            profilesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Toast.makeText(getApplicationContext(), ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();

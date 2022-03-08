@@ -82,6 +82,19 @@ public class IRCParser {
             }
             parsed = member_msgs_array[0].replace(":", "") + ": " + stringBuilder.toString();
             Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
+        } else if(array[1].startsWith("NOTICE")) {
+            if(array.length > 4) {
+                for(int index = 3; index < array.length; index++) {
+                    if(index == 3) {
+                        stringBuilder.append(array[index].substring(1).replace("http//", "http://")
+                                .replace("https//", "https://").replace("ftp//", "ftp://"));
+                    } else {
+                        stringBuilder.append(" " + array[index]);
+                    }
+                }
+                parsed = member_msgs_array[0].replace(":", "") + " sent a notification: " + stringBuilder;
+            }
+            Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
         } else {
             parsed = raw;
         }
@@ -91,6 +104,9 @@ public class IRCParser {
         }
         return parsed;
     }
+
+
+
     public String getMessageBody(String raw) {
        String[] array = raw.split(" ");
        String[] member_msgs_array = array[0].split("!");

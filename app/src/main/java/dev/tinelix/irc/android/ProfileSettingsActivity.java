@@ -161,7 +161,19 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     }
                     String current_value = getCurrentValue(current_parameter);
                     String[] auth_methods = getResources().getStringArray(R.array.auth_method);
-                    dialogBuilder.setTitle(R.string.auth_method);
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getString(R.string.auth_method) + "</b></font>"));
+                        } else {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getString(R.string.auth_method) + "</b></font>"));
+                        }
+                    } else {
+                        if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getString(R.string.auth_method) + "</b></font>"));
+                        } else {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getString(R.string.auth_method) + "</b></font>"));
+                        }
+                    }
                     if(current_value.contains("NickServ")) {
                         dialogBuilder.setSingleChoiceItems(auth_methods, 1,
                                 new DialogInterface.OnClickListener() {
@@ -258,6 +270,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
                             onChangingValues(current_parameter, profile_name.getText().toString());
                         }
                     });
+
                     dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -374,6 +387,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     } else {
                         hide_ip_cb.setChecked(true);
                     }
+                    customizeServerSettingsDialog(global_prefs, dialogView);
                     TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
                     dialog_title.setText(getString(R.string.server_settings));
                     Spinner spinner = dialogView.findViewById(R.id.encoding_spinner);
@@ -602,6 +616,68 @@ public class ProfileSettingsActivity extends PreferenceActivity
         realname.setSummary(realname_string);
         hostname.setSummary(hostname_string);
         quit_msg.setSummary(quitmsg_string);
+    }
+
+    private void customizeServerSettingsDialog(SharedPreferences global_prefs, View dialogView) {
+        EditText server_name = dialogView.findViewById(R.id.server_text);
+        EditText port_edit = dialogView.findViewById(R.id.port_numb);
+        Spinner spinner = dialogView.findViewById(R.id.encoding_spinner);
+
+        if (global_prefs.getString("theme", "Dark").contains("Light")) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                server_name.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea_light));
+                server_name.setTextColor(getResources().getColor(R.color.black));
+                server_name.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_Light_TextArea);
+            } else {
+                server_name.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea));
+                server_name.setTextColor(getResources().getColor(R.color.white));
+                server_name.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_TextArea);
+            }
+        } else {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                server_name.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea));
+                server_name.setTextColor(getResources().getColor(R.color.white));
+                server_name.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_TextArea);
+            } else {
+                server_name.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea_light));
+                server_name.setTextColor(getResources().getColor(R.color.black));
+                server_name.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_Light_TextArea);
+            }
+        }
+        if (global_prefs.getString("theme", "Dark").contains("Light")) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                port_edit.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea_light));
+                port_edit.setTextColor(getResources().getColor(R.color.black));
+                port_edit.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_Light_TextArea);
+            } else {
+                port_edit.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea));
+                port_edit.setTextColor(getResources().getColor(R.color.white));
+                port_edit.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_TextArea);
+            }
+        } else {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                port_edit.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea));
+                port_edit.setTextColor(getResources().getColor(R.color.white));
+                port_edit.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_TextArea);
+            } else {
+                port_edit.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea_light));
+                port_edit.setTextColor(getResources().getColor(R.color.black));
+                port_edit.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_Light_TextArea);
+            }
+        }
+        if (global_prefs.getString("theme", "Dark").contains("Light")) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner_light));
+            } else {
+                spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner));
+            }
+        } else {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner));
+            } else {
+                spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner_light));
+            }
+        }
     }
 
     private void setCustomTheme(SharedPreferences global_prefs) {

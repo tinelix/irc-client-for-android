@@ -40,6 +40,16 @@ public class MainActivity extends Activity {
 
         mainMenuList.setAdapter(mainMenuAdapter);
 
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            ImageButton menu_button = findViewById(R.id.menu_button);
+            menu_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openOptionsMenu();
+                }
+            });
+        }
+
         mainMenuList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -69,17 +79,17 @@ public class MainActivity extends Activity {
 
     private void showMainSettings() {
         Intent intent = new Intent(this, MainSettingsActivity.class);
-        startActivityForResult(intent, 1);
+        startActivity(intent);
     }
 
     private void showAboutApplication() {
         Intent intent = new Intent(this, AboutApplicationActivity.class);
-        startActivityForResult(intent, 1);
+        startActivity(intent);
     }
 
     private void showConnectionManager() {
         Intent intent = new Intent(this, ConnectionManagerActivity.class);
-        startActivityForResult(intent, 1);
+        startActivity(intent);
     }
 
 
@@ -104,14 +114,6 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            this.finish();
-        }
     }
 
     private void setColorStyle(SharedPreferences global_prefs) {

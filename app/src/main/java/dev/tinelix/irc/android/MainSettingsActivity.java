@@ -1,5 +1,6 @@
 package dev.tinelix.irc.android;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -9,15 +10,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.text.Html;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
@@ -26,7 +32,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,99 +58,6 @@ public class MainSettingsActivity  extends PreferenceActivity {
             getActionBar().setDisplayHomeAsUpEnabled(true);
         }
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        Preference setFontSizePref = findPreference("font_size");
-        setFontSizePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                setResult(Activity.RESULT_OK);
-                current_parameter = "setting_fontsize";
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    DialogFragment setFontSizeDialogFragm = new SetFontSizeDialogFragm();
-                    setFontSizeDialogFragm.show(getFragmentManager(), "set_font_size");
-                } else {
-                    final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                    final AlertDialog.Builder dialogBuilder;
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient_Light));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient));
-                        }
-                    } else {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient_Light));
-                        }
-                    }
-                    LayoutInflater inflater = getLayoutInflater();
-                    final View dialogView = inflater.inflate(R.layout.set_font_size_activity, null);
-                    DisplayMetrics metrics = new DisplayMetrics();
-                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                    dialogView.setMinimumWidth(metrics.widthPixels);
-                    final SeekBar font_size_seekbar = dialogView.findViewById(R.id.font_size_seekbar);
-                    final EditText preview_text = dialogView.findViewById(R.id.preview_text);
-                    final TextView value_label = dialogView.findViewById(R.id.value_label);
-                    dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            SharedPreferences.Editor editor = prefs.edit();
-                            editor.putInt("font_size", font_size_seekbar.getProgress() + 12);
-                            editor.commit();
-                        }
-                    });
-                    dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            return;
-                        }
-                    });
-                    preview_text.setKeyListener(null);
-                    font_size_seekbar.setMax((60 - 12) / 1);
-                    font_size_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                        @Override
-                        public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                            preview_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, i + 12);
-                            value_label.setText(getString(R.string.value_in_px, i + 12));
-                        }
-
-                        @Override
-                        public void onStartTrackingTouch(SeekBar seekBar) {
-
-                        }
-
-                        @Override
-                        public void onStopTrackingTouch(SeekBar seekBar) {
-
-                        }
-                    });
-                    if(prefs.getInt("font_size", 0) < 12) {
-                        float text_size_in_sp = (int) preview_text.getTextSize() / getResources().getDisplayMetrics().scaledDensity;
-                        font_size_seekbar.setProgress((int) text_size_in_sp - 12);
-                        value_label.setText(getString(R.string.value_in_px, (int)text_size_in_sp));
-                        preview_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, text_size_in_sp);
-                    } else {
-                        font_size_seekbar.setProgress(prefs.getInt("font_size", 0) - 12);
-                        value_label.setText(getString(R.string.value_in_px, prefs.getInt("font_size", 0)));
-                        preview_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, prefs.getInt("font_size", 0));
-                    }
-                    TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
-                    dialog_title.setText(getString(R.string.changing_font_label));
-                    dialogBuilder.setView(dialogView);
-                    AlertDialog alertDialog = dialogBuilder.create();
-                    alertDialog.getWindow().setGravity(Gravity.BOTTOM);
-
-                    alertDialog.show();
-                    Button dialogButton;
-                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                    final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
-                }
-                return true;
-            }
-        });
-        setFontSizePref.setSummary(getString(R.string.value_in_px, prefs.getInt("font_size", 0)));
         final Preference ui_language = findPreference("interface_language");
         ui_language.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -175,7 +87,19 @@ public class MainSettingsActivity  extends PreferenceActivity {
                             dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient_Light));
                         }
                     }
-                    dialogBuilder.setTitle(getString(R.string.interface_language_item));
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getString(R.string.interface_language_item) + "</b>"));
+                        } else {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getString(R.string.interface_language_item) + "</b>"));
+                        }
+                    } else {
+                        if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getString(R.string.interface_language_item) + "</b>"));
+                        } else {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getString(R.string.interface_language_item) + "</b>"));
+                        }
+                    }
                     if(current_value.contains("OS dependent")) {
                         dialogBuilder.setSingleChoiceItems(languages, 0,
                                 new DialogInterface.OnClickListener() {
@@ -305,7 +229,19 @@ public class MainSettingsActivity  extends PreferenceActivity {
                             dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient_Light));
                         }
                     }
-                    dialogBuilder.setTitle(getString(R.string.interface_theme_item));
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getString(R.string.interface_theme_item) + "</b>"));
+                        } else {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getString(R.string.interface_theme_item) + "</b>"));
+                        }
+                    } else {
+                        if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getString(R.string.interface_theme_item) + "</b>"));
+                        } else {
+                            dialogBuilder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getString(R.string.interface_theme_item) + "</b>"));
+                        }
+                    }
                     if(current_value.contains("Light")) {
                         dialogBuilder.setSingleChoiceItems(themes, 1,
                                 new DialogInterface.OnClickListener() {
@@ -394,6 +330,194 @@ public class MainSettingsActivity  extends PreferenceActivity {
             app_theme.setSummary(R.string.need_to_restart);
             app_theme.setEnabled(false);
         }
+
+        Preference setFontSizePref = findPreference("font_size");
+        setFontSizePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                setResult(Activity.RESULT_OK);
+                current_parameter = "setting_fontsize";
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    DialogFragment setFontSizeDialogFragm = new SetFontSizeDialogFragm();
+                    setFontSizeDialogFragm.show(getFragmentManager(), "set_font_size");
+                } else {
+                    final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    final AlertDialog.Builder dialogBuilder;
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient_Light));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient));
+                        }
+                    } else {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient));
+                        } else {
+                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(MainSettingsActivity.this, R.style.IRCClient_Light));
+                        }
+                    }
+                    LayoutInflater inflater = getLayoutInflater();
+                    final View dialogView = inflater.inflate(R.layout.set_font_size_activity, null);
+                    DisplayMetrics metrics = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                    dialogView.setMinimumWidth(metrics.widthPixels);
+                    final SeekBar font_size_seekbar = dialogView.findViewById(R.id.font_size_seekbar);
+                    final EditText preview_text = dialogView.findViewById(R.id.preview_text);
+                    final TextView value_label = dialogView.findViewById(R.id.value_label);
+                    dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putInt("font_size", font_size_seekbar.getProgress() + 12);
+                            editor.commit();
+                        }
+                    });
+                    dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            return;
+                        }
+                    });
+                    preview_text.setKeyListener(null);
+                    font_size_seekbar.setMax((60 - 12) / 1);
+                    font_size_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                        @Override
+                        public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                            preview_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, i + 12);
+                            value_label.setText(getString(R.string.value_in_px, i + 12));
+                        }
+
+                        @Override
+                        public void onStartTrackingTouch(SeekBar seekBar) {
+
+                        }
+
+                        @Override
+                        public void onStopTrackingTouch(SeekBar seekBar) {
+
+                        }
+                    });
+                    if(prefs.getInt("font_size", 0) < 12) {
+                        float text_size_in_sp = (int) preview_text.getTextSize() / getResources().getDisplayMetrics().scaledDensity;
+                        font_size_seekbar.setProgress((int) text_size_in_sp - 12);
+                        value_label.setText(getString(R.string.value_in_px, (int)text_size_in_sp));
+                        preview_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, text_size_in_sp);
+                    } else {
+                        font_size_seekbar.setProgress(prefs.getInt("font_size", 0) - 12);
+                        value_label.setText(getString(R.string.value_in_px, prefs.getInt("font_size", 0)));
+                        preview_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, prefs.getInt("font_size", 0));
+                    }
+                    TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
+                    dialog_title.setText(getString(R.string.changing_font_label));
+                    dialogBuilder.setView(dialogView);
+                    AlertDialog alertDialog = dialogBuilder.create();
+                    alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+
+                    alertDialog.show();
+                    Button dialogButton;
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                    final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
+                }
+                return true;
+            }
+        });
+        setFontSizePref.setSummary(getString(R.string.value_in_px, prefs.getInt("font_size", 18)));
+
+        final CheckBoxPreference save_msg_history = (CheckBoxPreference) findPreference("save_msg_history");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                save_msg_history.setChecked(global_prefs.getBoolean("save_msg_history", false));
+            } else {
+                save_msg_history.setChecked(false);
+            }
+        } else {
+            save_msg_history.setChecked(global_prefs.getBoolean("save_msg_history", false));
+        }
+
+        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath());
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            if (!directory.canWrite() && !directory.canRead()) {
+                save_msg_history.setChecked(false);
+                onChangingBooleanValues("setting_saving_msg_history", false);
+                save_msg_history.setEnabled(false);
+                save_msg_history.setSummary(R.string.device_memory_restricted);
+            }
+        }
+
+        save_msg_history.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        current_parameter = "setting_saving_msg_history";
+                        onChangingBooleanValues(current_parameter, save_msg_history.isChecked());
+                    } else {
+                        showMissingPermssionDialog();
+                    }
+                } else {
+                    current_parameter = "setting_saving_msg_history";
+                    onChangingBooleanValues(current_parameter, save_msg_history.isChecked());
+                }
+                return false;
+            }
+        });
+        Preference debug_logs = findPreference("debug_logs");
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            debug_logs.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    showDebugLogsActivity();
+                    return false;
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        CheckBoxPreference save_msg_history = (CheckBoxPreference) findPreference("save_msg_history");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            } else {
+                save_msg_history.setChecked(false);
+                onChangingBooleanValues(current_parameter, save_msg_history.isChecked());
+            }
+        }
+        super.onResume();
+    }
+
+    private void showMissingPermssionDialog() {
+        AlertDialog dialog;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.allow_permisssion_in_storage_title));
+        builder.setMessage(getResources().getString(R.string.allow_permisssion_in_storage));
+        builder.setPositiveButton(getResources().getString(R.string.open_button), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                CheckBoxPreference save_msg_history = (CheckBoxPreference) findPreference("save_msg_history");
+                save_msg_history.setChecked(false);
+                onChangingBooleanValues(current_parameter, save_msg_history.isChecked());
+                return;
+            }
+        });
+        dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showDebugLogsActivity() {
+        Intent intent = new Intent(this, DebugLogsActivity.class);
+        startActivity(intent);
     }
 
     public String getCurrentParameter() {
@@ -454,6 +578,20 @@ public class MainSettingsActivity  extends PreferenceActivity {
                 theme.setEnabled(false);
             }
         }
+    }
+
+    private void onChangingBooleanValues(String current_parameter, boolean value) {
+        if(current_parameter == "setting_saving_msg_history") {
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("save_msg_history", value);
+            editor.commit();
+        }
+    }
+
+    public void showDebugLogActivity() {
+        Intent intent = new Intent(this, ConnectionManagerActivity.class);
+        startActivity(intent);
     }
 
     public void setColorStyle(SharedPreferences global_prefs) {

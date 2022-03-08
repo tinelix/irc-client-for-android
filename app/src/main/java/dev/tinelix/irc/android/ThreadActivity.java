@@ -1,5 +1,6 @@
 package dev.tinelix.irc.android;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -17,6 +18,7 @@ import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.Editable;
@@ -26,12 +28,14 @@ import android.text.method.KeyListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.ContextMenu;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -45,6 +49,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -56,8 +62,10 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.channels.IllegalBlockingModeException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -105,7 +113,11 @@ public class ThreadActivity extends Activity {
     public boolean isMentioned;
     public String sendingMsgText;
     public AlertDialog connectionDialog;
+    public Date dt;
+    public boolean autoscroll_needed;
+    public Menu thread_menu;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,13 +125,35 @@ public class ThreadActivity extends Activity {
         setCustomTheme(global_prefs);
         setContentView(R.layout.thread_activity);
         setColorStyle(global_prefs);
+        dt = new Date(System.currentTimeMillis());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getActionBar().setHomeButtonEnabled(true);
         }
+        autoscroll_needed = true;
         socks_msg_text = findViewById(R.id.sock_msg_text);
         socks_msg_text.setKeyListener(null);
         socks_msg_text.setLongClickable(true);
         socks_msg_text.setTypeface(Typeface.MONOSPACE);
+        socks_msg_text.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                            autoscroll_needed = false;
+                            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                                MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
+                                go_down.setVisible(true);
+                            } else {
+                                Button go_down_btn = findViewById(R.id.go_down_button);
+                                go_down_btn.setVisibility(View.VISIBLE);
+                            }
+                }
+                return false;
+            }
+        });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            socks_msg_text.setTextIsSelectable(true);
+        }
         if(global_prefs.getInt("font_size", 0) >= 12) {
             socks_msg_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, global_prefs.getInt("font_size", 0));
         }
@@ -154,6 +188,19 @@ public class ThreadActivity extends Activity {
             getActionBar().setSubtitle(server + ":" + port);
         } else {
             Log.i("Client", "\r\nProfile Info:\r\n\r\nPROFILE NAME: [" + profile_name + "]\r\nSERVER: [" + server + "]\r\nPORT: " + port);
+        }
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            TextView app_summary = findViewById(R.id.app_summary_text);
+            app_summary.setText(server + ":" + port);
+            final Button go_down_btn = findViewById(R.id.go_down_button);
+            go_down_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    autoscroll_needed = true;
+                    socks_msg_text.setSelection(socks_msg_text.getText().length());
+                    go_down_btn.setVisibility(View.GONE);
+                }
+            });
         }
         nicknames = prefs.getString("nicknames", "");
         auth_method = prefs.getString("auth_method", "");
@@ -301,22 +348,22 @@ public class ThreadActivity extends Activity {
             if (global_prefs.getString("theme", "Dark").contains("Light")) {
                 if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
                     builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
-                    builder.setTitle(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_title) + "</html>"));
-                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</html>"));
+                    builder.setTitle(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_title) + "</b>"));
+                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</b>"));
                 } else {
                     builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
-                    builder.setTitle(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_title) + "</html>"));
-                    builder.setMessage(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_msg) + "</html>"));
+                    builder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_title) + "</b>"));
+                    builder.setMessage(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_msg) + "</b>"));
                 }
             } else {
                 if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
                     builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
-                    builder.setTitle(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_title) + "</html>"));
-                    builder.setMessage(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_msg) + "</html>"));
+                    builder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_title) + "</b>"));
+                    builder.setMessage(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_msg) + "</b>"));
                 } else {
                     builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
-                    builder.setTitle(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_title) + "</html>"));
-                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</html>"));
+                    builder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getResources().getString(R.string.quit_session_title) + "</b>"));
+                    builder.setMessage(Html.fromHtml("<font color='#000000'><b>" + getResources().getString(R.string.quit_session_msg) + "</b>"));
                 }
             }
         }
@@ -344,9 +391,6 @@ public class ThreadActivity extends Activity {
         output_msg_text.setText("/quit");
         sendingMsgText = "/quit";
         state = "sending_message";
-        PackageManager pm = getApplicationContext().getPackageManager();
-        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
-        getApplicationContext().startActivity(intent);
         new Thread(new SendSocketMsg()).start();
     }
 
@@ -358,6 +402,7 @@ public class ThreadActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.thread_menu, menu);
+        thread_menu = menu;
         return true;
     }
 
@@ -380,6 +425,11 @@ public class ThreadActivity extends Activity {
             showMainSettings();
         } else if(id == R.id.disconnect_item) {
             onBackPressed();
+        } else if(id == R.id.go_down_item) {
+            socks_msg_text.setSelection(socks_msg_text.getText().length());
+            autoscroll_needed = true;
+            MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
+            go_down.setVisible(false);
         }
 
         return super.onOptionsItemSelected(item);
@@ -419,6 +469,20 @@ public class ThreadActivity extends Activity {
             }
             LayoutInflater inflater = getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.statistics_activity, null);
+            TextView session_label = dialogView.findViewById(R.id.session_label);
+            if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    session_label.setTextColor(getResources().getColor(R.color.black));
+                } else {
+                    session_label.setTextColor(getResources().getColor(R.color.white));
+                }
+            } else {
+                if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    session_label.setTextColor(getResources().getColor(R.color.white));
+                } else {
+                    session_label.setTextColor(getResources().getColor(R.color.black));
+                }
+            }
             DisplayMetrics metrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(metrics);
             dialogView.setMinimumWidth(metrics.widthPixels);
@@ -699,6 +763,7 @@ public class ThreadActivity extends Activity {
                 msg = new StringBuilder();
                 while(socket.isConnected() == true) {
                     if(in.ready() == true) {
+                        sleep(10);
                         response = in.readLine();
                         received_bytes_count += response.length();
                         if (response.startsWith("PING")) {
@@ -835,10 +900,43 @@ public class ThreadActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     if(state == "getting_data") {
                         if(socket_data_string.length() > 0) {
+                            if(global_prefs.getBoolean("save_msg_history", false) == true) {
+                                File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
+                                if (!directory.exists()) {
+                                    directory.mkdirs();
+                                }
+
+                                directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
+                                if (!directory.exists()) {
+                                    directory.mkdirs();
+                                }
+                                directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
+                                if (!directory.exists()) {
+                                    directory.mkdirs();
+                                }
+
+                                try {
+                                    Log.d("App", "Attempting creating log file...");
+                                    File file = new File(directory, "LOG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(dt) + ".log");
+                                    if (!file.exists()) {
+                                        file.createNewFile();
+                                    }
+                                    Log.d("App", "Log file created!");
+                                    FileWriter writer = new FileWriter(file);
+                                    writer.append(socks_msg_text.getText() + socket_data_string);
+                                    writer.flush();
+                                    writer.close();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
                             socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
-                            socks_msg_text.setSelection(socks_msg_text.getText().length());
+                            if(autoscroll_needed == true) {
+                                socks_msg_text.setSelection(socks_msg_text.getText().length());
+                            }
                             socket_data_string = "";
                         }
                     } else if(state == "getting_data_with_mention") {
@@ -848,6 +946,36 @@ public class ThreadActivity extends Activity {
                             socket_data_string = "";
                             Context context = getApplicationContext();
                             if(messageBody.length() > 0 && nicknames.split(", ")[0].length() > 0) {
+                                if(global_prefs.getBoolean("save_msg_history", false) == true) {
+                                    File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "App Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    try {
+                                        Log.d("App", "Attempting creating log file...");
+                                        File file = new File(directory, "LOG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(dt) + ".log");
+                                        if (!file.exists()) {
+                                            file.createNewFile();
+                                        }
+                                        Log.d("App", "Log file created!");
+                                        FileWriter writer = new FileWriter(file);
+                                        writer.append(socks_msg_text.getText() + socket_data_string);
+                                        writer.flush();
+                                        writer.close();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                                     NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                                     Notification.Builder notificationBuilder = null;
@@ -884,33 +1012,21 @@ public class ThreadActivity extends Activity {
                     } else if(state == "disconnected") {
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         connectionDialog.cancel();
-                        PackageManager pm = getApplicationContext().getPackageManager();
-                        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
-                        getApplicationContext().startActivity(intent);
                         finish();
                     } else if(state == "connection_lost") {
                         Toast.makeText(getApplicationContext(), R.string.connection_lost_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         connectionDialog.cancel();
-                        PackageManager pm = getApplicationContext().getPackageManager();
-                        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
-                        getApplicationContext().startActivity(intent);
                         finish();
                     } else if(state == "timeout") {
                         Toast.makeText(getApplicationContext(), R.string.connection_timeout_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         connectionDialog.cancel();
-                        PackageManager pm = getApplicationContext().getPackageManager();
-                        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
-                        getApplicationContext().startActivity(intent);
                         finish();
                     } else if(state == "no_connection") {
                         Toast.makeText(getApplicationContext(), R.string.no_connection_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         connectionDialog.cancel();
-                        PackageManager pm = getApplicationContext().getPackageManager();
-                        Intent intent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
-                        getApplicationContext().startActivity(intent);
                         finish();
                     } else if(state == "sending_message") {
                         if (socket != null) {

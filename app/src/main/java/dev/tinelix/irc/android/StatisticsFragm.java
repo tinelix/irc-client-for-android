@@ -45,6 +45,20 @@ public class StatisticsFragm extends DialogFragment {
         sended_bytes_label = view.findViewById(R.id.sended_label2);
         received_bytes_label = view.findViewById(R.id.received_label2);
         total_bytes_label = view.findViewById(R.id.total_label2);
+        TextView session_label = view.findViewById(R.id.session_label);
+        if (global_prefs.getString("theme", "Dark").contains("Light")) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                session_label.setTextColor(getResources().getColor(R.color.black));
+            } else {
+                session_label.setTextColor(getResources().getColor(R.color.white));
+            }
+        } else {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                session_label.setTextColor(getResources().getColor(R.color.white));
+            } else {
+                session_label.setTextColor(getResources().getColor(R.color.black));
+            }
+        }
         if (sended_bytes > 1073741824) {
             sended_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (double)(sended_bytes / 1073741824))));
         } else if(sended_bytes > 1048576) {
