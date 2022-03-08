@@ -44,7 +44,7 @@
     <string name="quit_session_title">Выход из сеанса</string>
     <string name="quit_session_msg">Отсоединиться от сервера?</string>
     <string name="about_application_str">О приложении</string>
-    <string name="version_str">Версия 0.1.5 Alpha (8 марта 2022 г.)</string>
+    <string name="version_str">Версия 0.1.6 Alpha (8 марта 2022 г.)</string>
     <string name="license_info">Это свободное программное обеспечение с открытым исходным кодом, распространяемое в соответствии с условиями <a href="https://www.gnu.org/licenses/gpl-3.0.ru.html">GNU General Public License 3.0 (прочитать лицензию)</a>.\n\n<b>БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ, ВКЛЮЧАЯ КОММЕРЧЕСКУЮ ЦЕННОСТЬ.</b></string>
     <string name="repo_button">Репозиторий</string>
     <string name="message_text_hint">Сообщение</string>
