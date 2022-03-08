@@ -278,6 +278,8 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
             editor.putBoolean("connected", true);
             editor.commit();
             setResult(RESULT_OK, parentIntent);
+            intent.setAction(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
             startActivity(intent);
         }
         finish();
