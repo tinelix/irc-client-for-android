@@ -10,5 +10,9 @@
         <item>English</item>
         <item>Русский</item>
     </string-array>
+    <string-array name="themes">
+        <item>Темная</item>
+        <item>Светлая</item>
+    </string-array>
     <string-array name="nicknames" />
 </resources>

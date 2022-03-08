@@ -25,4 +25,10 @@
         android:defaultValue="false"
         android:key="save_msg_history"
         android:title="@string/save_msg_history_item" />
+    <PreferenceCategory android:title="@string/application_category">
+
+    </PreferenceCategory>
+    <Preference
+        android:key="debug_logs"
+        android:title="@string/debug_log_item" />
 </PreferenceScreen>

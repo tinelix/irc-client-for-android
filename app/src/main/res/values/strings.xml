@@ -15,6 +15,7 @@
     <string name="connection_manager_delete_item">Delete</string>
     <string name="profile_name_label">Profile name:</string>
     <string name="ok_button" translatable="false">OK</string>
+    <string name="open_button">Open</string>
     <string name="cancel_button">Cancel</string>
     <string name="enter_the_pfn_title">Enter profile name</string>
     <string name="enter_the_nick_title">Enter nickname</string>
@@ -69,7 +70,7 @@
     <string name="connection_progress">Connecting to %1$s...</string>
     <string name="quit_message">Quiting message</string>
     <string name="quit_message_label">Quiting message:</string>
-    <string name="default_quit_msg" translatable="false">Tinelix IRC Client ver. 0.1.4 Alpha for Android (2022-03-07)</string>
+    <string name="default_quit_msg" translatable="false">Tinelix IRC Client ver. 0.1.5 Alpha for Android (2022-03-08)</string>
     <string name="enter_the_quiting_message">Enter quiting message</string>
     <string name="interface_category">Interface</string>
     <string name="interface_language_item">Language</string>
@@ -85,4 +86,14 @@
     <string name="connected_state">CONNECTED</string>
     <string name="website_button">Website</string>
     <string name="need_to_restart">Application needs to be restarted</string>
+    <string name="empty_profiles_list"><b>The list is empty</b>\n\nYou can create your own profile to connect to IRC servers.</string>
+    <string name="application_category">Application</string>
+    <string name="debug_log_item">Debug log</string>
+    <string name="save_log_btn">Save log</string>
+    <string name="saved_log">Debug log saved to Device Memory/%1$s</string>
+    <string name="allow_permisssion_in_storage_title">Permissions required</string>
+    <string name="allow_permisssion_in_storage">To save data to the Device Memory, application needs special permissions.\n\nOpen the \"About application\" system settings section?</string>
+    <string name="save_msg_history_item">Save messages history</string>
+    <string name="device_memory_restricted">Device memory is not available</string>
+    <string name="go_down_action">Go down</string>
 </resources>

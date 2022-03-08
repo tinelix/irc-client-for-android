@@ -22,17 +22,53 @@
             android:layout_marginTop="8dp"
             android:src="@drawable/full_application_icon" />
 
-        <TextView
-            android:id="@+id/app_title_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
             android:layout_weight="1"
-            android:text="@string/app_name"
-            android:textStyle="bold" />
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/app_title_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_weight="1"
+                    android:text="@string/app_name"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/app_summary_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Summary Text"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/go_down_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/title_v11_full_transparent"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:text="@string/go_down_action"
+                android:textColor="@color/orange"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
         <ImageButton
             android:id="@+id/menu_button"

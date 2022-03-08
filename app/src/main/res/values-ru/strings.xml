@@ -12,6 +12,7 @@
     <string name="connection_manager_change_item">Изменить</string>
     <string name="connection_manager_delete_item">Удалить</string>
     <string name="profile_name_label">Имя профиля:</string>
+    <string name="open_button">Открыть</string>
     <string name="cancel_button">Отмена</string>
     <string name="enter_the_pfn_title">Ввод имени профиля</string>
     <string name="enter_the_nick_title">Ввод никнейма</string>
@@ -43,7 +44,7 @@
     <string name="quit_session_title">Выход из сеанса</string>
     <string name="quit_session_msg">Отсоединиться от сервера?</string>
     <string name="about_application_str">О приложении</string>
-    <string name="version_str">Версия 0.1.4 Alpha (7 марта 2022 г.)</string>
+    <string name="version_str">Версия 0.1.5 Alpha (8 марта 2022 г.)</string>
     <string name="license_info">Это свободное программное обеспечение с открытым исходным кодом, распространяемое в соответствии с условиями <a href="https://www.gnu.org/licenses/gpl-3.0.ru.html">GNU General Public License 3.0 (прочитать лицензию)</a>.\n\n<b>БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ, ВКЛЮЧАЯ КОММЕРЧЕСКУЮ ЦЕННОСТЬ.</b></string>
     <string name="repo_button">Репозиторий</string>
     <string name="message_text_hint">Сообщение</string>
@@ -78,4 +79,14 @@
     <string name="connected_state">ПОДКЛЮЧЕНО</string>
     <string name="website_button">Сайт</string>
     <string name="need_to_restart">Необходима перезагрузка приложения</string>
+    <string name="empty_profiles_list"><b>Список пуст</b>\n\nВы можете создать свой профиль для подключения к IRC-серверам.</string>
+    <string name="application_category">Приложение</string>
+    <string name="debug_log_item">Отладочный журнал</string>
+    <string name="save_log_btn">Сохранить журнал</string>
+    <string name="saved_log">Отладный журнал сохранен в Память устройства/%1$s</string>
+    <string name="allow_permisssion_in_storage_title">Требуются разрешения</string>
+    <string name="allow_permisssion_in_storage">Для сохранения данных в память устройства приложению нужны специальные разрешения.\n\nОткрыть раздел системных настроек \"О приложении\"?</string>
+    <string name="save_msg_history_item">Сохранять историю сообщений</string>
+    <string name="device_memory_restricted">Память устройства недоступна</string>
+    <string name="go_down_action">Вниз</string>
 </resources>
