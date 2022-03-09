@@ -8,9 +8,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.TextWatcher;
+import android.text.method.KeyListener;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -84,8 +92,23 @@ public class ServerSettingsDialogFragm extends DialogFragment {
             String[] encoding_array = getResources().getStringArray(R.array.encoding_array);
             server_parameter = "changing_server";
             current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(server_parameter);
-            EditText server_text = view.findViewById(R.id.server_text);
+            final EditText server_text = view.findViewById(R.id.server_text);
             server_text.setText(current_value);
+            server_text.addTextChangedListener(new TextWatcher() {
+
+                public void afterTextChanged(Editable s) { }
+
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if(s.toString().contains(":")) {
+                        server_text.setError(getResources().getString(R.string.text_field_wrong_characters));
+                        ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                    } else {
+                        ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                    }
+                }
+            });
             server_parameter = "changing_port";
             current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(server_parameter);
             EditText port_numb = view.findViewById(R.id.port_numb);

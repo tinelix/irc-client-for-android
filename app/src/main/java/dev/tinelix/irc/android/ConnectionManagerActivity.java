@@ -273,16 +273,24 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         editor.putBoolean("connected", true);
         editor.commit();
         SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        if(global_prefs.getBoolean("connected", false) == false) {
-            editor = global_prefs.edit();
-            editor.putBoolean("connected", true);
-            editor.commit();
-            setResult(RESULT_OK, parentIntent);
-            intent.setAction(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_LAUNCHER);
-            startActivity(intent);
+        if(prefs.getString("nicknames", "").length() > 0) {
+            if (global_prefs.getBoolean("connected", false) == false) {
+                editor = global_prefs.edit();
+                editor.putBoolean("connected", true);
+                editor.commit();
+                setResult(RESULT_OK, parentIntent);
+                intent.setAction(Intent.ACTION_MAIN);
+                intent.addCategory(Intent.CATEGORY_LAUNCHER);
+                startActivity(intent);
+            } else {
+                if(prefs.getBoolean("connected", false)) {
+                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.first_end_session), Toast.LENGTH_LONG);
+                }
+            }
+            finish();
+        } else {
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.forgot_nicknames), Toast.LENGTH_LONG);
         }
-        finish();
     }
 
     public void editProfile(int position) {

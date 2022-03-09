@@ -37,14 +37,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -213,9 +216,52 @@ public class ThreadActivity extends Activity {
         if(hostname.length() <= 2) {
             hostname = nicknames.split(", ")[0];
         }
-        if(hostname.length() <= 2) {
+        if(realname.length() <= 2) {
             realname = "Member";
         }
+
+        TabHost tabHost = (TabHost) findViewById(R.id.thread_tabs_host);
+
+        tabHost.setup();
+
+        TabHost.TabSpec tabSpec = tabHost.newTabSpec("thread");
+
+        tabSpec.setContent(R.id.thread_tab);
+        tabSpec.setIndicator(getResources().getString(R.string.thread_category));
+        tabHost.addTab(tabSpec);
+        tabHost.setCurrentTab(0);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            View view = tabHost.getTabWidget().getChildAt(0);
+            view.setBackgroundResource(R.drawable.tabwidget);
+            if (view != null) {
+                Log.d("Client", "TabWidget View");
+                tabHost.getTabWidget().getChildAt(0).getLayoutParams().height = (int) (30 * getResources().getDisplayMetrics().density);
+                View tabImage = view.findViewById(android.R.id.icon);
+                if (tabImage != null) {
+                    tabImage.setVisibility(View.GONE);
+                    Log.d("Client", "TabIcon View");
+                } else {
+                    Log.e("Client", "TabImage View is null");
+                }
+                TextView tabTitle = (TextView) view.findViewById(android.R.id.title);
+                if (tabTitle != null) {
+                    Log.d("Client", "TabTitle View");
+                    tabTitle.setGravity(Gravity.CENTER);
+                    ViewGroup parent = (ViewGroup) tabTitle.getParent();
+                    parent.removeView(tabTitle);
+                    parent.addView(tabTitle);
+                    ViewGroup.LayoutParams params = tabTitle.getLayoutParams();
+                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                } else {
+                    Log.e("Client", "TabTitle View is null");
+                }
+            } else {
+                Log.e("Client", "TabWidget View is null");
+            }
+        }
+
+        tabSpec = tabHost.newTabSpec("thread");
+
         new Thread(new ircThread()).start();
         ImageButton send_btn = findViewById(R.id.send_button);
         send_btn.setOnClickListener(new View.OnClickListener() {

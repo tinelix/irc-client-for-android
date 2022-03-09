@@ -14,11 +14,14 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.text.Editable;
 import android.text.Html;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -361,7 +364,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     String current_value = new String();
                     server_parameter = "changing_server";
                     current_value = getCurrentValue(server_parameter);
-                    EditText server_text = dialogView.findViewById(R.id.server_text);
+                    final EditText server_text = dialogView.findViewById(R.id.server_text);
                     server_text.setText(current_value);
                     server_parameter = "changing_port";
                     current_value = getCurrentValue(server_parameter);
@@ -400,7 +403,22 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(dialogView.getContext(), spinnerArray);
                     Log.d("Client", "Count: " + spinnerArray.size());
                     spinner.setAdapter(customSpinnerAdapter);
-                    AlertDialog alertDialog = dialogBuilder.create();
+                    final AlertDialog alertDialog = dialogBuilder.create();
+                    server_text.addTextChangedListener(new TextWatcher() {
+
+                        public void afterTextChanged(Editable s) { }
+
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                            if(server_text.getText().toString().contains(":")) {
+                                server_text.setError(getResources().getString(R.string.text_field_wrong_characters));
+                                ((AlertDialog) alertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                            } else {
+                                ((AlertDialog) alertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                            }
+                        }
+                    });
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
                     Button dialogButton = null;
