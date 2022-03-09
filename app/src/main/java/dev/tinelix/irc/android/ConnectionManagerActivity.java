@@ -284,12 +284,12 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                 startActivity(intent);
             } else {
                 if(prefs.getBoolean("connected", false)) {
-                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.first_end_session), Toast.LENGTH_LONG);
+                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.first_end_session), Toast.LENGTH_LONG).show();
                 }
             }
             finish();
         } else {
-            Toast.makeText(getApplicationContext(), getResources().getString(R.string.forgot_nicknames), Toast.LENGTH_LONG);
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.forgot_nicknames), Toast.LENGTH_LONG).show();
         }
     }
 
