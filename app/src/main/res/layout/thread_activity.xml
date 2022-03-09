@@ -80,61 +80,94 @@
 
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/sock_msg_text"
-        style="@style/IRCClient.TextArea"
+    <TabHost
+        android:id="@+id/thread_tabs_host"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="2dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginRight="2dp"
-        android:layout_marginBottom="4dp"
-        android:layout_weight="1"
-        android:cursorVisible="true"
-        android:ems="10"
-        android:enabled="true"
-        android:focusable="true"
-        android:fontFamily="monospace"
-        android:gravity="start|top"
-        android:inputType="textMultiLine"
-        android:maxLength="524288"
-        android:scrollbars="vertical"
-        android:textColor="@color/white"
-        android:textSize="16sp" />
+        android:layout_height="match_parent">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="42dp"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/output_msg_text"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"
-            android:layout_marginBottom="2dp"
-            android:layout_weight="1"
-            android:background="@drawable/textarea"
-            android:ems="10"
-            android:hint="@string/message_text_hint"
-            android:inputType="textPersonName"
-            android:padding="8dp"
-            android:textColor="@color/white"
-            android:textSize="16dp"
-            tools:ignore="SpeakableTextPresentCheck" />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <ImageButton
-            android:id="@+id/send_button"
-            android:layout_width="48dp"
-            android:layout_height="40dp"
-            android:background="@color/title_v11_full_transparent"
-            android:foregroundGravity="center"
-            android:src="@drawable/ic_menu_send"
-            android:textAllCaps="true"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            tools:ignore="SpeakableTextPresentCheck" />
-    </LinearLayout>
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/tabwidget"
+                android:tabStripEnabled="false"/>
+
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/thread_tab"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <EditText
+                        android:id="@+id/sock_msg_text"
+                        style="@style/IRCClient.TextArea"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginRight="2dp"
+                        android:layout_marginBottom="4dp"
+                        android:layout_weight="1"
+                        android:cursorVisible="true"
+                        android:ems="10"
+                        android:enabled="true"
+                        android:focusable="true"
+                        android:fontFamily="monospace"
+                        android:gravity="start|top"
+                        android:inputType="textMultiLine"
+                        android:maxLength="524288"
+                        android:scrollbars="vertical"
+                        android:textColor="@color/white"
+                        android:textSize="16sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/output_msg_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/textarea"
+                            android:ems="10"
+                            android:hint="@string/message_text_hint"
+                            android:inputType="textPersonName"
+                            android:padding="8dp"
+                            android:textColor="@color/white"
+                            android:textSize="16dp"
+                            tools:ignore="SpeakableTextPresentCheck" />
+
+                        <ImageButton
+                            android:id="@+id/send_button"
+                            android:layout_width="48dp"
+                            android:layout_height="40dp"
+                            android:background="@color/title_v11_full_transparent"
+                            android:foregroundGravity="center"
+                            android:src="@drawable/ic_menu_send"
+                            android:textAllCaps="true"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:ignore="SpeakableTextPresentCheck" />
+                    </LinearLayout>
+                </LinearLayout>
+            </FrameLayout>
+
+        </LinearLayout>
+    </TabHost>
 
 </LinearLayout>

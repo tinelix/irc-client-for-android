@@ -11,6 +11,7 @@
     <color name="gray">#222222</color>
     <color name="orange">#ff7700</color>
     <color name="dark_orange">#a14b00</color>
+    <color name="orange_transparent">#4aff7700</color>
     <color name="title_v11_transparent">#16ffffff</color>
     <color name="title_v11_full_transparent">#00ffffff</color>
     <color name="gray_v2">#2f2f2f</color>

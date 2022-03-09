@@ -3,6 +3,10 @@
         <item name="android:color">@color/gray</item>
         <item name="android:alertDialogStyle">@style/IRCClient.Dialog</item>
         <item name="android:textAppearance">@style/IRCClient.TextAppearance</item>
+        <item name="android:tabWidgetStyle">@style/IRCClient.TabWidget</item>
+    </style>
+    <style name="IRCClient.TabWidget" parent="@android:style/Widget.TabWidget">
+        <item name="android:background">@drawable/tabwidget</item>
     </style>
     <style name="IRCClient.Notification" parent="@android:style/TextAppearance">
         <item name="android:textColor">#000000</item>
