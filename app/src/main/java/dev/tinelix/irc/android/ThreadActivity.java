@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.LocaleList;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.Html;
@@ -589,14 +590,28 @@ public class ThreadActivity extends Activity {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
@@ -605,14 +620,28 @@ public class ThreadActivity extends Activity {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
@@ -923,6 +952,7 @@ public class ThreadActivity extends Activity {
                     try {
                         socket.getOutputStream().write((sendingMsgText).getBytes(encoding));
                         socket.getOutputStream().flush();
+                        Log.i("Client", "\r\nSended message!");
                         if(sendingMsgText.startsWith("QUIT")) {
                             socket.close();
                             socket = null;
@@ -950,18 +980,35 @@ public class ThreadActivity extends Activity {
                     if(state == "getting_data") {
                         if(socket_data_string.length() > 0) {
                             if(global_prefs.getBoolean("save_msg_history", false) == true) {
-                                File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
-                                if (!directory.exists()) {
-                                    directory.mkdirs();
-                                }
+                                File directory;
+                                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
 
-                                directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
-                                if (!directory.exists()) {
-                                    directory.mkdirs();
-                                }
-                                directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
-                                if (!directory.exists()) {
-                                    directory.mkdirs();
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                } else {
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
                                 }
 
                                 try {

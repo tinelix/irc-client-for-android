@@ -38,6 +38,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
 public class DebugLogsActivity extends Activity {
 
     public EditText debug_log_text;
@@ -82,37 +85,73 @@ public class DebugLogsActivity extends Activity {
         save_log_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
-                if(!directory.exists()) {
-                    directory.mkdirs();
-                }
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        File directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath(), "Tinelix");
+                        if (!directory.exists()) {
+                            directory.mkdirs();
+                        }
 
-                directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
-                if(!directory.exists()) {
-                    directory.mkdirs();
-                }
-                directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "App Logs");
-                if(!directory.exists()) {
-                    directory.mkdirs();
-                }
+                        directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)  + "/Tinelix", "IRC Client");
+                        if (!directory.exists()) {
+                            directory.mkdirs();
+                        }
+                        directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)  + "/Tinelix/IRC Client", "App Logs");
+                        if (!directory.exists()) {
+                            directory.mkdirs();
+                        }
 
-                try{
-                    Date dt = new Date(System.currentTimeMillis());
-                    Log.d("App", "Attempting creating log file...");
-                    File file = new File(directory, "LOG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(dt) + ".log");
-                    if(!file.exists()) {
-                        file.createNewFile();
+                        try {
+                            Date dt = new Date(System.currentTimeMillis());
+                            Log.d("App", "Attempting creating log file...");
+                            File file = new File(directory, "LOG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(dt) + ".log");
+                            if (!file.exists()) {
+                                file.createNewFile();
+                            }
+                            Log.d("App", "Log file created!");
+                            FileWriter writer = new FileWriter(file);
+                            writer.append(log_text);
+                            writer.flush();
+                            writer.close();
+                            Toast.makeText(getApplicationContext(), getResources().getString(R.string.saved_log, "Documents/Tinelix/IRC Client/App Logs"), Toast.LENGTH_LONG).show();
+                        } catch (Exception e) {
+                            Log.e("App", "Could not save log to file: " + e.getMessage());
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                showMissingPermssionDialog();
+                            }
+                        }
+                } else {
+                    File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
+                    if (!directory.exists()) {
+                        directory.mkdirs();
                     }
-                    Log.d("App", "Log file created!");
-                    FileWriter writer = new FileWriter(file);
-                    writer.append(log_text);
-                    writer.flush();
-                    writer.close();
-                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.saved_log, "Tinelix/IRC Client/App Logs"), Toast.LENGTH_LONG).show();
-                } catch (Exception e){
-                    Log.e("App", "Could not save log to file: " + e.getMessage());
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        showMissingPermssionDialog();
+
+                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
+                    if (!directory.exists()) {
+                        directory.mkdirs();
+                    }
+                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "App Logs");
+                    if (!directory.exists()) {
+                        directory.mkdirs();
+                    }
+
+                    try {
+                        Date dt = new Date(System.currentTimeMillis());
+                        Log.d("App", "Attempting creating log file...");
+                        File file = new File(directory, "LOG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(dt) + ".log");
+                        if (!file.exists()) {
+                            file.createNewFile();
+                        }
+                        Log.d("App", "Log file created!");
+                        FileWriter writer = new FileWriter(file);
+                        writer.append(log_text);
+                        writer.flush();
+                        writer.close();
+                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.saved_log, "Tinelix/IRC Client/App Logs"), Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Log.e("App", "Could not save log to file: " + e.getMessage());
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            showMissingPermssionDialog();
+                        }
                     }
                 }
             }

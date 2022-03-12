@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.LocaleList;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -65,6 +66,7 @@ public class MainSettingsActivity  extends PreferenceActivity {
                 setResult(Activity.RESULT_OK);
                 current_parameter = "setting_language";
                 final String current_value;
+                final String[] value = {new String()};
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     DialogFragment setFontSizeDialogFragm = new SettingsItemsDialogFragm();
                     setFontSizeDialogFragm.show(getFragmentManager(), "settings_items");
@@ -105,15 +107,13 @@ public class MainSettingsActivity  extends PreferenceActivity {
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int item) {
-                                        String value;
                                         if(item == 0) {
-                                            value = "OS dependent";
+                                            value[0] = "OS dependent";
                                         } else if(item == 1) {
-                                            value = "English";
+                                            value[0] = "English";
                                         } else {
-                                            value = "Russian";
+                                            value[0] = "Russian";
                                         }
-                                        onChangingValues(current_parameter, value);
                                     }
                                 });
                     } else if(current_value.contains("English")) {
@@ -121,15 +121,13 @@ public class MainSettingsActivity  extends PreferenceActivity {
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int item) {
-                                        String value;
                                         if(item == 0) {
-                                            value = "OS dependent";
+                                            value[0] = "OS dependent";
                                         } else if(item == 1) {
-                                            value = "English";
+                                            value[0] = "English";
                                         } else {
-                                            value = "Russian";
+                                            value[0] = "Russian";
                                         }
-                                        onChangingValues(current_parameter, value);
                                     }
                                 });
                     } else {
@@ -137,21 +135,20 @@ public class MainSettingsActivity  extends PreferenceActivity {
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int item) {
-                                        String value;
                                         if(item == 0) {
-                                            value = "OS dependent";
+                                            value[0] = "OS dependent";
                                         } else if(item == 1) {
-                                            value = "English";
+                                            value[0] = "English";
                                         } else {
-                                            value = "Russian";
+                                            value[0] = "Russian";
                                         }
-                                        onChangingValues(current_parameter, value);
                                     }
                                 });
                     }
                     dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int id) {
+                            onChangingValues(current_parameter, value[0]);
                             SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                             if(global_prefs.getBoolean("connected", false) == false) {
                                 Intent mainActivity = new Intent(getApplicationContext(), this.getClass());
@@ -188,19 +185,25 @@ public class MainSettingsActivity  extends PreferenceActivity {
             }
         });
         String[] languages = getResources().getStringArray(R.array.ui_language);
-        if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-            if (global_prefs.getString("language", "OS dependent").contains("English")) {
-                ui_language.setSummary(languages[1]);
-            } else if (global_prefs.getString("language", "OS dependent").contains("Russian")) {
-                ui_language.setSummary(languages[2]);
-            } else {
-                ui_language.setSummary(languages[0]);
-            }
-        } else {
-            ui_language.setSummary(R.string.need_to_restart);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ui_language.setSummary(R.string.doesnt_work_in_cav);
             ui_language.setEnabled(false);
+        } else {
+            if (global_prefs.getBoolean("language_requires_restart", false) == false) {
+                if (global_prefs.getString("language", "OS dependent").contains("English")) {
+                    ui_language.setSummary(languages[1]);
+                } else if (global_prefs.getString("language", "OS dependent").contains("Russian")) {
+                    ui_language.setSummary(languages[2]);
+                } else {
+                    ui_language.setSummary(languages[0]);
+                }
+            } else {
+                ui_language.setSummary(R.string.need_to_restart);
+                ui_language.setEnabled(false);
+            }
         }
         final Preference app_theme = findPreference("interface_theme");
+        final String[] value = {new String()};
         app_theme.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -247,13 +250,11 @@ public class MainSettingsActivity  extends PreferenceActivity {
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int item) {
-                                        String value;
                                         if(item == 0) {
-                                            value = "Dark";
+                                            value[0] = "Dark";
                                         } else {
-                                            value = "Light";
+                                            value[0] = "Light";
                                         }
-                                        onChangingValues(current_parameter, value);
                                     }
                                 });
                     } else {
@@ -261,13 +262,11 @@ public class MainSettingsActivity  extends PreferenceActivity {
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int item) {
-                                        String value;
                                         if(item == 0) {
-                                            value = "Dark";
+                                            value[0] = "Dark";
                                         } else {
-                                            value = "Light";
+                                            value[0] = "Light";
                                         }
-                                        onChangingValues(current_parameter, value);
                                     }
                                 });
                     }
@@ -275,6 +274,7 @@ public class MainSettingsActivity  extends PreferenceActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int id) {
                             SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                            onChangingValues(current_parameter, value[0]);
                             if(global_prefs.getBoolean("connected", false) == false) {
                                 Intent mainActivity = new Intent(getApplicationContext(), this.getClass());
                                 int pendingIntentId = 1;
@@ -463,6 +463,13 @@ public class MainSettingsActivity  extends PreferenceActivity {
                 return false;
             }
         });
+        if(global_prefs.getBoolean("save_msg_history", false) == true) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                save_msg_history.setSummary(getResources().getString(R.string.saved_messages_history, "Documents/Tinelix/IRC Client/Messages Logs"));
+            } else {
+                save_msg_history.setSummary(getResources().getString(R.string.saved_messages_history, "Tinelix/IRC Client/Messages Logs"));
+            }
+        }
         Preference debug_logs = findPreference("debug_logs");
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             debug_logs.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -622,14 +629,28 @@ public class MainSettingsActivity  extends PreferenceActivity {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
@@ -638,14 +659,28 @@ public class MainSettingsActivity  extends PreferenceActivity {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }

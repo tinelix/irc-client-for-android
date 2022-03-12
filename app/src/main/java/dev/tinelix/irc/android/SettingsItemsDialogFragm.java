@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.ContextThemeWrapper;
@@ -25,6 +26,7 @@ public class SettingsItemsDialogFragm extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         current_parameter = ((MainSettingsActivity) getActivity()).getCurrentParameter();
         final String current_value;
+        final String[] value = new String[1];
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         if(current_parameter == "setting_language") {
             current_value = ((MainSettingsActivity) getActivity()).getCurrentValue(current_parameter);
@@ -35,15 +37,13 @@ public class SettingsItemsDialogFragm extends DialogFragment {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int item) {
-                                String value;
                                 if(item == 0) {
-                                    value = "OS dependent";
+                                    value[0] = "OS dependent";
                                 } else if(item == 1) {
-                                    value = "English";
+                                    value[0] = "English";
                                 } else {
-                                    value = "Russian";
+                                    value[0] = "Russian";
                                 }
-                                ((MainSettingsActivity) getActivity()).onChangingValues(current_parameter, value);
                             }
                         });
             } else if(current_value.contains("English")) {
@@ -51,15 +51,13 @@ public class SettingsItemsDialogFragm extends DialogFragment {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int item) {
-                                String value;
                                 if(item == 0) {
-                                    value = "OS dependent";
+                                    value[0] = "OS dependent";
                                 } else if(item == 1) {
-                                    value = "English";
+                                    value[0] = "English";
                                 } else {
-                                    value = "Russian";
+                                    value[0] = "Russian";
                                 }
-                                ((MainSettingsActivity) getActivity()).onChangingValues(current_parameter, value);
                             }
                         });
             } else {
@@ -67,27 +65,31 @@ public class SettingsItemsDialogFragm extends DialogFragment {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int item) {
-                                String value;
                                 if(item == 0) {
-                                    value = "OS dependent";
+                                    value[0] = "OS dependent";
                                 } else if(item == 1) {
-                                    value = "English";
+                                    value[0] = "English";
                                 } else {
-                                    value = "Russian";
+                                    value[0] = "Russian";
                                 }
-                                ((MainSettingsActivity) getActivity()).onChangingValues(current_parameter, value);
                             }
                         });
             }
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
+                    ((MainSettingsActivity) getActivity()).onChangingValues(current_parameter, value[0]);
                     SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
                     final String[] requires_reboot_app = getResources().getStringArray(R.array.ui_language_app_restart_toast);
                     if(global_prefs.getBoolean("connected", false) == false) {
                         Intent mainActivity = new Intent(getActivity(), this.getClass());
                         int pendingIntentId = 1;
-                        PendingIntent pendingIntent = PendingIntent.getActivity(getActivity(), pendingIntentId, mainActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+                        PendingIntent pendingIntent;
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            pendingIntent = PendingIntent.getActivity(getActivity(), pendingIntentId, mainActivity, PendingIntent.FLAG_IMMUTABLE);
+                        } else {
+                            pendingIntent = PendingIntent.getActivity(getActivity(), pendingIntentId, mainActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+                        }
                         AlarmManager mgr = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
                         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent);
                         System.exit(0);
@@ -115,13 +117,11 @@ public class SettingsItemsDialogFragm extends DialogFragment {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int item) {
-                                String value;
                                 if(item == 0) {
-                                    value = "Dark";
+                                    value[0] = "Dark";
                                 } else {
-                                    value = "Light";
+                                    value[0] = "Light";
                                 }
-                                ((MainSettingsActivity) getActivity()).onChangingValues(current_parameter, value);
                             }
                         });
             } else {
@@ -129,25 +129,29 @@ public class SettingsItemsDialogFragm extends DialogFragment {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int item) {
-                                String value;
                                 if(item == 0) {
-                                    value = "Dark";
+                                    value[0] = "Dark";
                                 } else {
-                                    value = "Light";
+                                    value[0] = "Light";
                                 }
-                                ((MainSettingsActivity) getActivity()).onChangingValues(current_parameter, value);
                             }
                         });
             }
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
+                    ((MainSettingsActivity) getActivity()).onChangingValues(current_parameter, value[0]);
                     SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
                     final String[] requires_reboot_app = getResources().getStringArray(R.array.ui_language_app_restart_toast);
                     if(global_prefs.getBoolean("connected", false) == false) {
                         Intent mainActivity = new Intent(getActivity(), this.getClass());
                         int pendingIntentId = 1;
-                        PendingIntent pendingIntent = PendingIntent.getActivity(getActivity(), pendingIntentId, mainActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+                        PendingIntent pendingIntent;
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            pendingIntent = PendingIntent.getActivity(getActivity(), pendingIntentId, mainActivity, PendingIntent.FLAG_IMMUTABLE);
+                        } else {
+                            pendingIntent = PendingIntent.getActivity(getActivity(), pendingIntentId, mainActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+                        }
                         AlarmManager mgr = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
                         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent);
                         System.exit(0);

@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.LocaleList;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -704,14 +705,28 @@ public class ProfileSettingsActivity extends PreferenceActivity
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
@@ -720,14 +735,28 @@ public class ProfileSettingsActivity extends PreferenceActivity
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                config.locale = locale;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList localeList = new LocaleList(locale);
+                    LocaleList.setDefault(localeList);
+                    config.setLocales(localeList);
+                    config.setLayoutDirection(locale);
+                } else {
+                    config.locale = locale;
+                }
                 getApplicationContext().getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
