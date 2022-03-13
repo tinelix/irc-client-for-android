@@ -54,6 +54,9 @@ public class IRCParser {
         } else if(array[1].startsWith("366")) {
             Log.w("Tinelix IRC Parser", "Messages with \"366\" code ignored.");
             parsed = "";
+        } else if(array[1].startsWith("376")) {
+            Log.w("Tinelix IRC Parser", "Messages with \"376\" code ignored.");
+            parsed = "";
         } else if(array[1].startsWith("JOIN")) {
             parsed = member_msgs_array[0].replace(":", "") + " joined on the " + array[2].replace(":", "") + " channel.";
             Log.i("Tinelix IRC Parser", "\r\nDone!\r\n\r\nOriginal string: [" + raw + "]\r\nCode: [" + array[1] + "]");
