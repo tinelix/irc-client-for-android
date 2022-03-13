@@ -4,7 +4,7 @@ android {
     compileSdkVersion 32
     defaultConfig {
         applicationId "dev.tinelix.irc.android"
-        minSdkVersion 5
+        minSdkVersion 8
         targetSdkVersion 32
         versionCode 1
         versionName '0.2.0-alpha_20220312'
