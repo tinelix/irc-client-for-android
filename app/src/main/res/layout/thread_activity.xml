@@ -86,6 +86,7 @@
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/tab_frame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
@@ -95,7 +96,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/tabwidget"
-                android:tabStripEnabled="false"/>
+                android:tabStripEnabled="false" />
 
             <FrameLayout
                 android:id="@android:id/tabcontent"

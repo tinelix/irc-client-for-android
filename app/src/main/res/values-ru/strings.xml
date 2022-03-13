@@ -44,7 +44,7 @@
     <string name="quit_session_title">Выход из сеанса</string>
     <string name="quit_session_msg">Отсоединиться от сервера?</string>
     <string name="about_application_str">О приложении</string>
-    <string name="version_str">Версия 0.2.0 Alpha (12 марта 2022 г.)</string>
+    <string name="version_str">Версия 0.2.1 Beta (13 марта 2022 г.)</string>
     <string name="license_info">Это свободное программное обеспечение с открытым исходным кодом, распространяемое в соответствии с условиями <a href="https://www.gnu.org/licenses/gpl-3.0.ru.html">GNU General Public License 3.0 (прочитать лицензию)</a>.\n\n<b>БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ, ВКЛЮЧАЯ КОММЕРЧЕСКУЮ ЦЕННОСТЬ.</b></string>
     <string name="repo_button">Репозиторий</string>
     <string name="message_text_hint">Сообщение</string>
@@ -94,4 +94,5 @@
     <string name="first_end_session">Сначала завершите запущенное соединение нажатием кнопки "Назад".</string>
     <string name="text_field_wrong_characters">Это текстовое поле не должно содержать специальные символы</string>
     <string name="doesnt_work_in_cav">Пока не работает в текущей версии Android</string>
+    <string name="autoscroll_is_disabled">Автопрокрутка отключена. Включить можно с помощью кнопки \"Вниз\".</string>
 </resources>
