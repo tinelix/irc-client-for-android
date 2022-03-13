@@ -1238,6 +1238,53 @@ public class ThreadActivity extends Activity {
                                 }
                             }
                             output_msg_text.setText("");
+                            if(global_prefs.getBoolean("save_msg_history", false) == true) {
+                                File directory;
+                                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                } else {
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                }
+
+                                try {
+                                    Log.d("App", "Attempting creating log file...");
+                                    File file = new File(directory, "LOG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(dt) + ".log");
+                                    if (!file.exists()) {
+                                        file.createNewFile();
+                                    }
+                                    Log.d("App", "Log file created!");
+                                    FileWriter writer = new FileWriter(file);
+                                    writer.append(socks_msg_text.getText() + socket_data_string);
+                                    writer.flush();
+                                    writer.close();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         } else {
                             Log.e("Socket", "Socket not created");
                         }
