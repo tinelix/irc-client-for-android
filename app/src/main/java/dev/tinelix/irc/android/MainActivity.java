@@ -1,6 +1,7 @@
 package dev.tinelix.irc.android;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -183,29 +184,15 @@ public class MainActivity extends Activity {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
         } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
@@ -213,29 +200,15 @@ public class MainActivity extends Activity {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
         }

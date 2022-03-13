@@ -412,81 +412,93 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
     }
 
     private void setCustomTheme(SharedPreferences global_prefs) {
-        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+        if (global_prefs.getString("language", "OS dependent").contains("Russian")) {
+            if (global_prefs.getBoolean("language_requires_restart", false) == false) {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
+                Configuration config = new Configuration();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+                        config.setLocale(locale);
+                    } else {
+                        config.locale = locale;
+                    }
                     config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
                 }
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            } else {
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+                    getApplicationContext().createConfigurationContext(config);
+                } else {
+                    getApplicationContext().getResources().updateConfiguration(config,
+                            getApplicationContext().getResources().getDisplayMetrics());
+                }
+            } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        config.setLocale(locale);
+                    } else {
+                        config.locale = locale;
+                    }
                     config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
                 }
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+                    getApplicationContext().createConfigurationContext(config);
+                } else {
+                    getApplicationContext().getResources().updateConfiguration(config,
+                            getApplicationContext().getResources().getDisplayMetrics());
+                }
             }
         } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+            if (global_prefs.getBoolean("language_requires_restart", false) == false) {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    config.setLocale(locale);
                 } else {
                     config.locale = locale;
                 }
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    getApplicationContext().createConfigurationContext(config);
+                } else {
+                    getApplicationContext().getResources().updateConfiguration(config,
+                            getApplicationContext().getResources().getDisplayMetrics());
+                }
             } else {
-                Locale locale = new Locale("ru");
+                Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
+                Configuration config = new Configuration();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    config.setLocale(locale);
                 } else {
                     config.locale = locale;
                 }
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    config.setLayoutDirection(locale);
+                    getApplicationContext().createConfigurationContext(config);
+                } else {
+                    getApplicationContext().getResources().updateConfiguration(config,
+                            getApplicationContext().getResources().getDisplayMetrics());
+                }
             }
         }
         if (global_prefs.getString("theme", "Light").contains("Light")) {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
                 setTheme(R.style.IRCClient_Light);
             } else {
                 setTheme(R.style.IRCClient);
             }
         } else {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
                 setTheme(R.style.IRCClient);
             } else {
                 setTheme(R.style.IRCClient_Light);
             }
         }
     }
+
     private void customizeDialogStyle(Button dialogButton, SharedPreferences global_prefs, AlertDialog alertDialog) {
         if(global_prefs.getString("theme", "Dark").contains("Light")) {
             if(global_prefs.getBoolean("theme_requires_restart", false) == false) {

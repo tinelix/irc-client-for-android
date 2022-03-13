@@ -106,6 +106,7 @@ public class ThreadActivity extends Activity {
     public String state;
     public String encoding;
     public String channel;
+    public String current_channel;
     public String password;
     public String auth_method;
     public String hide_ip;
@@ -120,6 +121,7 @@ public class ThreadActivity extends Activity {
     public Date dt;
     public boolean autoscroll_needed;
     public Menu thread_menu;
+    public TabHost tabHost;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -133,6 +135,8 @@ public class ThreadActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getActionBar().setHomeButtonEnabled(true);
         }
+        channel = new String();
+        current_channel = new String();
         autoscroll_needed = true;
         socks_msg_text = findViewById(R.id.sock_msg_text);
         socks_msg_text.setKeyListener(null);
@@ -142,16 +146,31 @@ public class ThreadActivity extends Activity {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 switch (motionEvent.getAction()) {
-                    case MotionEvent.ACTION_UP:
-                            autoscroll_needed = false;
-                            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                                MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
-                                go_down.setVisible(true);
-                            } else {
-                                Button go_down_btn = findViewById(R.id.go_down_button);
-                                go_down_btn.setVisibility(View.VISIBLE);
-                            }
+                    case MotionEvent.ACTION_SCROLL:
+                        autoscroll_needed = false;
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
+                            go_down.setVisible(true);
+                        } else {
+                            Button go_down_btn = findViewById(R.id.go_down_button);
+                            go_down_btn.setVisibility(View.VISIBLE);
+                        }
                 }
+                return false;
+            }
+        });
+        socks_msg_text.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                autoscroll_needed = false;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
+                    go_down.setVisible(true);
+                } else {
+                    Button go_down_btn = findViewById(R.id.go_down_button);
+                    go_down_btn.setVisibility(View.VISIBLE);
+                }
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.autoscroll_is_disabled), Toast.LENGTH_LONG).show();
                 return false;
             }
         });
@@ -221,16 +240,20 @@ public class ThreadActivity extends Activity {
             realname = "Member";
         }
 
-        TabHost tabHost = (TabHost) findViewById(R.id.thread_tabs_host);
-
+        tabHost = (TabHost) findViewById(R.id.thread_tabs_host);
         tabHost.setup();
-
         TabHost.TabSpec tabSpec = tabHost.newTabSpec("thread");
-
         tabSpec.setContent(R.id.thread_tab);
         tabSpec.setIndicator(getResources().getString(R.string.thread_category));
         tabHost.addTab(tabSpec);
         tabHost.setCurrentTab(0);
+        tabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String s) {
+                tabHost.setCurrentTab(tabHost.getCurrentTab());
+            }
+        });
+
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             View view = tabHost.getTabWidget().getChildAt(0);
             view.setBackgroundResource(R.drawable.tabwidget);
@@ -395,22 +418,22 @@ public class ThreadActivity extends Activity {
             if (global_prefs.getString("theme", "Dark").contains("Light")) {
                 if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
                     builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
-                    builder.setTitle(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_title) + "</b>"));
-                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</b>"));
+                    builder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getResources().getString(R.string.quit_session_title) + "</b></font>"));
+                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</font>"));
                 } else {
                     builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
-                    builder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_title) + "</b>"));
-                    builder.setMessage(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_msg) + "</b>"));
+                    builder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_title) + "</b></font>"));
+                    builder.setMessage(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_msg) + "</font>"));
                 }
             } else {
                 if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
                     builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
-                    builder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_title) + "</b>"));
-                    builder.setMessage(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_msg) + "</b>"));
+                    builder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_title) + "</b></font>"));
+                    builder.setMessage(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_msg) + "</font>"));
                 } else {
                     builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
-                    builder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getResources().getString(R.string.quit_session_title) + "</b>"));
-                    builder.setMessage(Html.fromHtml("<font color='#000000'><b>" + getResources().getString(R.string.quit_session_msg) + "</b>"));
+                    builder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getResources().getString(R.string.quit_session_title) + "</b></font>"));
+                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</font>"));
                 }
             }
         }
@@ -590,29 +613,15 @@ public class ThreadActivity extends Activity {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
         } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
@@ -620,40 +629,26 @@ public class ThreadActivity extends Activity {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
         }
         if (global_prefs.getString("theme", "Light").contains("Light")) {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
                 setTheme(R.style.IRCClient_Light);
             } else {
                 setTheme(R.style.IRCClient);
             }
         } else {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
                 setTheme(R.style.IRCClient);
             } else {
                 setTheme(R.style.IRCClient_Light);
@@ -849,6 +844,7 @@ public class ThreadActivity extends Activity {
                             String parsedString = parser.parseString(response, true);
                             messageBody = parser.getMessageBody(response);
                             messageAuthor = parser.getMessageAuthor(response);
+                            current_channel = parser.getChannel(response);
                             if(parsedString.length() > 0) {
                                 msg.append(parsedString).append("\n");
                                 socket_data_string = msg.toString();
@@ -950,16 +946,28 @@ public class ThreadActivity extends Activity {
                 }
                 if(sendingMsgText.length() > 0) {
                     try {
-                        socket.getOutputStream().write((sendingMsgText).getBytes(encoding));
-                        socket.getOutputStream().flush();
-                        Log.i("Client", "\r\nSended message!");
                         if(sendingMsgText.startsWith("QUIT")) {
-                            socket.close();
-                            socket = null;
-                            finish();
+                            Timer shutdownTimer = new Timer();
+                            shutdownTimer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        socket.close();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    socket = null;
+                                    finish();
+                                }
+                            }, 1000);
                         }
-                        state = "sended_message";
-                        updateUITask.run();
+                        if(socket.isConnected() == true) {
+                            socket.getOutputStream().write((sendingMsgText).getBytes(encoding));
+                            socket.getOutputStream().flush();
+                            Log.i("Client", "\r\nSended message!");
+                            state = "sended_message";
+                            updateUITask.run();
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -976,6 +984,28 @@ public class ThreadActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d("Client", "CHANNEL: [" + current_channel + "]");
+                    if(current_channel.length() > 0 && channelsArray.size() > 0 && tabHost.getTabWidget().getTabCount() > 1) {
+                        socks_msg_text = findViewById(R.id.sock_msg_text);
+                        for(int ch_index = 0; ch_index < channelsArray.size(); ch_index++) {
+                            if(channelsArray.get(ch_index).equals(current_channel)) {
+                                Log.d("Client", "Found channel at position " + ch_index);
+                                View tab = tabHost.getTabWidget().getChildTabViewAt(ch_index + 1);
+                                if(tab == null) {
+                                    Log.e("Client", "TabView is null");
+                                }
+                                socks_msg_text = (EditText) tab.findViewById(R.id.sock_msg_text);
+                                if(socks_msg_text == null) {
+                                    Log.e("Client", "EditText is null");
+                                    socks_msg_text = findViewById(R.id.sock_msg_text);
+                                } else {
+                                    Log.d("Client", "EditText is null");
+                                }
+                            }
+                        }
+                    } else {
+                        socks_msg_text = findViewById(R.id.sock_msg_text);
+                    }
                     final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     if(state == "getting_data") {
                         if(socket_data_string.length() > 0) {
@@ -1026,16 +1056,27 @@ public class ThreadActivity extends Activity {
                                     e.printStackTrace();
                                 }
                             }
+                            Log.d("Client", "Position: " + socks_msg_text.getSelectionStart());
+                            int cursor_pos = socks_msg_text.getSelectionStart();
                             socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
                             if(autoscroll_needed == true) {
                                 socks_msg_text.setSelection(socks_msg_text.getText().length());
+                            } else {
+                                socks_msg_text.setSelection(cursor_pos);
                             }
+                            Log.d("Client", "Position 2: " + socks_msg_text.getSelectionStart());
                             socket_data_string = "";
                         }
                     } else if(state == "getting_data_with_mention") {
                         if(socket_data_string.length() > 0) {
+                            int cursor_pos = socks_msg_text.getSelectionStart();
                             socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
-                            socks_msg_text.setSelection(socks_msg_text.getText().length());
+                            if(autoscroll_needed == true) {
+                                socks_msg_text.setSelection(socks_msg_text.getText().length());
+                            } else {
+                                socks_msg_text.setSelection(cursor_pos);
+                            }
+                            Log.d("Client", "Position 2: " + socks_msg_text.getSelectionStart());
                             socket_data_string = "";
                             Context context = getApplicationContext();
                             if(messageBody.length() > 0 && nicknames.split(", ")[0].length() > 0) {

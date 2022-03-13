@@ -705,29 +705,15 @@ public class ProfileSettingsActivity extends PreferenceActivity
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
         } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
@@ -735,40 +721,26 @@ public class ProfileSettingsActivity extends PreferenceActivity
                 Locale locale = new Locale("en_US");
                 Locale.setDefault(locale);
                 Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             } else {
                 Locale locale = new Locale("ru");
                 Locale.setDefault(locale);
                 Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
-                    config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
+                config.locale = locale;
+                getResources().updateConfiguration(config,
                         getApplicationContext().getResources().getDisplayMetrics());
             }
         }
         if (global_prefs.getString("theme", "Light").contains("Light")) {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
                 setTheme(R.style.IRCClient_Light);
             } else {
                 setTheme(R.style.IRCClient);
             }
         } else {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
                 setTheme(R.style.IRCClient);
             } else {
                 setTheme(R.style.IRCClient_Light);

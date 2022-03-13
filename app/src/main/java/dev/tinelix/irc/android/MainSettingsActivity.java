@@ -185,10 +185,6 @@ public class MainSettingsActivity  extends PreferenceActivity {
             }
         });
         String[] languages = getResources().getStringArray(R.array.ui_language);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ui_language.setSummary(R.string.doesnt_work_in_cav);
-            ui_language.setEnabled(false);
-        } else {
             if (global_prefs.getBoolean("language_requires_restart", false) == false) {
                 if (global_prefs.getString("language", "OS dependent").contains("English")) {
                     ui_language.setSummary(languages[1]);
@@ -201,7 +197,6 @@ public class MainSettingsActivity  extends PreferenceActivity {
                 ui_language.setSummary(R.string.need_to_restart);
                 ui_language.setEnabled(false);
             }
-        }
         final Preference app_theme = findPreference("interface_theme");
         final String[] value = {new String()};
         app_theme.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -449,7 +444,21 @@ public class MainSettingsActivity  extends PreferenceActivity {
         save_msg_history.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(save_msg_history.isChecked() == true) {
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        save_msg_history.setSummary(getResources().getString(R.string.saved_messages_history, "Documents/Tinelix/IRC Client/Messages Logs"));
+                    } else {
+                        save_msg_history.setSummary(getResources().getString(R.string.saved_messages_history, "Tinelix/IRC Client/Messages Logs"));
+                    }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).canWrite() == true) {
+                        current_parameter = "setting_saving_msg_history";
+                        onChangingBooleanValues(current_parameter, save_msg_history.isChecked());
+                    } else {
+                        showMissingPermssionDialog();
+                    }
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                         current_parameter = "setting_saving_msg_history";
                         onChangingBooleanValues(current_parameter, save_msg_history.isChecked());
@@ -625,74 +634,46 @@ public class MainSettingsActivity  extends PreferenceActivity {
 
     private void setCustomTheme(SharedPreferences global_prefs) {
         if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
+                if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                    Locale locale = new Locale("ru");
+                    Locale.setDefault(locale);
+                    Configuration config = getResources().getConfiguration();
                     config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
+                    getResources().updateConfiguration(config,
+                            getApplicationContext().getResources().getDisplayMetrics());
                 } else {
+                    Locale locale = new Locale("en_US");
+                    Locale.setDefault(locale);
+                    Configuration config = new Configuration();
                     config.locale = locale;
+                    getResources().updateConfiguration(config,
+                            getApplicationContext().getResources().getDisplayMetrics());
                 }
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            }
         } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
-                } else {
+                if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                    Locale locale = new Locale("en_US");
+                    Locale.setDefault(locale);
+                    Configuration config = new Configuration();
                     config.locale = locale;
-                }
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    LocaleList localeList = new LocaleList(locale);
-                    LocaleList.setDefault(localeList);
-                    config.setLocales(localeList);
-                    config.setLayoutDirection(locale);
+                    getResources().updateConfiguration(config,
+                            getApplicationContext().getResources().getDisplayMetrics());
                 } else {
+                    Locale locale = new Locale("ru");
+                    Locale.setDefault(locale);
+                    Configuration config = getResources().getConfiguration();
                     config.locale = locale;
+                    getResources().updateConfiguration(config,
+                            getApplicationContext().getResources().getDisplayMetrics());
                 }
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            }
         }
         if (global_prefs.getString("theme", "Light").contains("Light")) {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
                 setTheme(R.style.IRCClient_Light);
             } else {
                 setTheme(R.style.IRCClient);
             }
         } else {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
                 setTheme(R.style.IRCClient);
             } else {
                 setTheme(R.style.IRCClient_Light);

@@ -14,19 +14,37 @@ public class NotificationActivity extends Activity {
         super.onCreate(savedInstanceState);
         final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
-            Locale locale = new Locale("ru");
-            Locale.setDefault(locale);
-            Configuration config = getResources().getConfiguration();
-            config.locale = locale;
-            getApplicationContext().getResources().updateConfiguration(config,
-                    getApplicationContext().getResources().getDisplayMetrics());
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            }
         } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-            Locale locale = new Locale("en_US");
-            Locale.setDefault(locale);
-            Configuration config = new Configuration();
-            config.locale = locale;
-            getApplicationContext().getResources().updateConfiguration(config,
-                    getApplicationContext().getResources().getDisplayMetrics());
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            }
         }
         setContentView(R.layout.notification_activity);
     }
