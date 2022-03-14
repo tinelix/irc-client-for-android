@@ -16,6 +16,8 @@ import android.os.Bundle;
 import android.app.DialogFragment;
 import android.os.LocaleList;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -165,6 +167,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
             final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
             TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
             dialog_title.setText(getString(R.string.enter_the_pfn_title));
+            final EditText profile_name = dialogView.findViewById(R.id.profile_name_text);
             DisplayMetrics metrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(metrics);
             dialogView.setMinimumWidth(metrics.widthPixels);
@@ -172,7 +175,6 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
             dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    EditText profile_name = dialogView.findViewById(R.id.profile_name_text);
                     profileNameOkClicked(profile_name.getText().toString());
                 }
             });
@@ -182,8 +184,29 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
 
                 }
             });
-            AlertDialog alertDialog = dialogBuilder.create();
+            final AlertDialog alertDialog = dialogBuilder.create();
             alertDialog.getWindow().setGravity(Gravity.BOTTOM);
+            profile_name.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    if(profile_name.getText().toString().contains("/")) {
+                        profile_name.setError(getResources().getString(R.string.text_field_wrong_characters));
+                        ((AlertDialog) alertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                    } else {
+                        ((AlertDialog) alertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+
+                }
+            });
             alertDialog.show();
 
             Button dialogButton;

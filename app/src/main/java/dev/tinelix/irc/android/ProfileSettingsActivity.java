@@ -422,6 +422,25 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     });
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
+                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            server_name.setTextColor(getResources().getColor(R.color.black));
+                            port_number.setTextColor(getResources().getColor(R.color.black));
+                        } else {
+                            server_name.setTextColor(getResources().getColor(R.color.white));
+                            port_number.setTextColor(getResources().getColor(R.color.white));
+                        }
+                    } else {
+                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                            server_name.setTextColor(getResources().getColor(R.color.white));
+                            port_number.setTextColor(getResources().getColor(R.color.white));
+                        } else {
+                            server_name.setTextColor(getResources().getColor(R.color.black));
+                            port_number.setTextColor(getResources().getColor(R.color.black));
+                        }
+                    }
+                    server_name.setPadding(12, 0, 12, 0);
+                    port_number.setPadding(12, 0, 12, 0);
                     Button dialogButton = null;
                     customizeDialogStyle(dialogButton, global_prefs, alertDialog);
                 }

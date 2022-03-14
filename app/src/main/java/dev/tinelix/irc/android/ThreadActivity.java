@@ -58,6 +58,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.RoundingMode;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -66,6 +67,7 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.channels.IllegalBlockingModeException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -571,30 +573,43 @@ public class ThreadActivity extends Activity {
             TextView total_bytes_label = dialogView.findViewById(R.id.total_label2);
             TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
             dialog_title.setText(getString(R.string.statistics_item));
+            DecimalFormat dF = new DecimalFormat("#.00");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+                dF.setRoundingMode(RoundingMode.DOWN);
+            }
             if (sended_bytes > 1073741824) {
-                sended_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (float)(sended_bytes / 1073741824))));
+                String sended_bytes_rounded = dF.format((sended_bytes / 1073741824));
+                sended_bytes_label.setText(getString(R.string.gbytes_stats, sended_bytes_rounded));
             } else if(sended_bytes > 1048576) {
-                sended_bytes_label.setText(getString(R.string.mbytes_stats, String.format("%.2f", (float)(sended_bytes / 1048576))));
+                String sended_bytes_rounded = dF.format((sended_bytes / 1048576));
+                sended_bytes_label.setText(getString(R.string.mbytes_stats, sended_bytes_rounded));
             } else if(sended_bytes > 1024) {
-                sended_bytes_label.setText(getString(R.string.kbytes_stats, String.format("%.2f", (float)(sended_bytes / 1024))));
+                String sended_bytes_rounded = dF.format((sended_bytes / 1024));
+                sended_bytes_label.setText(getString(R.string.kbytes_stats, sended_bytes_rounded));
             } else {
                 sended_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(sended_bytes)));
             }
             if (received_bytes > 1073741824) {
-                received_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (float)(received_bytes / 1073741824))));
+                String received_bytes_rounded = dF.format((received_bytes / 1073741824));
+                received_bytes_label.setText(getString(R.string.gbytes_stats, received_bytes_rounded));
             } else if(received_bytes > 1048576) {
-                received_bytes_label.setText(getString(R.string.mbytes_stats, String.format("%.2f", (float)(received_bytes / 1048576))));
+                String received_bytes_rounded = dF.format((received_bytes / 1048576));
+                received_bytes_label.setText(getString(R.string.mbytes_stats, received_bytes_rounded));
             } else if(received_bytes > 1024) {
-                received_bytes_label.setText(getString(R.string.kbytes_stats, String.format("%.2f", (float)(received_bytes / 1024))));
+                String received_bytes_rounded = dF.format((received_bytes / 1024));
+                received_bytes_label.setText(getString(R.string.kbytes_stats, received_bytes_rounded));
             } else {
                 received_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(received_bytes)));
             }
             if (total_bytes > 1073741824) {
-                total_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (double)(total_bytes / 1073741824))));
+                String total_bytes_rounded = dF.format((total_bytes / 1073741824));
+                total_bytes_label.setText(getString(R.string.gbytes_stats, total_bytes_rounded));
             } else if(total_bytes > 1048576) {
-                total_bytes_label.setText(getString(R.string.mbytes_stats, String.format("%.2f", (double)(total_bytes / 1048576))));
+                String total_bytes_rounded = dF.format((total_bytes / 1048576));
+                total_bytes_label.setText(getString(R.string.mbytes_stats, total_bytes_rounded));
             } else if(total_bytes > 1024) {
-                total_bytes_label.setText(getString(R.string.kbytes_stats, String.format("%.2f", (double)(total_bytes / 1024))));
+                String total_bytes_rounded = dF.format((total_bytes / 1024));
+                total_bytes_label.setText(getString(R.string.kbytes_stats, total_bytes_rounded));
             } else {
                 total_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(total_bytes)));
             }

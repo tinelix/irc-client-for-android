@@ -9,9 +9,13 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.app.DialogFragment;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.Locale;
 
@@ -24,12 +28,33 @@ public class EnterTextDialogFragm extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.enter_text_activity, null);
+        final EditText profile_name = view.findViewById(R.id.profile_name_text);
+        profile_name.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if(profile_name.getText().toString().contains("/")) {
+                    profile_name.setError(getResources().getString(R.string.text_field_wrong_characters));
+                    ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                } else {
+                    ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
         builder.setView(view);
         builder.setTitle(R.string.enter_the_pfn_title);
         builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                EditText profile_name = view.findViewById(R.id.profile_name_text);
                 ((ConnectionManagerActivity) getActivity()).profileNameOkClicked(profile_name.getText().toString());
             }
         });
