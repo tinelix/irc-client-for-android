@@ -2,12 +2,10 @@
 <resources>
     <string-array name="main_menu_array">
         <item>Connection manager</item>
-        <item>Settings</item>
         <item>About application</item>
         <item>Quit</item>
     </string-array>
     <string name="app_name" translatable="false">Tinelix IRC Client</string>
-    <string name="short_app_name" translatable="false">Tinelix IRC</string>
     <string name="connection_manager_title">Connection manager</string>
     <string name="connection_manager_add_item">Add</string>
     <string name="connection_manager_connect_item">Connect</string>
@@ -15,7 +13,6 @@
     <string name="connection_manager_delete_item">Delete</string>
     <string name="profile_name_label">Profile name:</string>
     <string name="ok_button" translatable="false">OK</string>
-    <string name="open_button">Open</string>
     <string name="cancel_button">Cancel</string>
     <string name="enter_the_pfn_title">Enter profile name</string>
     <string name="enter_the_nick_title">Enter nickname</string>
@@ -48,7 +45,7 @@
     <string name="quit_session_title">Quit session</string>
     <string name="quit_session_msg">Disconnect from server?</string>
     <string name="about_application_str">About application</string>
-    <string name="version_str">Version 0.2.3 Beta (March 14, 2022)</string>
+    <string name="version_str">Version 0.1.0 Alpha (March 2, 2022)</string>
     <string name="license_info">This is free software with open source, distributed under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License 3.0 (read license)</a>.\n\n<b>WITHOUT ANY WARRANTY, NOT EVEN FOR MERCHANTABILITY.</b></string>
     <string name="repo_button">Repository</string>
     <string name="copyright_str" translatable="false">Copyright © 2022 Dmitry Tretyakov (aka. Tinelix)</string>
@@ -67,39 +64,4 @@
     <string name="mention_notification_title">%1$s mentioned you</string>
     <string name="empty_message_sending_attempt">You cannot send empty message.</string>
     <string name="menu_button">Menu</string>
-    <string name="connection_progress">Connecting to %1$s...</string>
-    <string name="quit_message">Quiting message</string>
-    <string name="quit_message_label">Quiting message:</string>
-    <string name="default_quit_msg" translatable="false">Tinelix IRC Client ver. 0.2.3 Beta for Android (2022-03-14)</string>
-    <string name="enter_the_quiting_message">Enter quiting message</string>
-    <string name="interface_category">Interface</string>
-    <string name="interface_language_item">Language</string>
-    <string name="interface_theme_item">Theme</string>
-    <string name="thread_category">Thread</string>
-    <string name="font_size_item">Font size</string>
-    <string name="font_size_label">Font size:</string>
-    <string name="preview_label">Preview:</string>
-    <string name="changing_font_label">Changing font size</string>
-    <string name="sample_preview_text" translatable="false">tinelix: Hello everyone (11:00:12)\nshortn: hello (11:00:13)\nlong_nick: hi\nsuper_long_nick: Hello, Dmitry! (11:00:13)\ntinelix: How are you? (11:00:16)</string>
-    <string name="settings_title">Settings</string>
-    <string name="value_in_px">%1$d px</string>
-    <string name="connected_state">CONNECTED</string>
-    <string name="website_button">Website</string>
-    <string name="need_to_restart">Application needs to be restarted</string>
-    <string name="empty_profiles_list"><b>The list is empty</b>\n\nYou can create your own profile to connect to IRC servers.</string>
-    <string name="application_category">Application</string>
-    <string name="debug_log_item">Debug log</string>
-    <string name="save_log_btn">Save log</string>
-    <string name="saved_log">Debug log saved to Device Memory/%1$s</string>
-    <string name="saved_messages_history">Saving to Device Memory/%1$s</string>
-    <string name="allow_permisssion_in_storage_title">Permissions required</string>
-    <string name="allow_permisssion_in_storage">To save data to the Device Memory, application needs special permissions.\n\nOpen the \"About application\" system settings section?</string>
-    <string name="save_msg_history_item">Save messages history</string>
-    <string name="device_memory_restricted">Device Memory is not available</string>
-    <string name="go_down_action">Go down</string>
-    <string name="forgot_nicknames">You forgot to enter the first nickname in Profile Settings.</string>
-    <string name="first_end_session">First end the running connection by pressing the Back button.</string>
-    <string name="text_field_wrong_characters">This text field must not contain special characters!</string>
-    <string name="doesnt_work_in_cav">Doesn\'t work in current Android version yet</string>
-    <string name="autoscroll_is_disabled">Autoscrolling is disabled. You can enable using the \"Go down\" button.</string>
 </resources>

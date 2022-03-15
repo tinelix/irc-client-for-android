@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/activity_ll">
+    android:orientation="vertical">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -66,29 +65,15 @@
                 android:layout_marginRight="16dp"
                 android:text="@string/copyright_str" />
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <Button
+                android:id="@+id/repo_button"
+                android:layout_width="140dp"
+                android:layout_height="38dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/repo_button"
-                    android:layout_width="140dp"
-                    android:layout_height="40dp"
-                    android:text="@string/repo_button"
-                    android:textSize="16sp" />
-
-                <Button
-                    android:id="@+id/website_button"
-                    android:layout_width="140dp"
-                    android:layout_height="40dp"
-                    android:text="@string/website_button"
-                    android:textSize="16sp"
-                    android:layout_marginLeft="4dp"/>
-            </LinearLayout>
+                android:text="@string/repo_button"
+                android:textSize="16sp" />
 
         </LinearLayout>
     </ScrollView>

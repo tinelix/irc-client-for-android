@@ -31,7 +31,7 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/session_label"
+        android:id="@+id/textView7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"

@@ -18,27 +18,9 @@
             tools:layout="@layout/create_item" />
 
         <ListView
-            android:id="@+id/profiles_list"
+            android:id="@+id/nicknames_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
-        <LinearLayout
-            android:id="@+id/empty_profiles_list_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/empty_profiles_list_label"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_margin="16dp"
-                android:gravity="center"
-                android:text="@string/empty_profiles_list"
-                android:textSize="16sp" />
-        </LinearLayout>
-
     </LinearLayout>
 
 </LinearLayout>

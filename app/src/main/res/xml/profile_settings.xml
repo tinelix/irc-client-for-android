@@ -21,7 +21,6 @@
         android:title="@string/nicknames" />
     <Preference
         android:id="@+id/password"
-        android:enabled="false"
         android:key="password"
         android:selectAllOnFocus="true"
         android:title="@string/password_label" />
@@ -47,9 +46,4 @@
             android:selectAllOnFocus="true"
             android:title="@string/hostname" />
     </PreferenceCategory>
-    <Preference
-        android:key="quit_message"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/quit_message" />
 </PreferenceScreen>
