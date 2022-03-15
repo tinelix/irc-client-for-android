@@ -7,16 +7,13 @@ android {
         minSdkVersion 8
         targetSdkVersion 32
         versionCode 1
-        versionName '0.2.3-alpha_20220314'
+        versionName '0.1.0-alpha_20220302'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            debuggable true
         }
     }
     productFlavors {
