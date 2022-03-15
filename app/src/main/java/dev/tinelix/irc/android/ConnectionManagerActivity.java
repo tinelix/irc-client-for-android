@@ -9,17 +9,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.DialogFragment;
-import android.os.LocaleList;
 import android.preference.PreferenceManager;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,8 +25,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -41,7 +34,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 public class ConnectionManagerActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
     public List<String> profilesArray = new ArrayList<String>();
@@ -52,53 +44,30 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        setCustomTheme(global_prefs);
         setContentView(R.layout.activity_connection_manager);
-        setColorStyle(global_prefs);
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            ImageButton menu_button = findViewById(R.id.menu_button);
-            menu_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    openOptionsMenu();
-                }
-            });
-        }
         profilesAdapter = new ProfileAdapter(this, profilesList);
         String package_name = getApplicationContext().getPackageName();
         String profile_path = "/data/data/" + package_name + "/shared_prefs";
         File prefs_directory = new File(profile_path);
         File[] prefs_files = prefs_directory.listFiles();
-        ListView profilesListView = findViewById(R.id.profiles_list);
-        LinearLayout profilesLinearLayout = findViewById(R.id.empty_profiles_list_layout);
         profilesArray = new LinkedList<String>();
         String file_extension;
         Context context = getApplicationContext();
         try {
             for (int i = 0; i < prefs_files.length; i++) {
-                if(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)).startsWith(getApplicationInfo().packageName + "_preferences"))
-                {
-                } else {
-                    SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
-                    file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
-                    if (file_extension.contains(".xml") && file_extension.length() == 4) {
-                        profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                                prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
-                    }
+                SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
+                file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
+                if (file_extension.contains(".xml") && file_extension.length() == 4) {
+                    profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
+                            prefs.getString("server", ""), prefs.getInt("port", 0), false));
                 }
+                ;
             }
-            if(prefs_files == null || profilesList.size() == 0) {
-                profilesListView.setVisibility(View.GONE);
-                profilesLinearLayout.setVisibility(View.VISIBLE);
-            } else {
-                profilesListView.setVisibility(View.VISIBLE);
-                profilesLinearLayout.setVisibility(View.GONE);
-            }
+            ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
-            profilesListView.setAdapter(profilesAdapter);
-            profilesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            profilesList.setAdapter(profilesAdapter);
+            profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Toast.makeText(getApplicationContext(), ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
@@ -108,6 +77,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
             ex.printStackTrace();
         }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.registerOnSharedPreferenceChangeListener(this);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
             FragmentManager fragmentManager = null;
             fragmentManager = getFragmentManager();
@@ -167,7 +137,6 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
             final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
             TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
             dialog_title.setText(getString(R.string.enter_the_pfn_title));
-            final EditText profile_name = dialogView.findViewById(R.id.profile_name_text);
             DisplayMetrics metrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(metrics);
             dialogView.setMinimumWidth(metrics.widthPixels);
@@ -175,6 +144,7 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
             dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
+                    EditText profile_name = dialogView.findViewById(R.id.profile_name_text);
                     profileNameOkClicked(profile_name.getText().toString());
                 }
             });
@@ -184,35 +154,33 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
 
                 }
             });
-            final AlertDialog alertDialog = dialogBuilder.create();
+            AlertDialog alertDialog = dialogBuilder.create();
             alertDialog.getWindow().setGravity(Gravity.BOTTOM);
-            profile_name.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    if(profile_name.getText().toString().contains("/")) {
-                        profile_name.setError(getResources().getString(R.string.text_field_wrong_characters));
-                        ((AlertDialog) alertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-                    } else {
-                        ((AlertDialog) alertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                    }
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-
-                }
-            });
             alertDialog.show();
 
             Button dialogButton;
             dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-            final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            customizeDialogStyle(dialogButton, global_prefs, alertDialog);
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
         }
         return false;
     };
@@ -229,31 +197,26 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         profilesArray.clear();
         String file_extension;
         Context context = getApplicationContext();
-        ListView profilesListView = findViewById(R.id.profiles_list);
-        LinearLayout profilesLinearLayout = findViewById(R.id.empty_profiles_list_layout);
         try {
             for (int i = 0; i < prefs_files.length; i++) {
-                if(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)).startsWith(getApplicationInfo().packageName + "_preferences"))
-                {
-                } else {
-                    SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
-                    file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
-                    if (file_extension.contains(".xml") && file_extension.length() == 4) {
-                        profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                                prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
-                    }
+                SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
+                file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
+                if (file_extension.contains(".xml") && file_extension.length() == 4) {
+                    profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
+                            prefs.getString("server", ""), prefs.getInt("port", 0), false));
                 }
+                ;
             }
-            if(prefs_files == null || profilesList.size() == 0) {
-                profilesListView.setVisibility(View.GONE);
-                profilesLinearLayout.setVisibility(View.VISIBLE);
-            } else {
-                profilesListView.setVisibility(View.VISIBLE);
-                profilesLinearLayout.setVisibility(View.GONE);
-            }
+            ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
-            profilesListView.setAdapter(profilesAdapter);
+            profilesList.setAdapter(profilesAdapter);
+            profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Toast.makeText(getApplicationContext(), ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
+                }
+            });
         } catch(Exception ex) {
             ex.printStackTrace();
         }
@@ -273,8 +236,6 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         editor.putString("name", profile_name);
         editor.putString("auth_method", "Disabled");
         editor.putString("hide_ip", "Disabled");
-        editor.putString("quit_message", getString(R.string.default_quit_msg));
-        editor.putBoolean("connected", false);
         editor.commit();
         Intent intent = new Intent(this, ProfileSettingsActivity.class);
         intent.putExtra("profile_name", profile_name);
@@ -285,56 +246,32 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
     public void selectProfile(View v) {
     }
 
-    public void connectProfile(int position) {
+    public void connectProfile(View v) {
         Context context = getApplicationContext();
         Intent intent = new Intent(context, ThreadActivity.class);
-        Intent parentIntent = new Intent();
-        Profile profile_item = null;
-        profile_item = (Profile) profilesAdapter.getItem(position);
-        intent.putExtra("profile_name", profile_item.name);
-        SharedPreferences prefs = context.getSharedPreferences(profile_item.name, 0);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("connected", true);
-        editor.commit();
-        SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        if(prefs.getString("nicknames", "").length() > 0) {
-            if (global_prefs.getBoolean("connected", false) == false) {
-                editor = global_prefs.edit();
-                editor.putBoolean("connected", true);
-                editor.commit();
-                setResult(RESULT_OK, parentIntent);
-                intent.setAction(Intent.ACTION_MAIN);
-                intent.addCategory(Intent.CATEGORY_LAUNCHER);
-                startActivity(intent);
-            } else {
-                if(prefs.getBoolean("connected", false)) {
-                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.first_end_session), Toast.LENGTH_LONG).show();
-                }
-            }
-            finish();
-        } else {
-            Toast.makeText(getApplicationContext(), getResources().getString(R.string.forgot_nicknames), Toast.LENGTH_LONG).show();
-        }
+        TextView profile_name = v.getRootView().findViewById(R.id.profile_item_label);
+        intent.putExtra("profile_name", profile_name.getText());
+        startActivity(intent);
+        finish();
     }
 
-    public void editProfile(int position) {
+    public void editProfile(View v) {
         Context context = getApplicationContext();
         Intent intent = new Intent(context, ProfileSettingsActivity.class);
-        Profile profile_item = null;
-        profile_item = (Profile) profilesAdapter.getItem(position);
-        intent.putExtra("profile_name", profile_item.name);
+        TextView profile_name = v.getRootView().findViewById(R.id.profile_item_label);
+        intent.putExtra("profile_name", profile_name.getText());
         intent.putExtra("package_name", getApplicationContext().getPackageName());
         startActivity(intent);
     }
 
-    public void deleteProfile(int position) {
-        profilesAdapter = new ProfileAdapter(this, profilesList);
-        String package_name = getApplicationContext().getPackageName();
-        Profile profile_item = null;
-        profile_item = (Profile) profilesAdapter.getItem(position);
+    public void deleteProfile(View v) {
         profilesArray.clear();
         profilesList.clear();
-        String profile_path = "/data/data/" + package_name + "/shared_prefs/" + profile_item.name + ".xml";
+        profilesAdapter = new ProfileAdapter(this, profilesList);
+        String package_name = getApplicationContext().getPackageName();
+        TextView profile_name = v.getRootView().findViewById(R.id.profile_item_label);
+        TextView server_text = v.getRootView().findViewById(R.id.profile_server_label);
+        String profile_path = "/data/data/" + package_name + "/shared_prefs/" + profile_name.getText() + ".xml";
         File file = new File(profile_path);
         file.delete();
         profilesAdapter = new ProfileAdapter(this, profilesList);
@@ -346,32 +283,21 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
         profilesArray.clear();
         String file_extension;
         Context context = getApplicationContext();
-        ListView profilesListView = findViewById(R.id.profiles_list);
-        LinearLayout profilesLinearLayout = findViewById(R.id.empty_profiles_list_layout);
         try {
             for (int i = 0; i < prefs_files.length; i++) {
-                if(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)).startsWith(getApplicationInfo().packageName + "_preferences"))
-                {
-                } else {
-                    SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
-                    file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
-                    if (file_extension.contains(".xml") && file_extension.length() == 4) {
-                        profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
-                                prefs.getString("server", ""), prefs.getInt("port", 0), false, false));
-                    }
+                SharedPreferences prefs = context.getSharedPreferences(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)), 0);
+                file_extension = prefs_files[i].getName().substring((int) (prefs_files[i].getName().length() - 4));
+                if (file_extension.contains(".xml") && file_extension.length() == 4) {
+                    profilesList.add(new Profile(prefs_files[i].getName().substring(0, (int) (prefs_files[i].getName().length() - 4)),
+                            prefs.getString("server", ""), prefs.getInt("port", 0), false));
                 }
+                ;
             }
-            if(prefs_files == null || profilesList.size() == 0) {
-                profilesListView.setVisibility(View.GONE);
-                profilesLinearLayout.setVisibility(View.VISIBLE);
-            } else {
-                profilesListView.setVisibility(View.VISIBLE);
-                profilesLinearLayout.setVisibility(View.GONE);
-            }
+            ListView profilesList = findViewById(R.id.nicknames_list);
             ArrayAdapter<String> profilesAdapter2 = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1, profilesArray);
-            profilesListView.setAdapter(profilesAdapter);
-            profilesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            profilesList.setAdapter(profilesAdapter);
+            profilesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Toast.makeText(getApplicationContext(), ((TextView)view.findViewById(R.id.profile_item_label)).getText(), Toast.LENGTH_LONG).show();
@@ -384,242 +310,5 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 
-    }
-
-    private void setColorStyle(SharedPreferences global_prefs) {
-        if (global_prefs.getString("theme", "Light").contains("Light")) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
-                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    TextView app_title = findViewById(R.id.app_title_label);
-                    app_title.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    ImageView app_icon = findViewById(R.id.app_icon_view);
-                    app_icon.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
-                    activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
-                } else {
-                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
-                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.title_v11_transparent));
-                    TextView app_title = findViewById(R.id.app_title_label);
-                    app_title.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    ImageView app_icon = findViewById(R.id.app_icon_view);
-                    app_icon.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
-                    activity_ll.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                }
-            }
-        } else {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
-                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.title_v11_transparent));
-                    TextView app_title = findViewById(R.id.app_title_label);
-                    app_title.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    ImageView app_icon = findViewById(R.id.app_icon_view);
-                    app_icon.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
-                    activity_ll.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                } else {
-                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
-                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    TextView app_title = findViewById(R.id.app_title_label);
-                    app_title.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    ImageView app_icon = findViewById(R.id.app_icon_view);
-                    app_icon.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
-                    activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
-                }
-            }
-        }
-    }
-
-    private void setCustomTheme(SharedPreferences global_prefs) {
-        if (global_prefs.getString("language", "OS dependent").contains("Russian")) {
-            if (global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-                        config.setLocale(locale);
-                    } else {
-                        config.locale = locale;
-                    }
-                    config.setLayoutDirection(locale);
-                }
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-                    getApplicationContext().createConfigurationContext(config);
-                } else {
-                    getApplicationContext().getResources().updateConfiguration(config,
-                            getApplicationContext().getResources().getDisplayMetrics());
-                }
-            } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        config.setLocale(locale);
-                    } else {
-                        config.locale = locale;
-                    }
-                    config.setLayoutDirection(locale);
-                }
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-                    getApplicationContext().createConfigurationContext(config);
-                } else {
-                    getApplicationContext().getResources().updateConfiguration(config,
-                            getApplicationContext().getResources().getDisplayMetrics());
-                }
-            }
-        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-            if (global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    config.setLocale(locale);
-                } else {
-                    config.locale = locale;
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    getApplicationContext().createConfigurationContext(config);
-                } else {
-                    getApplicationContext().getResources().updateConfiguration(config,
-                            getApplicationContext().getResources().getDisplayMetrics());
-                }
-            } else {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    config.setLocale(locale);
-                } else {
-                    config.locale = locale;
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    config.setLayoutDirection(locale);
-                    getApplicationContext().createConfigurationContext(config);
-                } else {
-                    getApplicationContext().getResources().updateConfiguration(config,
-                            getApplicationContext().getResources().getDisplayMetrics());
-                }
-            }
-        }
-        if (global_prefs.getString("theme", "Light").contains("Light")) {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                setTheme(R.style.IRCClient_Light);
-            } else {
-                setTheme(R.style.IRCClient);
-            }
-        } else {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                setTheme(R.style.IRCClient);
-            } else {
-                setTheme(R.style.IRCClient_Light);
-            }
-        }
-    }
-
-    private void customizeDialogStyle(Button dialogButton, SharedPreferences global_prefs, AlertDialog alertDialog) {
-        if(global_prefs.getString("theme", "Dark").contains("Light")) {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            } else {
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            }
-        } else {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            } else {
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            }
-        }
     }
 }

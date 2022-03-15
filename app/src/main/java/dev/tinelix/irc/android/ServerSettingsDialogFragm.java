@@ -6,19 +6,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.text.Editable;
-import android.text.Html;
-import android.text.SpannableStringBuilder;
-import android.text.TextWatcher;
-import android.text.method.KeyListener;
-import android.text.style.ForegroundColorSpan;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -27,8 +16,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.Locale;
-
 @SuppressLint("NewApi")
 public class ServerSettingsDialogFragm extends DialogFragment {
 
@@ -36,8 +23,6 @@ public class ServerSettingsDialogFragm extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        setLocale(global_prefs);
         current_parameter = ((ProfileSettingsActivity) getActivity()).getCurrentParameter();
         String current_value;
         String server_parameter;
@@ -92,23 +77,8 @@ public class ServerSettingsDialogFragm extends DialogFragment {
             String[] encoding_array = getResources().getStringArray(R.array.encoding_array);
             server_parameter = "changing_server";
             current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(server_parameter);
-            final EditText server_text = view.findViewById(R.id.server_text);
+            EditText server_text = view.findViewById(R.id.server_text);
             server_text.setText(current_value);
-            server_text.addTextChangedListener(new TextWatcher() {
-
-                public void afterTextChanged(Editable s) { }
-
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if(s.toString().contains(":")) {
-                        server_text.setError(getResources().getString(R.string.text_field_wrong_characters));
-                        ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-                    } else {
-                        ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                    }
-                }
-            });
             server_parameter = "changing_port";
             current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(server_parameter);
             EditText port_numb = view.findViewById(R.id.port_numb);
@@ -140,41 +110,5 @@ public class ServerSettingsDialogFragm extends DialogFragment {
             }
         };
         return builder.create();
-    }
-
-    private void setLocale(SharedPreferences global_prefs) {
-        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            }
-        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            }
-        }
     }
 }

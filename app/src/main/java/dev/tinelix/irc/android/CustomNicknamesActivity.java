@@ -6,15 +6,11 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,7 +19,6 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 public class CustomNicknamesActivity extends Activity {
 
@@ -44,10 +38,7 @@ public class CustomNicknamesActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        setCustomTheme(global_prefs);
         setContentView(R.layout.custom_nicknames_activity);
-        setColorStyle(global_prefs);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getActionBar().setHomeButtonEnabled(true);
         }
@@ -148,25 +139,11 @@ public class CustomNicknamesActivity extends Activity {
     }
 
     public boolean showEnterTextDialog() {
-        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             DialogFragment enterTextDialogFragm = new EnterTextDialogFragm3();
             enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
         } else {
-            AlertDialog.Builder dialogBuilder;
-            if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                    dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(CustomNicknamesActivity.this, R.style.IRCClient_Light));
-                } else {
-                    dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(CustomNicknamesActivity.this, R.style.IRCClient));
-                }
-            } else {
-                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                    dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(CustomNicknamesActivity.this, R.style.IRCClient));
-                } else {
-                    dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(CustomNicknamesActivity.this, R.style.IRCClient_Light));
-                }
-            }
+            final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(CustomNicknamesActivity.this);
             LayoutInflater inflater = getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
             DisplayMetrics metrics = new DisplayMetrics();
@@ -196,205 +173,28 @@ public class CustomNicknamesActivity extends Activity {
             Button dialogButton;
             dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
 
-            customizeDialogStyle(dialogButton, global_prefs, alertDialog);
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
         }
         return false;
     };
-
-    private void setColorStyle(SharedPreferences global_prefs) {
-        if (global_prefs.getString("theme", "Light").contains("Light")) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
-                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    TextView app_title = findViewById(R.id.app_title_label);
-                    app_title.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    ImageView app_icon = findViewById(R.id.app_icon_view);
-                    app_icon.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
-                    activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
-                } else {
-                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
-                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.title_v11_transparent));
-                    TextView app_title = findViewById(R.id.app_title_label);
-                    app_title.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    ImageView app_icon = findViewById(R.id.app_icon_view);
-                    app_icon.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
-                    activity_ll.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                }
-            }
-        } else {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
-                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.title_v11_transparent));
-                    TextView app_title = findViewById(R.id.app_title_label);
-                    app_title.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    ImageView app_icon = findViewById(R.id.app_icon_view);
-                    app_icon.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
-                    activity_ll.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                } else {
-                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
-                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    TextView app_title = findViewById(R.id.app_title_label);
-                    app_title.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    ImageView app_icon = findViewById(R.id.app_icon_view);
-                    app_icon.setBackgroundColor(getResources().getColor(R.color.white_75));
-                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
-                    activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
-                }
-            }
-        }
-    }
-
-    private void setCustomTheme(SharedPreferences global_prefs) {
-        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            }
-        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getApplicationContext().getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            }
-        }
-        if (global_prefs.getString("theme", "Light").contains("Light")) {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                setTheme(R.style.IRCClient_Light);
-            } else {
-                setTheme(R.style.IRCClient);
-            }
-        } else {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                setTheme(R.style.IRCClient);
-            } else {
-                setTheme(R.style.IRCClient_Light);
-            }
-        }
-    }
-    private void customizeDialogStyle(Button dialogButton, SharedPreferences global_prefs, AlertDialog alertDialog) {
-        if(global_prefs.getString("theme", "Dark").contains("Light")) {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            } else {
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            }
-        } else {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            } else {
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            }
-        }
-    }
 }

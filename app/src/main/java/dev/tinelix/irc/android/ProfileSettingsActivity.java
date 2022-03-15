@@ -7,22 +7,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.LocaleList;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
-import android.text.Editable;
 import android.text.Html;
-import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 public class ProfileSettingsActivity extends PreferenceActivity
 {
@@ -52,14 +45,10 @@ public class ProfileSettingsActivity extends PreferenceActivity
     public int server_port;
     public String realname_string;
     public String hostname_string;
-    public String quitmsg_string;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        setCustomTheme(global_prefs);
-        setColorStyle(global_prefs);
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.profile_settings);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -94,20 +83,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder;
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        }
-                    } else {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        }
-                    }
+                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -132,8 +108,30 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton = null;
-                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
+                    Button dialogButton;
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
                 }
                 return true;
             }
@@ -149,35 +147,10 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder;
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        }
-                    } else {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        }
-                    }
+                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
                     String current_value = getCurrentValue(current_parameter);
                     String[] auth_methods = getResources().getStringArray(R.array.auth_method);
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getString(R.string.auth_method) + "</b></font>"));
-                        } else {
-                            dialogBuilder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getString(R.string.auth_method) + "</b></font>"));
-                        }
-                    } else {
-                        if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getString(R.string.auth_method) + "</b></font>"));
-                        } else {
-                            dialogBuilder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getString(R.string.auth_method) + "</b></font>"));
-                        }
-                    }
+                    dialogBuilder.setTitle(R.string.auth_method);
                     if(current_value.contains("NickServ")) {
                         dialogBuilder.setSingleChoiceItems(auth_methods, 1,
                                 new DialogInterface.OnClickListener() {
@@ -221,8 +194,30 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton = null;
-                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
+                    Button dialogButton;
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
                 }
                 return true;
             }
@@ -247,20 +242,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment enterPasswordDialogFragm = new EnterPasswordDialogFragm();
                     enterPasswordDialogFragm.show(getFragmentManager(), "enter_password_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder;
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        }
-                    } else {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        }
-                    }
+                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_password_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -274,7 +256,6 @@ public class ProfileSettingsActivity extends PreferenceActivity
                             onChangingValues(current_parameter, profile_name.getText().toString());
                         }
                     });
-
                     dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -286,8 +267,30 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton = null;
-                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
+                    Button dialogButton;
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
                 }
                 return true;
             }
@@ -303,20 +306,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     DialogFragment serverSettingsDialogFragm = new ServerSettingsDialogFragm();
                     serverSettingsDialogFragm.show(getFragmentManager(), "server_settings_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder;
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        }
-                    } else {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        }
-                    }
+                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_server_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -365,7 +355,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     String current_value = new String();
                     server_parameter = "changing_server";
                     current_value = getCurrentValue(server_parameter);
-                    final EditText server_text = dialogView.findViewById(R.id.server_text);
+                    EditText server_text = dialogView.findViewById(R.id.server_text);
                     server_text.setText(current_value);
                     server_parameter = "changing_port";
                     current_value = getCurrentValue(server_parameter);
@@ -391,7 +381,6 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     } else {
                         hide_ip_cb.setChecked(true);
                     }
-                    customizeServerSettingsDialog(global_prefs, dialogView);
                     TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
                     dialog_title.setText(getString(R.string.server_settings));
                     Spinner spinner = dialogView.findViewById(R.id.encoding_spinner);
@@ -404,45 +393,33 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(dialogView.getContext(), spinnerArray);
                     Log.d("Client", "Count: " + spinnerArray.size());
                     spinner.setAdapter(customSpinnerAdapter);
-                    final AlertDialog alertDialog = dialogBuilder.create();
-                    server_text.addTextChangedListener(new TextWatcher() {
-
-                        public void afterTextChanged(Editable s) { }
-
-                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-                        public void onTextChanged(CharSequence s, int start, int before, int count) {
-                            if(server_text.getText().toString().contains(":")) {
-                                server_text.setError(getResources().getString(R.string.text_field_wrong_characters));
-                                ((AlertDialog) alertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-                            } else {
-                                ((AlertDialog) alertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                            }
-                        }
-                    });
+                    AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            server_name.setTextColor(getResources().getColor(R.color.black));
-                            port_number.setTextColor(getResources().getColor(R.color.black));
-                        } else {
-                            server_name.setTextColor(getResources().getColor(R.color.white));
-                            port_number.setTextColor(getResources().getColor(R.color.white));
-                        }
-                    } else {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            server_name.setTextColor(getResources().getColor(R.color.white));
-                            port_number.setTextColor(getResources().getColor(R.color.white));
-                        } else {
-                            server_name.setTextColor(getResources().getColor(R.color.black));
-                            port_number.setTextColor(getResources().getColor(R.color.black));
-                        }
+                    Button dialogButton;
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
                     }
-                    server_name.setPadding(12, 0, 12, 0);
-                    port_number.setPadding(12, 0, 12, 0);
-                    Button dialogButton = null;
-                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
                 }
                 return true;
             }
@@ -454,27 +431,11 @@ public class ProfileSettingsActivity extends PreferenceActivity
             {
                 setResult(Activity.RESULT_OK);
                 current_parameter = "changing_realname";
-                Context context = getApplicationContext();
-                SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
-                realname_string = prefs.getString("realname", "");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder;
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        }
-                    } else {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        }
-                    }
+                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -496,14 +457,34 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     });
                     TextView textAreaTitle = dialogView.findViewById(R.id.profile_name_label);
                     TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
-                    EditText dialog_value = dialogView.findViewById(R.id.profile_name_text);
-                    dialog_value.setText(realname_string);
                     dialog_title.setText(getString(R.string.enter_the_realname_title));
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton = null;
-                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
+                    Button dialogButton;
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
                 }
                 return true;
             }
@@ -515,27 +496,11 @@ public class ProfileSettingsActivity extends PreferenceActivity
             {
                 setResult(Activity.RESULT_OK);
                 current_parameter = "changing_hostname";
-                Context context = getApplicationContext();
-                SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
-                hostname_string = prefs.getString("hostname", "");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
                     enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
                 } else {
-                    final AlertDialog.Builder dialogBuilder;
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        }
-                    } else {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        }
-                    }
+                    final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
                     LayoutInflater inflater = getLayoutInflater();
                     final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -559,75 +524,33 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     textAreaTitle.setText(R.string.hostname);
                     TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
                     dialog_title.setText(getString(R.string.enter_the_hostname_title));
-                    EditText dialog_value = dialogView.findViewById(R.id.profile_name_text);
-                    dialog_value.setText(hostname_string);
                     AlertDialog alertDialog = dialogBuilder.create();
                     alertDialog.getWindow().setGravity(Gravity.BOTTOM);
                     alertDialog.show();
-                    Button dialogButton = null;
-                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
-                }
-                return true;
-            }
-        });
-        Preference quit_msg = (Preference) findPreference("quit_message");
-        quit_msg.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
-        {
-            public boolean onPreferenceClick(Preference pref)
-            {
-                setResult(Activity.RESULT_OK);
-                current_parameter = "changing_quitmsg";
-                Context context = getApplicationContext();
-                SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
-                quitmsg_string = prefs.getString("quit_message", "");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    DialogFragment enterTextDialogFragm = new EnterTextDialogFragm2();
-                    enterTextDialogFragm.show(getFragmentManager(), "enter_text_dlg");
-                } else {
-                    final AlertDialog.Builder dialogBuilder;
-                    if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        }
-                    } else {
-                        if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient));
-                        } else {
-                            dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ProfileSettingsActivity.this, R.style.IRCClient_Light));
-                        }
-                    }
-                    LayoutInflater inflater = getLayoutInflater();
-                    final View dialogView = inflater.inflate(R.layout.enter_text_activity, null);
-                    DisplayMetrics metrics = new DisplayMetrics();
-                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                    dialogView.setMinimumWidth(metrics.widthPixels);
-                    dialogBuilder.setView(dialogView);
-                    dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            EditText profile_name = dialogView.findViewById(R.id.profile_name_text);
-                            onChangingValues(current_parameter, profile_name.getText().toString());
-                        }
-                    });
-                    dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
+                    Button dialogButton;
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
 
-                        }
-                    });
-                    TextView textAreaTitle = dialogView.findViewById(R.id.profile_name_label);
-                    textAreaTitle.setText(R.string.quit_message);
-                    TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
-                    dialog_title.setText(getString(R.string.enter_the_quiting_message));
-                    EditText dialog_value = dialogView.findViewById(R.id.profile_name_text);
-                    dialog_value.setText(quitmsg_string);
-                    AlertDialog alertDialog = dialogBuilder.create();
-                    alertDialog.getWindow().setGravity(Gravity.BOTTOM);
-                    alertDialog.show();
-                    Button dialogButton = null;
-                    customizeDialogStyle(dialogButton, global_prefs, alertDialog);
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
+
+                    dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                    if(dialogButton != null) {
+                        dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                        dialogButton.setTextColor(getResources().getColor(R.color.white));
+                        dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                    }
                 }
                 return true;
             }
@@ -635,13 +558,11 @@ public class ProfileSettingsActivity extends PreferenceActivity
         Context context = getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
         auth_method_string = prefs.getString("auth_method", "");
-        if(auth_method_string.contains("NickServ")) {
+        if(auth_method_string == "NickServ") {
             auth_method.setSummary("NickServ");
-            password.setEnabled(true);
         } else {
             String[] auth_methods = getResources().getStringArray(R.array.auth_method);
             auth_method.setSummary(auth_methods[0]);
-            password.setEnabled(false);
         };
         server_name = prefs.getString("server", "");
         server_port = prefs.getInt("port", 0);
@@ -650,222 +571,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
         };
         realname_string = prefs.getString("realname", "");
         hostname_string = prefs.getString("hostname", "");
-        quitmsg_string = prefs.getString("quit_message", "");
         realname.setSummary(realname_string);
         hostname.setSummary(hostname_string);
-        quit_msg.setSummary(quitmsg_string);
-    }
-
-    private void customizeServerSettingsDialog(SharedPreferences global_prefs, View dialogView) {
-        EditText server_name = dialogView.findViewById(R.id.server_text);
-        EditText port_edit = dialogView.findViewById(R.id.port_numb);
-        Spinner spinner = dialogView.findViewById(R.id.encoding_spinner);
-
-        if (global_prefs.getString("theme", "Dark").contains("Light")) {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                server_name.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea_light));
-                server_name.setTextColor(getResources().getColor(R.color.black));
-                server_name.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_Light_TextArea);
-            } else {
-                server_name.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea));
-                server_name.setTextColor(getResources().getColor(R.color.white));
-                server_name.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_TextArea);
-            }
-        } else {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                server_name.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea));
-                server_name.setTextColor(getResources().getColor(R.color.white));
-                server_name.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_TextArea);
-            } else {
-                server_name.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea_light));
-                server_name.setTextColor(getResources().getColor(R.color.black));
-                server_name.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_Light_TextArea);
-            }
-        }
-        if (global_prefs.getString("theme", "Dark").contains("Light")) {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                port_edit.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea_light));
-                port_edit.setTextColor(getResources().getColor(R.color.black));
-                port_edit.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_Light_TextArea);
-            } else {
-                port_edit.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea));
-                port_edit.setTextColor(getResources().getColor(R.color.white));
-                port_edit.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_TextArea);
-            }
-        } else {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                port_edit.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea));
-                port_edit.setTextColor(getResources().getColor(R.color.white));
-                port_edit.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_TextArea);
-            } else {
-                port_edit.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_textarea_light));
-                port_edit.setTextColor(getResources().getColor(R.color.black));
-                port_edit.setTextAppearance(ProfileSettingsActivity.this, R.style.IRCClient_Light_TextArea);
-            }
-        }
-        if (global_prefs.getString("theme", "Dark").contains("Light")) {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner_light));
-            } else {
-                spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner));
-            }
-        } else {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner));
-            } else {
-                spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner_light));
-            }
-        }
-    }
-
-    private void setCustomTheme(SharedPreferences global_prefs) {
-        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            }
-        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getResources().updateConfiguration(config,
-                        getApplicationContext().getResources().getDisplayMetrics());
-            }
-        }
-        if (global_prefs.getString("theme", "Light").contains("Light")) {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                setTheme(R.style.IRCClient_Light);
-            } else {
-                setTheme(R.style.IRCClient);
-            }
-        } else {
-            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                setTheme(R.style.IRCClient);
-            } else {
-                setTheme(R.style.IRCClient_Light);
-            }
-        }
-    }
-
-    private void customizeDialogStyle(Button dialogButton, SharedPreferences global_prefs, AlertDialog alertDialog) {
-        if(global_prefs.getString("theme", "Dark").contains("Light")) {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            } else {
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            }
-        } else {
-            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                    dialogButton.setTextColor(getResources().getColor(R.color.white));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            } else {
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.black));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-                if (dialogButton != null) {
-                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
-                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-                }
-            }
-        }
     }
 
     private void showNicknamesActivity(String profile_name) {
@@ -890,7 +597,6 @@ public class ProfileSettingsActivity extends PreferenceActivity
             prof_name.setSummary(old_profile_name);
         } else if(parameter == "changing_auth_method") {
             Preference auth_method = (Preference) findPreference("auth_method");
-            Preference password = (Preference) findPreference("password");
             Context context = getApplicationContext();
             SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
             SharedPreferences.Editor editor = prefs.edit();
@@ -898,10 +604,8 @@ public class ProfileSettingsActivity extends PreferenceActivity
             editor.putString("auth_method", value);
             if(value == "Disabled") {
                 auth_method.setSummary(auth_methods[0]);
-                password.setEnabled(false);
             } else {
                 auth_method.setSummary(value);
-                password.setEnabled(true);
             }
             editor.commit();
         } else if (parameter == "changing_nicknames") {
@@ -933,14 +637,6 @@ public class ProfileSettingsActivity extends PreferenceActivity
             editor.putString("hostname", value);
             editor.commit();
             hostname.setSummary(value);
-        } else if (parameter == "changing_quitmsg") {
-            Preference quit_msg = (Preference) findPreference("quit_message");
-            Context context = getApplicationContext();
-            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("quit_message", value);
-            editor.commit();
-            quit_msg.setSummary(value);
         }
     }
 
@@ -982,10 +678,6 @@ public class ProfileSettingsActivity extends PreferenceActivity
             Context context = getApplicationContext();
             SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
             value = prefs.getString("hide_ip", "");
-        } else if(parameter == "changing_quitmsg") {
-            Context context = getApplicationContext();
-            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
-            value = prefs.getString("quit_message", "");
         } else {
             value = "";
         };
@@ -1006,31 +698,6 @@ public class ProfileSettingsActivity extends PreferenceActivity
         editor.putString("hide_ip", hide_ip);
         editor.commit();
     }
-
-    public void setColorStyle(SharedPreferences global_prefs) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            if (global_prefs.getString("theme", "Dark").contains("Light")) {
-                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                    getListView().setBackgroundColor(getResources().getColor(R.color.white));
-                    getListView().setCacheColorHint(getResources().getColor(R.color.white));
-                } else {
-                    getListView().setBackgroundColor(getResources().getColor(R.color.black));
-                    getListView().setCacheColorHint(getResources().getColor(R.color.black));
-                }
-            } else {
-                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
-                    getListView().setBackgroundColor(getResources().getColor(R.color.black));
-                    getListView().setCacheColorHint(getResources().getColor(R.color.black));
-                } else {
-                    getListView().setBackgroundColor(getResources().getColor(R.color.white));
-                    getListView().setCacheColorHint(getResources().getColor(R.color.white));
-                }
-            }
-        }
-    }
-
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

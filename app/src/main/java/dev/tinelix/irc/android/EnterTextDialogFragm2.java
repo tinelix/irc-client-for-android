@@ -5,17 +5,12 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import java.util.Locale;
 
 @SuppressLint("NewApi")
 public class EnterTextDialogFragm2 extends DialogFragment {
@@ -24,8 +19,6 @@ public class EnterTextDialogFragm2 extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        setLocale(global_prefs);
         current_parameter = ((ProfileSettingsActivity) getActivity()).getCurrentParameter();
         String current_value;
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -139,66 +132,7 @@ public class EnterTextDialogFragm2 extends DialogFragment {
                     return;
                 }
             });
-        } else if(current_parameter == "changing_quitmsg") {
-            current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(current_parameter);
-            LayoutInflater inflater = getActivity().getLayoutInflater();
-            final View view = inflater.inflate(R.layout.enter_text_activity, null);
-            builder.setView(view);
-            builder.setTitle(R.string.enter_the_quiting_message);
-            TextView quitmsgname_label = view.findViewById(R.id.profile_name_label);
-            quitmsgname_label.setText(R.string.quit_message);
-            EditText quitmsgname_text = view.findViewById(R.id.profile_name_text);
-            quitmsgname_text.setText(current_value);
-            builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    EditText profile_name = view.findViewById(R.id.profile_name_text);
-                    ((ProfileSettingsActivity) getActivity()).onChangingValues(current_parameter, profile_name.getText().toString());
-                }
-            });
-            builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    return;
-                }
-            });
         }
         return builder.create();
-    }
-
-    private void setLocale(SharedPreferences global_prefs) {
-        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            }
-        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            }
-        }
     }
 }

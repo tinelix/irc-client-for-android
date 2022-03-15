@@ -5,15 +5,10 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-
-import java.util.Locale;
 
 @SuppressLint("NewApi")
 public class EnterPasswordDialogFragm extends DialogFragment {
@@ -22,8 +17,6 @@ public class EnterPasswordDialogFragm extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        setLocale(global_prefs);
         current_parameter = ((ProfileSettingsActivity) getActivity()).getCurrentParameter();
         String current_value;
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -47,41 +40,5 @@ public class EnterPasswordDialogFragm extends DialogFragment {
             });
         };
         return builder.create();
-    }
-
-    private void setLocale(SharedPreferences global_prefs) {
-        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            }
-        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
-            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
-                Locale locale = new Locale("en_US");
-                Locale.setDefault(locale);
-                Configuration config = new Configuration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            } else {
-                Locale locale = new Locale("ru");
-                Locale.setDefault(locale);
-                Configuration config = getResources().getConfiguration();
-                config.locale = locale;
-                getActivity().getResources().updateConfiguration(config,
-                        getActivity().getResources().getDisplayMetrics());
-            }
-        }
     }
 }
