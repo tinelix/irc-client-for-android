@@ -1,6 +1,8 @@
 package dev.tinelix.irc.android;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Notification;
@@ -11,31 +13,61 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.LocaleList;
+import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.Html;
+import android.text.InputType;
+import android.text.method.KeyListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.ContextMenu;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RemoteViews;
+import android.widget.Spinner;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.math.RoundingMode;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -43,19 +75,27 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.channels.IllegalBlockingModeException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.zip.Inflater;
+
+import static java.lang.System.out;
+import static java.lang.Thread.sleep;
 
 public class ThreadActivity extends Activity {
 
     public Socket socket;
     public boolean isConnected;
     public InputStream input;
+    public OutputStream output;
     Handler updateConversationHandler;
     public String profile_name;
     public String server;
@@ -70,33 +110,138 @@ public class ThreadActivity extends Activity {
     public byte[] socket_data_bytes;
     public int port;
     private EditText socks_msg_text;
+    public EditText output_msg_text;
     public byte[] socket_data = new byte[1<<12];
     public String socket_data_string;
+    public String raw_socket_data_string;
     private Timer timer;
     private UpdateUITask updateUITask;
     public String state;
     public String encoding;
     public String channel;
+    public String current_channel;
     public String password;
     public String auth_method;
     public String hide_ip;
+    public String quit_msg;
     public int sended_bytes_count;
     public int received_bytes_count;
     public String messageAuthor;
     public String messageBody;
     public boolean isMentioned;
     public String sendingMsgText;
+    public AlertDialog connectionDialog;
+    public Date dt;
+    public boolean autoscroll_needed;
+    public Menu thread_menu;
+    public TabHost tabHost;
+    public List<StringBuilder> channels_sb = new LinkedList<StringBuilder>();
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        setCustomTheme(global_prefs);
         setContentView(R.layout.thread_activity);
+        setColorStyle(global_prefs);
+        dt = new Date(System.currentTimeMillis());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getActionBar().setHomeButtonEnabled(true);
         }
+        channel = new String();
+        current_channel = new String();
+        for (int ch_index = 0; ch_index < 128; ch_index++) {
+            channels_sb.add(ch_index, new StringBuilder());
+        }
+        autoscroll_needed = true;
         socks_msg_text = findViewById(R.id.sock_msg_text);
         socks_msg_text.setKeyListener(null);
-        final EditText output_msg_text = findViewById(R.id.output_msg_text);
+        socks_msg_text.setLongClickable(true);
+        socks_msg_text.setTypeface(Typeface.MONOSPACE);
+        socks_msg_text.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_SCROLL:
+                        autoscroll_needed = false;
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
+                            go_down.setVisible(true);
+                        } else {
+                            Button go_down_btn = findViewById(R.id.go_down_button);
+                            go_down_btn.setVisibility(View.VISIBLE);
+                        }
+                }
+                return false;
+            }
+        });
+        socks_msg_text.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                autoscroll_needed = false;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
+                    go_down.setVisible(true);
+                } else {
+                    Button go_down_btn = findViewById(R.id.go_down_button);
+                    go_down_btn.setVisibility(View.VISIBLE);
+                }
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.autoscroll_is_disabled), Toast.LENGTH_LONG).show();
+                return false;
+            }
+        });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            socks_msg_text.setTextIsSelectable(true);
+        }
+        if(global_prefs.getInt("font_size", 0) >= 12) {
+            socks_msg_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, global_prefs.getInt("font_size", 0));
+        }
+        EditText channel_socks_msg = findViewById(R.id.channels_msg_text);
+        channel_socks_msg.setKeyListener(null);
+        channel_socks_msg.setLongClickable(true);
+        channel_socks_msg.setTypeface(Typeface.MONOSPACE);
+        channel_socks_msg.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_SCROLL:
+                        autoscroll_needed = false;
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
+                            go_down.setVisible(true);
+                        } else {
+                            Button go_down_btn = findViewById(R.id.go_down_button);
+                            go_down_btn.setVisibility(View.VISIBLE);
+                        }
+                }
+                return false;
+            }
+        });
+        channel_socks_msg.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                autoscroll_needed = false;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
+                    go_down.setVisible(true);
+                } else {
+                    Button go_down_btn = findViewById(R.id.go_down_button);
+                    go_down_btn.setVisibility(View.VISIBLE);
+                }
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.autoscroll_is_disabled), Toast.LENGTH_LONG).show();
+                return false;
+            }
+        });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            channel_socks_msg.setTextIsSelectable(true);
+        }
+        if(global_prefs.getInt("font_size", 0) >= 12) {
+            channel_socks_msg.setTextSize(TypedValue.COMPLEX_UNIT_SP, global_prefs.getInt("font_size", 0));
+        }
+        output_msg_text = findViewById(R.id.output_msg_text);
+        Spinner channels_spinner = findViewById(R.id.channels_spinner);
+
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if(extras == null) {
@@ -107,19 +252,44 @@ public class ThreadActivity extends Activity {
         } else {
             profile_name = (String) savedInstanceState.getSerializable("profile_name");
         };
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(profile_name, 0);
         if (timer != null) {
             timer.cancel();
+        }
+        if(profile_name == null) {
+            socket = null;
+            finish();
+            return;
         }
 
         updateUITask = new UpdateUITask();
         sendingMsgText = new String();
 
         final Context context = getApplicationContext();
-        SharedPreferences prefs = context.getSharedPreferences(profile_name, 0);
         server = prefs.getString("server", "");
         port = prefs.getInt("port", 0);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             getActionBar().setSubtitle(server + ":" + port);
+        } else {
+            Log.i("Client", "\r\nProfile Info:\r\n\r\nPROFILE NAME: [" + profile_name + "]\r\nSERVER: [" + server + "]\r\nPORT: " + port);
+        }
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            TextView app_summary = findViewById(R.id.app_summary_text);
+            app_summary.setText(server + ":" + port);
+            final Button go_down_btn = findViewById(R.id.go_down_button);
+            go_down_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    autoscroll_needed = true;
+                    if(tabHost.getCurrentTab() == 0) {
+                        socks_msg_text.setSelection(socks_msg_text.getText().length());
+                    } else if(tabHost.getCurrentTab() == 1) {
+                        EditText channel_socks_msg = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                        channel_socks_msg.setSelection(channel_socks_msg.getText().length());
+                    }
+                    go_down_btn.setVisibility(View.GONE);
+                }
+            });
         }
         nicknames = prefs.getString("nicknames", "");
         auth_method = prefs.getString("auth_method", "");
@@ -128,12 +298,60 @@ public class ThreadActivity extends Activity {
         realname = prefs.getString("realname", "");
         encoding = prefs.getString("encoding", "");
         hide_ip = prefs.getString("hide_ip", "");
+        quit_msg = prefs.getString("quit_message", "");
         if(hostname.length() <= 2) {
             hostname = nicknames.split(", ")[0];
         }
-        if(hostname.length() <= 2) {
+        if(realname.length() <= 2) {
             realname = "Member";
         }
+
+        tabHost = (TabHost) findViewById(R.id.thread_tabs_host);
+        tabHost.setup();
+        TabHost.TabSpec tabSpec = tabHost.newTabSpec("thread");
+        tabSpec.setContent(R.id.thread_tab);
+        tabSpec.setIndicator(getResources().getString(R.string.thread_category));
+        tabHost.addTab(tabSpec);
+        tabHost.setCurrentTab(0);
+        tabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String s) {
+                tabHost.setCurrentTab(tabHost.getCurrentTab());
+            }
+        });
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            View view = tabHost.getTabWidget().getChildAt(0);
+            view.setBackgroundResource(R.drawable.tabwidget);
+            if (view != null) {
+                Log.d("Client", "TabWidget View");
+                tabHost.getTabWidget().getChildAt(0).getLayoutParams().height = (int) (30 * getResources().getDisplayMetrics().density);
+                View tabImage = view.findViewById(android.R.id.icon);
+                if (tabImage != null) {
+                    tabImage.setVisibility(View.GONE);
+                    Log.d("Client", "TabIcon View");
+                } else {
+                    Log.e("Client", "TabImage View is null");
+                }
+                TextView tabTitle = (TextView) view.findViewById(android.R.id.title);
+                if (tabTitle != null) {
+                    Log.d("Client", "TabTitle View");
+                    tabTitle.setGravity(Gravity.CENTER);
+                    ViewGroup parent = (ViewGroup) tabTitle.getParent();
+                    parent.removeView(tabTitle);
+                    parent.addView(tabTitle);
+                    ViewGroup.LayoutParams params = tabTitle.getLayoutParams();
+                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                } else {
+                    Log.e("Client", "TabTitle View is null");
+                }
+            } else {
+                Log.e("Client", "TabWidget View is null");
+            }
+        }
+
+        tabSpec = tabHost.newTabSpec("thread");
+
         new Thread(new ircThread()).start();
         ImageButton send_btn = findViewById(R.id.send_button);
         send_btn.setOnClickListener(new View.OnClickListener() {
@@ -151,6 +369,7 @@ public class ThreadActivity extends Activity {
                 }
             }
         });
+
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             ImageButton menu_button = findViewById(R.id.menu_button);
             menu_button.setOnClickListener(new View.OnClickListener() {
@@ -160,29 +379,137 @@ public class ThreadActivity extends Activity {
                 }
             });
         }
+        AlertDialog.Builder builder;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            builder = new AlertDialog.Builder(this);
+        } else {
+            if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                }
+            } else {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                }
+            }
+        }
+        LayoutInflater inflater = getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.progress_activity, null);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            dialogView.setMinimumWidth(metrics.widthPixels);
+        }
+        TextView progressText = dialogView.findViewById(R.id.progress_text);
+        progressText.setText(getString(R.string.connection_progress, server + ":" + port));
+        builder.setView(dialogView);
+        connectionDialog = builder.create();
+        connectionDialog.setCancelable(false);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            connectionDialog.getWindow().setGravity(Gravity.BOTTOM);
+        }
+        connectionDialog.show();
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            Button dialogButton;
+            dialogButton = connectionDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = connectionDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+
+            dialogButton = connectionDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+            if(dialogButton != null) {
+                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                dialogButton.setTextColor(getResources().getColor(R.color.white));
+                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }
+        }
+    }
+
+    private void setColorStyle(SharedPreferences global_prefs) {
+        if (global_prefs.getString("theme", "Light").contains("Light")) {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                EditText socks_msg_text = findViewById(R.id.sock_msg_text);
+                socks_msg_text.setTextColor(getResources().getColor(R.color.black));
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                    LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
+                    app_title_bar.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    TextView app_title = findViewById(R.id.app_title_label);
+                    app_title.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    ImageView app_icon = findViewById(R.id.app_icon_view);
+                    app_icon.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    LinearLayout activity_ll = findViewById(R.id.activity_ll);
+                    activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
+                    socks_msg_text.setBackgroundColor(getResources().getColor(R.color.white_75));
+                    EditText sended_msg_area = findViewById(R.id.output_msg_text);
+                    sended_msg_area.setTextColor(getResources().getColor(R.color.black));
+                    Spinner channels_spinner = findViewById(R.id.channels_spinner);
+                    channels_spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner_light));
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if(global_prefs.getInt("font_size", 0) >= 12) {
+            socks_msg_text.setTextSize(TypedValue.COMPLEX_UNIT_SP, global_prefs.getInt("font_size", 0));
+        }
+        super.onResume();
     }
 
     @Override
     public void onBackPressed() {
         AlertDialog alertDialog;
         AlertDialog.Builder builder;
+        final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             builder = new AlertDialog.Builder(this);
+            builder.setTitle(getResources().getString(R.string.quit_session_title));
+            builder.setMessage(getResources().getString(R.string.quit_session_msg));
         } else {
-            builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.IRCClient));
+            if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                    builder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getResources().getString(R.string.quit_session_title) + "</b></font>"));
+                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</font>"));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                    builder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_title) + "</b></font>"));
+                    builder.setMessage(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_msg) + "</font>"));
+                }
+            } else {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                    builder.setTitle(Html.fromHtml("<font color='#ffffff'><b>" + getResources().getString(R.string.quit_session_title) + "</b></font>"));
+                    builder.setMessage(Html.fromHtml("<font color='#ffffff'>" + getResources().getString(R.string.quit_session_msg) + "</font>"));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                    builder.setTitle(Html.fromHtml("<font color='#000000'><b>" + getResources().getString(R.string.quit_session_title) + "</b></font>"));
+                    builder.setMessage(Html.fromHtml("<font color='#000000'>" + getResources().getString(R.string.quit_session_msg) + "</font>"));
+                }
+            }
         }
-        builder.setTitle(R.string.quit_session_title);
-        builder.setMessage(R.string.quit_session_msg);
         builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                socket = null;
-                finish();
+                sendQuitMessage();
             }
         });
         builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
@@ -194,31 +521,21 @@ public class ThreadActivity extends Activity {
         alertDialog = builder.create();
         alertDialog.show();
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            Button dialogButton;
-            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
-
-            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
-
-            dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
+            Button dialogButton = null;
+            customizeDialogStyle(dialogButton, global_prefs, alertDialog);
         }
+    }
+
+    private void sendQuitMessage() {
+        if(tabHost.getCurrentTab() == 0) {
+            output_msg_text.setText("/quit");
+        } else {
+            EditText channel_output_msg = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_output_msg_text);
+            channel_output_msg.setText("/quit");
+        }
+        sendingMsgText = "/quit";
+        state = "sending_message";
+        new Thread(new SendSocketMsg()).start();
     }
 
     @Override
@@ -229,6 +546,7 @@ public class ThreadActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.thread_menu, menu);
+        thread_menu = menu;
         return true;
     }
 
@@ -245,15 +563,37 @@ public class ThreadActivity extends Activity {
             return true;
         } else if (id == R.id.about_application_item) {
             showAboutApplication();
+        } else if (id == R.id.connection_manager_item) {
+            showConnectionManager();
+        } else if (id == R.id.settings_item) {
+            showMainSettings();
         } else if(id == R.id.disconnect_item) {
             onBackPressed();
+        } else if(id == R.id.go_down_item) {
+            if(tabHost.getCurrentTab() == 0) {
+                socks_msg_text.setSelection(socks_msg_text.getText().length());
+            } else if(tabHost.getCurrentTab() == 1) {
+                EditText channel_socks_msg = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                channel_socks_msg.setSelection(channel_socks_msg.getText().length());
+            }
+            autoscroll_needed = true;
+            MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
+            go_down.setVisible(false);
+
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void showConnectionManager() {
+        Intent intent = new Intent(ThreadActivity.this, ConnectionManagerActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
     private void showAboutApplication() {
-        Intent intent = new Intent(this, AboutApplicationActivity.class);
+        Intent intent = new Intent(ThreadActivity.this, AboutApplicationActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
@@ -262,9 +602,37 @@ public class ThreadActivity extends Activity {
             DialogFragment statsDialogFragm = new StatisticsFragm();
             statsDialogFragm.show(getFragmentManager(), "stats_dialog");
         } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.IRCClient));
+            final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            AlertDialog.Builder builder;
+            if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                }
+            } else {
+                if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient));
+                } else {
+                    builder = new AlertDialog.Builder(new ContextThemeWrapper(ThreadActivity.this, R.style.IRCClient_Light));
+                }
+            }
             LayoutInflater inflater = getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.statistics_activity, null);
+            TextView session_label = dialogView.findViewById(R.id.session_label);
+            if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    session_label.setTextColor(getResources().getColor(R.color.black));
+                } else {
+                    session_label.setTextColor(getResources().getColor(R.color.white));
+                }
+            } else {
+                if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                    session_label.setTextColor(getResources().getColor(R.color.white));
+                } else {
+                    session_label.setTextColor(getResources().getColor(R.color.black));
+                }
+            }
             DisplayMetrics metrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(metrics);
             dialogView.setMinimumWidth(metrics.widthPixels);
@@ -283,30 +651,43 @@ public class ThreadActivity extends Activity {
             TextView total_bytes_label = dialogView.findViewById(R.id.total_label2);
             TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
             dialog_title.setText(getString(R.string.statistics_item));
+            DecimalFormat dF = new DecimalFormat("#.00");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+                dF.setRoundingMode(RoundingMode.DOWN);
+            }
             if (sended_bytes > 1073741824) {
-                sended_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (float)(sended_bytes / 1073741824))));
+                String sended_bytes_rounded = dF.format((sended_bytes / 1073741824));
+                sended_bytes_label.setText(getString(R.string.gbytes_stats, sended_bytes_rounded));
             } else if(sended_bytes > 1048576) {
-                sended_bytes_label.setText(getString(R.string.mbytes_stats, String.format("%.2f", (float)(sended_bytes / 1048576))));
+                String sended_bytes_rounded = dF.format((sended_bytes / 1048576));
+                sended_bytes_label.setText(getString(R.string.mbytes_stats, sended_bytes_rounded));
             } else if(sended_bytes > 1024) {
-                sended_bytes_label.setText(getString(R.string.kbytes_stats, String.format("%.2f", (float)(sended_bytes / 1024))));
+                String sended_bytes_rounded = dF.format((sended_bytes / 1024));
+                sended_bytes_label.setText(getString(R.string.kbytes_stats, sended_bytes_rounded));
             } else {
                 sended_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(sended_bytes)));
             }
             if (received_bytes > 1073741824) {
-                received_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (float)(received_bytes / 1073741824))));
+                String received_bytes_rounded = dF.format((received_bytes / 1073741824));
+                received_bytes_label.setText(getString(R.string.gbytes_stats, received_bytes_rounded));
             } else if(received_bytes > 1048576) {
-                received_bytes_label.setText(getString(R.string.mbytes_stats, String.format("%.2f", (float)(received_bytes / 1048576))));
+                String received_bytes_rounded = dF.format((received_bytes / 1048576));
+                received_bytes_label.setText(getString(R.string.mbytes_stats, received_bytes_rounded));
             } else if(received_bytes > 1024) {
-                received_bytes_label.setText(getString(R.string.kbytes_stats, String.format("%.2f", (float)(received_bytes / 1024))));
+                String received_bytes_rounded = dF.format((received_bytes / 1024));
+                received_bytes_label.setText(getString(R.string.kbytes_stats, received_bytes_rounded));
             } else {
                 received_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(received_bytes)));
             }
             if (total_bytes > 1073741824) {
-                total_bytes_label.setText(getString(R.string.gbytes_stats, String.format("%.2f", (double)(total_bytes / 1073741824))));
+                String total_bytes_rounded = dF.format((total_bytes / 1073741824));
+                total_bytes_label.setText(getString(R.string.gbytes_stats, total_bytes_rounded));
             } else if(total_bytes > 1048576) {
-                total_bytes_label.setText(getString(R.string.mbytes_stats, String.format("%.2f", (double)(total_bytes / 1048576))));
+                String total_bytes_rounded = dF.format((total_bytes / 1048576));
+                total_bytes_label.setText(getString(R.string.mbytes_stats, total_bytes_rounded));
             } else if(total_bytes > 1024) {
-                total_bytes_label.setText(getString(R.string.kbytes_stats, String.format("%.2f", (double)(total_bytes / 1024))));
+                String total_bytes_rounded = dF.format((total_bytes / 1024));
+                total_bytes_label.setText(getString(R.string.kbytes_stats, total_bytes_rounded));
             } else {
                 total_bytes_label.setText(getString(R.string.bytes_stats, Integer.toString(total_bytes)));
             }
@@ -314,31 +695,179 @@ public class ThreadActivity extends Activity {
             statisticsDlg.getWindow().setGravity(Gravity.BOTTOM);
             statisticsDlg.show();
 
-            Button dialogButton;
-            dialogButton = statisticsDlg.getButton(DialogInterface.BUTTON_POSITIVE);
+            Button dialogButton = null;
+            customizeDialogStyle(dialogButton, global_prefs, statisticsDlg);
+        }
+    }
 
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.orange));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+    private void setCustomTheme(SharedPreferences global_prefs) {
+        if(global_prefs.getString("language", "OS dependent").contains("Russian")) {
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
             }
-
-            dialogButton = statisticsDlg.getButton(DialogInterface.BUTTON_NEGATIVE);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            }
-
-            dialogButton = statisticsDlg.getButton(DialogInterface.BUTTON_NEUTRAL);
-
-            if(dialogButton != null) {
-                dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
-                dialogButton.setTextColor(getResources().getColor(R.color.white));
-                dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+        } else if (global_prefs.getString("language", "OS dependent").contains("English")) {
+            if(global_prefs.getBoolean("language_requires_restart", false) == false) {
+                Locale locale = new Locale("en_US");
+                Locale.setDefault(locale);
+                Configuration config = new Configuration();
+                config.locale = locale;
+                getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
+            } else {
+                Locale locale = new Locale("ru");
+                Locale.setDefault(locale);
+                Configuration config = getResources().getConfiguration();
+                config.locale = locale;
+                getResources().updateConfiguration(config,
+                        getApplicationContext().getResources().getDisplayMetrics());
             }
         }
+        if (global_prefs.getString("theme", "Light").contains("Light")) {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                setTheme(R.style.IRCClient_Light);
+            } else {
+                setTheme(R.style.IRCClient);
+            }
+        } else {
+            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                setTheme(R.style.IRCClient);
+            } else {
+                setTheme(R.style.IRCClient_Light);
+            }
+        }
+    }
+
+    private void customizeDialogStyle(Button dialogButton, SharedPreferences global_prefs, AlertDialog alertDialog) {
+        if(global_prefs.getString("theme", "Dark").contains("Light")) {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            } else {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            }
+        } else {
+            if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
+                    dialogButton.setTextColor(getResources().getColor(R.color.white));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            } else {
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.black));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+                dialogButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                if (dialogButton != null) {
+                    dialogButton.setBackgroundColor(getResources().getColor(R.color.white));
+                    dialogButton.setTextColor(getResources().getColor(R.color.orange));
+                    dialogButton.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                }
+            }
+        }
+    }
+
+    private void showMainSettings() {
+        Intent intent = new Intent(ThreadActivity.this, MainSettingsActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(profile_name != null) {
+            SharedPreferences prefs = getApplicationContext().getSharedPreferences(profile_name, 0);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("connected", false);
+            editor.commit();
+            SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            editor = global_prefs.edit();
+            editor.putBoolean("connected", false);
+            editor.commit();
+        }
+        super.onDestroy();
     }
 
     public int getSendedBytes() {
@@ -353,31 +882,41 @@ public class ThreadActivity extends Activity {
         @Override
         public void run() {
             try {
+                final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 socket = new Socket();
+                state = "connecting";
                 Log.d("Client", "Getting IP address from " + server + ":" + port + "...");
                 InetAddress serverAddr = InetAddress.getByName(server);
                 SocketAddress socketAddress = new InetSocketAddress(serverAddr, port);
                 Log.d("Client", "Connecting to " + server + ":" + port + "...");
-                socket.connect(socketAddress);
+                socket.connect(socketAddress, 30000);
+                socket.setKeepAlive(true);
+                while(state == "connecting") {
+                    if (socket.isConnected()) {
+                        updateUITask.run();
+                        sleep(50);
+                    }
+                }
                 input = socket.getInputStream();
-                socket.getOutputStream().write(("USER " + nicknames.split(", ")[0] + " " +
+                output = socket.getOutputStream();
+                output.write(("USER " + nicknames.split(", ")[0] + " " +
                         hostname + " " + nicknames.split(", ")[0] + " :" +
                         realname + "\r\n").getBytes(encoding));
-                socket.getOutputStream().flush();
+                output.flush();
                 sended_bytes_count += ("USER " + nicknames.split(", ")[0] + " " +
                         hostname + " " + nicknames.split(", ")[0] + " :" +
                         realname + "\r\n").getBytes(encoding).length;
-                socket.getOutputStream().write(("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes(encoding));
-                socket.getOutputStream().flush();
+                output.write(("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes(encoding));
+                output.flush();
                 sended_bytes_count += ("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes(encoding).length;
                 if(password.length() > 0 && auth_method.startsWith("NickServ")) {
-                    socket.getOutputStream().write(("NICKSERV identify " + password + "\r\n").getBytes(encoding));
-                    socket.getOutputStream().flush();
+                    output.write(("NICKSERV identify " + password + "\r\n").getBytes(encoding));
+                    output.flush();
                     sended_bytes_count += ("NICKSERV identify " + password + "\r\n").getBytes(encoding).length;
                 }
                 if(hide_ip.startsWith("Enabled")) {
-                    socket.getOutputStream().write(("MODE " + nicknames.split(", ")[0] + " +x\r\n").getBytes(encoding));
-                    socket.getOutputStream().flush();
+                    output.write(("MODE " + nicknames.split(", ")[0] + " +x\r\n").getBytes(encoding));
+                    output.flush();
                     sended_bytes_count += ("MODE " + nicknames.split(", ")[0] + " +x\r\n").getBytes(encoding).length;
                 }
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), encoding));
@@ -390,16 +929,25 @@ public class ThreadActivity extends Activity {
                 msg = new StringBuilder();
                 while(socket.isConnected() == true) {
                     if(in.ready() == true) {
+                        sleep(10);
                         response = in.readLine();
+                        raw_socket_data_string = response;
                         received_bytes_count += response.length();
                         if (response.startsWith("PING")) {
-                            socket.getOutputStream().write(("PONG " + response.split(" ")[1]).getBytes(encoding));
+                            output.write(("PONG " + response.split(" ")[1]).getBytes(encoding));
+                            output.flush();
                             sended_bytes_count += ("PONG " + response.split(" ")[1]).getBytes(encoding).length;
                         }
                         if(response != null) {
-                            String parsedString = parser.parseString(response, true);
+                            String parsedString;
+                            if(global_prefs.getBoolean("show_timestamps_in_msgs", true) == true) {
+                                parsedString = parser.parseString(response, true);
+                            } else {
+                                parsedString = parser.parseString(response, false);
+                            }
                             messageBody = parser.getMessageBody(response);
                             messageAuthor = parser.getMessageAuthor(response);
+                            current_channel = parser.getChannel(response);
                             if(parsedString.length() > 0) {
                                 msg.append(parsedString).append("\n");
                                 socket_data_string = msg.toString();
@@ -446,6 +994,8 @@ public class ThreadActivity extends Activity {
                     e.printStackTrace();
                 }
                 socket = null;
+                state = "no_connection";
+                updateUITask.run();
             } catch (IllegalArgumentException iaEx) {
                 Log.e("Socket", "IllegalArgumentException");
                 try {
@@ -454,8 +1004,20 @@ public class ThreadActivity extends Activity {
                     e.printStackTrace();
                 }
                 socket = null;
+                state = "no_connection";
+                updateUITask.run();
+            } catch (ConnectException Ex) {
+                Log.e("Socket", "ConnectException");
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                socket = null;
+                state = "no_connection";
+                updateUITask.run();
             } catch (IOException ioEx) {
-                Log.e("Socket", "IOException");
+                ioEx.printStackTrace();
             } catch (Exception ex) {
                 try {
                     if(socket != null) {
@@ -478,11 +1040,41 @@ public class ThreadActivity extends Activity {
                 state = "sending_message";
                 while(state == "sending_message") {
                     updateUITask.run();
+                    try {
+                        sleep(50);
+                        state = "finishing_sending_message";
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
                 if(sendingMsgText.length() > 0) {
                     try {
-                        socket.getOutputStream().write((sendingMsgText).getBytes(encoding));
-                        socket.getOutputStream().flush();
+                        if(sendingMsgText.startsWith("QUIT")) {
+                            Timer shutdownTimer = new Timer();
+                            shutdownTimer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        socket.close();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    socket = null;
+                                    finish();
+                                }
+                            }, 1000);
+                        }
+                        if(socket.isConnected() == true && state == "finishing_sending_message") {
+                            PrintWriter out;
+                            out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output)));
+                            Log.i("Client", "Sending message...\r\n\r\nMESSAGE: [" + sendingMsgText.replace("\r", "\\r").replace("\n", "\\n") + "]");
+                            out.println(new String((sendingMsgText).getBytes(encoding), encoding));
+                            Log.i("Client", "Clearing output stream...");
+                            out.flush();
+                            Log.i("Client", "\r\nSended message!");
+                            state = "sended_message";
+                            updateUITask.run();
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -499,64 +1091,445 @@ public class ThreadActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    if(current_channel.length() > 0 && channelsArray.size() > 0 && tabHost.getTabWidget().getTabCount() > 1) {
+                        socks_msg_text = findViewById(R.id.sock_msg_text);
+                        for(int ch_index = 0; ch_index < channelsArray.size(); ch_index++) {
+                            if(channelsArray.get(ch_index).equals(current_channel)) {
+                                Log.d("Client", "Found channel at position " + ch_index);
+                                View tab = tabHost.getTabWidget().getChildTabViewAt(0);
+                                if(tab == null) {
+                                    Log.e("Client", "TabView is null");
+                                }
+                                socks_msg_text = (EditText) tab.findViewById(R.id.sock_msg_text);
+                                if(socks_msg_text == null) {
+                                    Log.e("Client", "EditText is null");
+                                    socks_msg_text = findViewById(R.id.sock_msg_text);
+                                } else {
+                                    Log.d("Client", "EditText is null");
+                                }
+                            }
+                        }
+                    } else {
+                        socks_msg_text = findViewById(R.id.sock_msg_text);
+                    }
+                    final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     if(state == "getting_data") {
                         if(socket_data_string.length() > 0) {
-                            socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
-                            socks_msg_text.setSelection(socks_msg_text.getText().length());
-                            socket_data_string = "";
+                            if(global_prefs.getBoolean("save_msg_history", false) == true) {
+                                File directory;
+                                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                } else {
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                }
+
+                                try {
+                                    Log.d("App", "Attempting creating log file...");
+                                    File file = new File(directory, "LOG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(dt) + ".log");
+                                    if (!file.exists()) {
+                                        file.createNewFile();
+                                    }
+                                    Log.d("App", "Log file created!");
+                                    FileWriter writer = new FileWriter(file);
+                                    writer.append(socks_msg_text.getText() + socket_data_string);
+                                    writer.flush();
+                                    writer.close();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            Log.d("Client", "Position: " + socks_msg_text.getSelectionStart());
+                            int cursor_pos = socks_msg_text.getSelectionStart();
+                            int current_ch_index = -1;
+                            for (int ch_index = 0; ch_index < channelsArray.size(); ch_index++) {
+                                if(current_channel.length() > 0 && current_channel.equals(channelsArray.get(ch_index))) {
+                                    current_ch_index = ch_index;
+                                }
+                            }
+                            Log.d("Client", "Current index: " + current_ch_index);
+                            if(current_ch_index > -1 && channels_sb.size() > current_ch_index && channelsArray.size() > current_ch_index) {
+                                channels_sb.get(current_ch_index).append(socket_data_string);
+                            }
+                            if(tabHost.getTabWidget().getTabCount() == 1) {
+                                socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
+                            } else if(tabHost.getTabWidget().getTabCount() > 1) {
+                                try {
+                                    if(current_ch_index > -1) {
+                                        Spinner channel_spinner = (Spinner) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_spinner);
+                                        if (channel_spinner.getSelectedItemPosition() == current_ch_index) {
+                                            EditText channel_socks_msg = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                                            channel_socks_msg.setText(channels_sb.get(current_ch_index));
+                                        }
+                                    } else {
+                                        socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            if(autoscroll_needed == true) {
+                                if(tabHost.getCurrentTab() == 0) {
+                                    socks_msg_text.setSelection(socks_msg_text.getText().length());
+                                } else if(tabHost.getCurrentTab() == 1) {
+                                    if(current_ch_index > -1) {
+                                        EditText channel_socks_msg = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                                        channel_socks_msg.setSelection(channel_socks_msg.getText().length());
+                                    } else {
+                                        socks_msg_text.setSelection(socks_msg_text.getText().length());
+                                    }
+
+                                }
+                            } else {
+                                if (tabHost.getCurrentTab() == 0) {
+                                    cursor_pos = socks_msg_text.getSelectionStart();
+                                    socks_msg_text.setSelection(socks_msg_text.getSelectionStart());
+                                } else if (tabHost.getCurrentTab() == 1) {
+                                    EditText channel_socks_msg = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                                    cursor_pos = channel_socks_msg.getSelectionStart();
+                                    channel_socks_msg.setSelection(cursor_pos);
+                                }
+                            }
+                                Log.d("Client", "Position 2: " + socks_msg_text.getSelectionStart());
+                                socket_data_string = "";
                         }
                     } else if(state == "getting_data_with_mention") {
                         if(socket_data_string.length() > 0) {
+                            int cursor_pos = socks_msg_text.getSelectionStart();
                             socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
-                            socks_msg_text.setSelection(socks_msg_text.getText().length());
+                            if(autoscroll_needed == true) {
+                                socks_msg_text.setSelection(socks_msg_text.getText().length());
+                            } else {
+                                socks_msg_text.setSelection(cursor_pos);
+                            }
+                            Log.d("Client", "Position 2: " + socks_msg_text.getSelectionStart());
                             socket_data_string = "";
                             Context context = getApplicationContext();
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                                Notification.Builder notificationBuilder = null;
-                                notificationBuilder = new Notification.Builder(context);
-                                notificationBuilder
-                                        .setSmallIcon(R.drawable.ic_notification_icon)
-                                        .setWhen(System.currentTimeMillis())
-                                        .setContentTitle(getString(R.string.mention_notification_title, messageAuthor))
-                                        .setContentText(messageBody);
-                                notificationManager.notify(1, notificationBuilder.build());
-                            } else {
-                                Toast.makeText(context, getString(R.string.mention_notification_title, messageAuthor) + ":" + messageBody, Toast.LENGTH_LONG).show();
+                            if(messageBody.length() > 0 && nicknames.split(", ")[0].length() > 0) {
+                                if(global_prefs.getBoolean("save_msg_history", false) == true) {
+                                    File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "App Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    try {
+                                        Log.d("App", "Attempting creating log file...");
+                                        File file = new File(directory, "LOG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(dt) + ".log");
+                                        if (!file.exists()) {
+                                            file.createNewFile();
+                                        }
+                                        Log.d("App", "Log file created!");
+                                        FileWriter writer = new FileWriter(file);
+                                        writer.append(socks_msg_text.getText() + socket_data_string);
+                                        writer.flush();
+                                        writer.close();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                                    Notification.Builder notificationBuilder = null;
+                                    notificationBuilder = new Notification.Builder(context);
+                                    notificationBuilder
+                                            .setSmallIcon(R.drawable.ic_notification_icon)
+                                            .setWhen(System.currentTimeMillis())
+                                            .setContentTitle(getString(R.string.mention_notification_title, messageAuthor))
+                                            .setContentText(messageBody);
+                                    notificationManager.notify(1, notificationBuilder.build());
+                                } else {
+                                    Notification notification = new Notification(R.drawable.ic_notification_icon, getString(R.string.mention_notification_title, messageAuthor), System.currentTimeMillis());
+                                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                                    RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_activity);
+                                    contentView.setTextViewText(R.id.notification_title, getString(R.string.mention_notification_title, messageAuthor));
+                                    contentView.setTextViewText(R.id.notification_text, messageBody);
+                                    DisplayMetrics metrics = new DisplayMetrics();
+                                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                                    notification.contentView = contentView;
+                                    ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+                                    List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
+                                    ActivityManager.RunningTaskInfo task = tasks.get(0); // Should be my task
+                                    Intent notificationIntent = new Intent(context, ThreadActivity.class);
+                                    notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    notificationIntent.setAction(Intent.ACTION_MAIN);
+                                    notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+                                    notification.flags |= Notification.FLAG_AUTO_CANCEL;
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
+                                    notification.contentIntent = contentIntent;
+                                    notificationManager.notify(R.layout.notification_activity, notification);
+                                }
                             }
                         }
                     } else if(state == "disconnected") {
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
+                        connectionDialog.cancel();
                         finish();
                     } else if(state == "connection_lost") {
                         Toast.makeText(getApplicationContext(), R.string.connection_lost_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
+                        connectionDialog.cancel();
                         finish();
-                    }else if(state == "timeout") {
+                    } else if(state == "timeout") {
                         Toast.makeText(getApplicationContext(), R.string.connection_timeout_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
+                        connectionDialog.cancel();
                         finish();
                     } else if(state == "no_connection") {
                         Toast.makeText(getApplicationContext(), R.string.no_connection_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
+                        connectionDialog.cancel();
                         finish();
                     } else if(state == "sending_message") {
                         if (socket != null) {
-                            EditText output_msg_text = findViewById(R.id.output_msg_text);
+                            EditText output_msg_text;
+                            if(tabHost.getCurrentTab() == 1) {
+                                output_msg_text = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_output_msg_text);
+                            } else {
+                                output_msg_text = findViewById(R.id.output_msg_text);
+                            }
                             outputMsgArray = new LinkedList<String>(Arrays.asList(output_msg_text.getText().toString().split(" ")));
+                            Log.i("Client", "\r\nSending message...\r\n\r\nMESSAGE: [" + output_msg_text.getText().toString() + "]");
                             if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && outputMsgArray.get(1).startsWith("#")) {
                                 try {
                                     channelsArray.add(outputMsgArray.get(1));
                                     sendingMsgText = ("JOIN " + outputMsgArray.get(1) + "\r\n");
                                     sended_bytes_count += ("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                                    if(tabHost.getTabWidget().getTabCount() < 2) {
+                                        TabHost.TabSpec tabSpec = tabHost.newTabSpec("channels");
+                                        tabSpec.setContent(R.id.channels_tab);
+                                        tabSpec.setIndicator(getResources().getString(R.string.channels_tab_item));
+                                        tabHost.addTab(tabSpec);
+                                        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                                            View view = tabHost.getTabWidget().getChildAt(1);
+                                            view.setBackgroundResource(R.drawable.tabwidget);
+                                            if (view != null) {
+                                                Log.d("Client", "TabWidget View");
+                                                tabHost.getTabWidget().getChildAt(1).getLayoutParams().height = (int) (30 * getResources().getDisplayMetrics().density);
+                                                View tabImage = view.findViewById(android.R.id.icon);
+                                                if (tabImage != null) {
+                                                    tabImage.setVisibility(View.GONE);
+                                                    Log.d("Client", "TabIcon View");
+                                                } else {
+                                                    Log.e("Client", "TabImage View is null");
+                                                }
+                                                TextView tabTitle = (TextView) view.findViewById(android.R.id.title);
+                                                if (tabTitle != null) {
+                                                    Log.d("Client", "TabTitle View");
+                                                    tabTitle.setGravity(Gravity.CENTER);
+                                                    ViewGroup parent = (ViewGroup) tabTitle.getParent();
+                                                    parent.removeView(tabTitle);
+                                                    parent.addView(tabTitle);
+                                                    ViewGroup.LayoutParams params = tabTitle.getLayoutParams();
+                                                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                                                } else {
+                                                    Log.e("Client", "TabTitle View is null");
+                                                }
+                                            } else {
+                                                Log.e("Client", "TabWidget View is null");
+                                            }
+                                        }
+                                    }
+                                    tabHost.setCurrentTab(1);
+                                    final Spinner channels_spinner = (Spinner) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_spinner);
+                                    final EditText channels_socks_text = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                                    final EditText channels_output_text = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_output_msg_text);
+                                    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                                        if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                                            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                                                channels_spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner_light));
+                                            } else {
+                                                channels_spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner));
+                                            }
+                                        } else if (global_prefs.getString("theme", "Dark").contains("Dark")) {
+                                            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                                                channels_spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner));
+                                            } else {
+                                                channels_spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner_light));
+                                            }
+                                        }
+                                        channels_spinner.setPadding(2, 0, 2, 0);
+                                        ArrayList<CustomSpinnerItem> spinnerArray = new ArrayList<CustomSpinnerItem>();
+                                        spinnerArray.clear();
+                                        for (int i = 0; i < channelsArray.size(); i++) {
+                                            spinnerArray.add(new CustomSpinnerItem(channelsArray.get(i)));
+                                        }
+                                        CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(getApplicationContext(), spinnerArray);
+                                        channels_spinner.setAdapter(customSpinnerAdapter);
+                                    } else {
+                                        ArrayAdapter<String> spinner_adapter = new ArrayAdapter<String>(
+                                                getApplicationContext(), android.R.layout.simple_spinner_item, channelsArray);
+                                        channels_spinner.setAdapter(spinner_adapter);
+                                    }
+                                    ImageButton channels_send_btn = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_send_button);
+                                    channels_send_btn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            if (channels_output_text.getText().toString().length() > 0) {
+                                                sendingMsgText = channels_output_text.getText().toString();
+                                                Thread send_msg_thread = new Thread(new SendSocketMsg());
+                                                new Thread(new SendSocketMsg()).start();
+                                                channels_socks_text.setText(channels_socks_text.getText() + "You: " + channels_output_text.getText() + "\r\n");
+                                                channels_socks_text.setSelection(channels_socks_text.getText().length());
+                                                channels_sb.get(channels_spinner.getSelectedItemPosition()).append("You: " + channels_output_text.getText() + "\r\n");
+                                            } else {
+                                                Toast emptyMessageAttempting = Toast.makeText(getApplicationContext(), getString(R.string.empty_message_sending_attempt), Toast.LENGTH_SHORT);
+                                                emptyMessageAttempting.show();
+                                            }
+                                        }
+                                    });
+                                    channels_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                        @Override
+                                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                                            try {
+                                                channels_socks_text.setText(channels_sb.get(i).toString());
+                                            } catch(IndexOutOfBoundsException ioofe) {
+                                                ioofe.printStackTrace();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onNothingSelected(AdapterView<?> adapterView) {
+
+                                        }
+                                    });
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
                             } else if (outputMsgArray.get(0).startsWith("/join") && outputMsgArray.size() > 1 && !outputMsgArray.get(1).startsWith("#")) {
                                 try {
-                                    channelsArray.add("#" + outputMsgArray.get(1));
-                                    sendingMsgText = ("JOIN #" + outputMsgArray.get(1) + "\r\n");
-                                    sended_bytes_count += ("JOIN #" + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                                    channelsArray.add(outputMsgArray.get(1));
+                                    sendingMsgText = ("JOIN " + outputMsgArray.get(1) + "\r\n");
+                                    sended_bytes_count += ("JOIN " + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                                    if(tabHost.getTabWidget().getTabCount() < 2) {
+                                        TabHost.TabSpec tabSpec = tabHost.newTabSpec("channels");
+                                        tabSpec.setContent(R.id.channels_tab);
+                                        tabSpec.setIndicator(getResources().getString(R.string.channels_tab_item));
+                                        tabHost.addTab(tabSpec);
+                                        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                                            View view = tabHost.getTabWidget().getChildAt(1);
+                                            view.setBackgroundResource(R.drawable.tabwidget);
+                                            if (view != null) {
+                                                Log.d("Client", "TabWidget View");
+                                                tabHost.getTabWidget().getChildAt(1).getLayoutParams().height = (int) (30 * getResources().getDisplayMetrics().density);
+                                                View tabImage = view.findViewById(android.R.id.icon);
+                                                if (tabImage != null) {
+                                                    tabImage.setVisibility(View.GONE);
+                                                    Log.d("Client", "TabIcon View");
+                                                } else {
+                                                    Log.e("Client", "TabImage View is null");
+                                                }
+                                                TextView tabTitle = (TextView) view.findViewById(android.R.id.title);
+                                                if (tabTitle != null) {
+                                                    Log.d("Client", "TabTitle View");
+                                                    tabTitle.setGravity(Gravity.CENTER);
+                                                    ViewGroup parent = (ViewGroup) tabTitle.getParent();
+                                                    parent.removeView(tabTitle);
+                                                    parent.addView(tabTitle);
+                                                    ViewGroup.LayoutParams params = tabTitle.getLayoutParams();
+                                                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                                                } else {
+                                                    Log.e("Client", "TabTitle View is null");
+                                                }
+                                            } else {
+                                                Log.e("Client", "TabWidget View is null");
+                                            }
+                                        }
+                                    }
+                                    tabHost.setCurrentTab(1);
+                                    final Spinner channels_spinner = (Spinner) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_spinner);
+                                    final EditText channels_socks_text = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                                    final EditText channels_output_text = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_output_msg_text);
+                                    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                                        if (global_prefs.getString("theme", "Dark").contains("Light")) {
+                                            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                                                channels_spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner_light));
+                                            } else {
+                                                channels_spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner));
+                                            }
+                                        } else if (global_prefs.getString("theme", "Dark").contains("Dark")) {
+                                            if (global_prefs.getBoolean("theme_requires_restart", false) == false) {
+                                                channels_spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner));
+                                            } else {
+                                                channels_spinner.setBackgroundDrawable(getResources().getDrawable(R.drawable.dialog_spinner_light));
+                                            }
+                                        }
+                                        channels_spinner.setPadding(2, 0, 2, 0);
+                                        ArrayList<CustomSpinnerItem> spinnerArray = new ArrayList<CustomSpinnerItem>();
+                                        spinnerArray.clear();
+                                        for (int i = 0; i < channelsArray.size(); i++) {
+                                            spinnerArray.add(new CustomSpinnerItem(channelsArray.get(i)));
+                                        }
+                                        CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(getApplicationContext(), spinnerArray);
+                                        channels_spinner.setAdapter(customSpinnerAdapter);
+                                    } else {
+                                        ArrayAdapter<String> spinner_adapter = new ArrayAdapter<String>(
+                                                getApplicationContext(), android.R.layout.simple_spinner_item, channelsArray);
+                                        channels_spinner.setAdapter(spinner_adapter);
+                                    }
+                                    ImageButton channels_send_btn = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_send_button);
+                                    channels_send_btn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            if (channels_output_text.getText().toString().length() > 0) {
+                                                sendingMsgText = channels_output_text.getText().toString();
+                                                Thread send_msg_thread = new Thread(new SendSocketMsg());
+                                                new Thread(new SendSocketMsg()).start();
+                                                channels_socks_text.setText(channels_socks_text.getText() + "You: " + channels_output_text.getText() + "\r\n");
+                                                channels_socks_text.setSelection(channels_socks_text.getText().length());
+                                                channels_sb.get(channels_spinner.getSelectedItemPosition()).append("You: " + channels_output_text.getText() + "\r\n");
+                                            } else {
+                                                Toast emptyMessageAttempting = Toast.makeText(getApplicationContext(), getString(R.string.empty_message_sending_attempt), Toast.LENGTH_SHORT);
+                                                emptyMessageAttempting.show();
+                                            }
+                                        }
+                                    });
+                                    channels_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                        @Override
+                                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                                            try {
+                                                channels_socks_text.setText(channels_sb.get(i).toString());
+                                            } catch(IndexOutOfBoundsException ioofe) {
+                                                ioofe.printStackTrace();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onNothingSelected(AdapterView<?> adapterView) {
+
+                                        }
+                                    });
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -575,10 +1548,17 @@ public class ThreadActivity extends Activity {
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-                            } else if (outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() == 1) {
+                            } else if (outputMsgArray.get(0).startsWith("/nick") && outputMsgArray.size() > 1) {
                                 try {
                                     sendingMsgText = ("NICK " + outputMsgArray.get(1) + "\r\n");
                                     sended_bytes_count += ("NICK " + outputMsgArray.get(1) + "\r\n").getBytes(encoding).length;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if (outputMsgArray.get(0).startsWith("/quit")) {
+                                try {
+                                    sendingMsgText = ("QUIT :" + quit_msg + "\r\n");
+                                    sended_bytes_count += ("QUIT :" + quit_msg + "\r\n").getBytes(encoding).length;
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -597,22 +1577,83 @@ public class ThreadActivity extends Activity {
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
-                            } else {
+                            } else if (!outputMsgArray.get(0).startsWith("/")) {
                                 try {
                                     if (channelsArray.size() > 0) {
-                                        sendingMsgText = ("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n");
-                                        sended_bytes_count += ("PRIVMSG " + channelsArray.get(channelsArray.size() - 1) + " :" + output_msg_text.getText().toString() + "\r\n").getBytes(encoding).length;
+                                        if(tabHost.getCurrentTab() == 1) {
+                                            Spinner channels_spinner = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_spinner);
+                                            EditText channels_socks_msg = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                                            EditText channels_output_msg = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_output_msg_text);
+                                            sendingMsgText = ("PRIVMSG " + channelsArray.get(channels_spinner.getSelectedItemPosition()) + " :" + channels_output_msg.getText().toString() + "\r\n");
+                                            sended_bytes_count += ("PRIVMSG " + channelsArray.get(channels_spinner.getSelectedItemPosition()) + " :" + channels_output_msg.getText().toString() + "\r\n").getBytes(encoding).length;
+                                        } else {
+
+                                        }
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
                             }
-                            output_msg_text.setText("");
-                            Log.i("Client", "Message: [" + sendingMsgText + "]");
-                            state = "finishing_sending_message";
+                            if(tabHost.getCurrentTab() == 1) {
+                                output_msg_text.setText("");
+                                EditText ch_output_msg_text = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_output_msg_text);
+                                ch_output_msg_text.setText("");
+                            } else {
+                                output_msg_text.setText("");
+                            }
+                            if(global_prefs.getBoolean("save_msg_history", false) == true) {
+                                File directory;
+                                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                } else {
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Tinelix");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix", "IRC Client");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                    directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tinelix/IRC Client", "Messages Logs");
+                                    if (!directory.exists()) {
+                                        directory.mkdirs();
+                                    }
+                                }
+
+                                try {
+                                    Log.d("App", "Attempting creating log file...");
+                                    File file = new File(directory, "LOG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(dt) + ".log");
+                                    if (!file.exists()) {
+                                        file.createNewFile();
+                                    }
+                                    Log.d("App", "Log file created!");
+                                    FileWriter writer = new FileWriter(file);
+                                    writer.append(socks_msg_text.getText() + socket_data_string);
+                                    writer.flush();
+                                    writer.close();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         } else {
                             Log.e("Socket", "Socket not created");
                         }
+                    } else if(state == "connecting") {
+                        connectionDialog.cancel();
+                        state = "connected";
                     }
                 }
             });
