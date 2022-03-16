@@ -3,4 +3,4 @@ Tinelix IRC Client for Android. <b>Beta development state.</b><p><p><img src="ht
 <h3>System requirements</h3>
 <p><b>Operating system:</b> Android 2.2 Eclair (with Android API level 8) and higher.
 <h3>Links</h3>
-<a href="https://github.com/tinelix/irc-client-for-android/releases/tag/0.2.4-beta-20220314">Download latest version</a> | <a href="https://tinelix.github.io">by Tinelix</a>
+<a href="https://github.com/tinelix/irc-client-for-android/releases/tag/0.2.4-beta-20220315">Download latest version</a> | <a href="https://tinelix.github.io">by Tinelix</a>
