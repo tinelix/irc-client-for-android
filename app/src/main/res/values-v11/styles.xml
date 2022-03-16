@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="IRCClient" parent="@android:style/Theme.Holo">
+    </style>
+    <style name="IRCClient.Notification" parent="@android:style/Theme.Holo">
+        <item name="android:textColor">#ffffff</item>
+    </style>
 
+    <style name="IRCClient.Light" parent="@android:style/Theme.Holo.Light">
     </style>
 </resources>

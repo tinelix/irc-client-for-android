@@ -2,6 +2,7 @@
 <resources>
     <string-array name="main_menu_array">
         <item>Менеджер подключений</item>
+        <item>Настройки</item>
         <item>О приложении</item>
         <item>Выход</item>
     </string-array>
@@ -11,6 +12,7 @@
     <string name="connection_manager_change_item">Изменить</string>
     <string name="connection_manager_delete_item">Удалить</string>
     <string name="profile_name_label">Имя профиля:</string>
+    <string name="open_button">Открыть</string>
     <string name="cancel_button">Отмена</string>
     <string name="enter_the_pfn_title">Ввод имени профиля</string>
     <string name="enter_the_nick_title">Ввод никнейма</string>
@@ -42,7 +44,7 @@
     <string name="quit_session_title">Выход из сеанса</string>
     <string name="quit_session_msg">Отсоединиться от сервера?</string>
     <string name="about_application_str">О приложении</string>
-    <string name="version_str">Версия 0.1.0 Alpha (2 марта 2022 г.)</string>
+    <string name="version_str">Версия 0.3.0 Beta (16 марта 2022 г.)</string>
     <string name="license_info">Это свободное программное обеспечение с открытым исходным кодом, распространяемое в соответствии с условиями <a href="https://www.gnu.org/licenses/gpl-3.0.ru.html">GNU General Public License 3.0 (прочитать лицензию)</a>.\n\n<b>БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ, ВКЛЮЧАЯ КОММЕРЧЕСКУЮ ЦЕННОСТЬ.</b></string>
     <string name="repo_button">Репозиторий</string>
     <string name="message_text_hint">Сообщение</string>
@@ -60,4 +62,39 @@
     <string name="mention_notification_title">%1$s упомянул(a) вас</string>
     <string name="empty_message_sending_attempt">Вы не можете отправить пустое сообщение.</string>
     <string name="menu_button">Меню</string>
+    <string name="connection_progress">Соединение к %1$s...</string>
+    <string name="quit_message">Сообщение о выходе</string>
+    <string name="quit_message_label">Сообщение о выходе:</string>
+    <string name="enter_the_quiting_message">Ввод сообщения о выходе</string>
+    <string name="interface_category">Интерфейс</string>
+    <string name="interface_language_item">Язык (Language)</string>
+    <string name="interface_theme_item">Тема оформления</string>
+    <string name="thread_category">Поток</string>
+    <string name="font_size_item">Размер шрифта</string>
+    <string name="font_size_label">Размер шрифта:</string>
+    <string name="changing_font_label">Изменение размера шрифта</string>
+    <string name="preview_label">Предпросмотр:</string>
+    <string name="settings_title">Настройки</string>
+    <string name="value_in_px">%1$d пикс.</string>
+    <string name="connected_state">ПОДКЛЮЧЕНО</string>
+    <string name="website_button">Сайт</string>
+    <string name="need_to_restart">Необходима перезагрузка приложения</string>
+    <string name="empty_profiles_list"><b>Список пуст</b>\n\nВы можете создать свой профиль для подключения к IRC-серверам.</string>
+    <string name="application_category">Приложение</string>
+    <string name="debug_log_item">Отладочный журнал</string>
+    <string name="save_log_btn">Сохранить журнал</string>
+    <string name="saved_log">Отладочный журнал сохранен в Память устройства/%1$s</string>
+    <string name="saved_messages_history">Сохраняется в Память устройства/%1$s</string>
+    <string name="allow_permisssion_in_storage_title">Требуются разрешения</string>
+    <string name="allow_permisssion_in_storage">Для сохранения данных в память устройства приложению нужны специальные разрешения.\n\nОткрыть раздел системных настроек \"О приложении\"?</string>
+    <string name="save_msg_history_item">Сохр. историю сообщений</string>
+    <string name="device_memory_restricted">Память устройства недоступна</string>
+    <string name="go_down_action">Вниз</string>
+    <string name="forgot_nicknames">Вы забыли указать первый никнейм в настройках профиля.</string>
+    <string name="first_end_session">Сначала завершите запущенное соединение нажатием кнопки "Назад".</string>
+    <string name="text_field_wrong_characters">Это текстовое поле не должно содержать специальные символы</string>
+    <string name="doesnt_work_in_cav">Пока не работает в текущей версии Android</string>
+    <string name="autoscroll_is_disabled">Автопрокрутка отключена. Включить можно с помощью кнопки \"Вниз\".</string>
+    <string name="show_messages_timestamps_item">Показывать время в сообщениях</string>
+    <string name="channels_tab_item">Каналы</string>
 </resources>

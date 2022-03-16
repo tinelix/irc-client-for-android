@@ -22,7 +22,7 @@
         android:src="@drawable/ic_menu_btn_add" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/add_item_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_x="52dp"

@@ -4,17 +4,24 @@
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"></uses-permission>
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="@string/short_app_name"
         android:supportsRtl="true"
-        android:theme="@style/IRCClient">
+        android:theme="@style/IRCClient"
+        android:name=".IRCClientApp"
+        android:requestLegacyExternalStorage="true">
             <activity
                 android:name=".MainActivity"
-                android:label="@string/app_name"
-                android:exported="true">
+                android:label="@string/short_app_name"
+                android:exported="true"
+                android:configChanges="locale|orientation">
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />
 
@@ -34,10 +41,20 @@
         </activity>
         <activity android:name=".ThreadActivity"
             android:label="@string/app_name"
-            android:configChanges="keyboardHidden|orientation|screenSize">
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mcc|mnc|uiMode">
         </activity>
         <activity android:name=".AboutApplicationActivity"
             android:label="@string/about_application_str">
+        </activity>
+        <activity android:name=".NotificationActivity"
+            android:label="Notification Activity">
+        </activity>
+        <activity android:name=".MainSettingsActivity"
+            android:label="@string/settings_title">
+        </activity>
+        <activity android:name=".DebugLogsActivity"
+            android:label="@string/debug_log_item"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mcc|mnc|uiMode">
         </activity>
     </application>
 </manifest>

@@ -14,18 +14,40 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/profile_item_label"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:layout_marginLeft="16dp"
-            android:layout_marginRight="8dp"
             android:layout_marginTop="9dp"
-            android:text="Profile Item"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
             android:layout_marginEnd="8dp"
-            android:layout_marginStart="16dp" />
+            android:layout_marginRight="8dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/profile_item_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginRight="8dp"
+                android:singleLine="true"
+                android:text="Profile Item"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/state_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@drawable/successfully_state_shape"
+                android:gravity="center"
+                android:text="@string/connected_state"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="visible" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/profile_server_label"
@@ -38,8 +60,8 @@
             android:layout_marginEnd="8dp" />
     </LinearLayout>
 
-    <FrameLayout
-        android:layout_width="144dp"
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="match_parent">
 
         <ImageButton
@@ -47,7 +69,7 @@
             style="@android:style/Widget.Holo.Button.Borderless"
             android:layout_width="48dp"
             android:layout_height="match_parent"
-            android:onClick="editProfile"
+            android:contentDescription="TODO"
             android:src="@drawable/ic_menu_edit"
             android:visibility="visible" />
 
@@ -56,22 +78,16 @@
             style="@android:style/Widget.Holo.Button.Borderless"
             android:layout_width="48dp"
             android:layout_height="match_parent"
-            android:layout_marginLeft="48dp"
-            android:onClick="deleteProfile"
             android:src="@drawable/ic_menu_delete"
-            android:visibility="visible"
-            android:layout_marginStart="48dp" />
+            android:visibility="visible" />
 
         <ImageButton
             android:id="@+id/connect_btn"
             style="@android:style/Widget.Holo.Button.Borderless"
             android:layout_width="48dp"
             android:layout_height="match_parent"
-            android:layout_marginLeft="96dp"
-            android:onClick="connectProfile"
+            android:contentDescription="TODO"
             android:src="@drawable/ic_menu_send"
-            android:visibility="visible"
-            android:layout_marginStart="96dp" />
-    </FrameLayout>
-
+            android:visibility="visible" />
+    </LinearLayout>
 </LinearLayout>

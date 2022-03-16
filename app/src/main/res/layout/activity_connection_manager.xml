@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:id="@+id/activity_ll">
 
     <LinearLayout
         android:id="@+id/app_title_bar"
@@ -71,9 +72,26 @@
     </LinearLayout>
 
     <ListView
-        android:id="@+id/nicknames_list"
+        android:id="@+id/profiles_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="0dp" />
+
+    <LinearLayout
+        android:id="@+id/empty_profiles_list_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/empty_profiles_list_label"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="16dp"
+            android:gravity="center"
+            android:text="@string/empty_profiles_list"
+            android:textSize="16sp" />
+    </LinearLayout>
 
 </LinearLayout>
