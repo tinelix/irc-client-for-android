@@ -4,10 +4,10 @@ android {
     compileSdkVersion 32
     defaultConfig {
         applicationId "dev.tinelix.irc.android"
-        minSdkVersion 8
+        minSdkVersion 5
         targetSdkVersion 32
         versionCode 1
-        versionName '0.3.0_alpha_20220316'
+        versionName '0.3.1_beta_20220408'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
