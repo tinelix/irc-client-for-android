@@ -48,7 +48,7 @@
     <string name="quit_session_title">Quit session</string>
     <string name="quit_session_msg">Disconnect from server?</string>
     <string name="about_application_str">About application</string>
-    <string name="version_str">Version 0.3.0 Beta (March 16, 2022)</string>
+    <string name="version_str">Version 0.3.1 Beta (April 8, 2022)</string>
     <string name="license_info">This is free software with open source, distributed under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License 3.0 (read license)</a>.\n\n<b>WITHOUT ANY WARRANTY, NOT EVEN FOR MERCHANTABILITY.</b></string>
     <string name="repo_button">Repository</string>
     <string name="copyright_str" translatable="false">Copyright © 2022 Dmitry Tretyakov (aka. Tinelix)</string>
@@ -70,7 +70,7 @@
     <string name="connection_progress">Connecting to %1$s...</string>
     <string name="quit_message">Quiting message</string>
     <string name="quit_message_label">Quiting message:</string>
-    <string name="default_quit_msg" translatable="false">Tinelix IRC Client ver. 0.3.0 Beta for Android (2022-03-16)</string>
+    <string name="default_quit_msg" translatable="false">Tinelix IRC Client ver. 0.3.1 Beta for Android (2022-04-08)</string>
     <string name="enter_the_quiting_message">Enter quiting message</string>
     <string name="interface_category">Interface</string>
     <string name="interface_language_item">Language</string>
