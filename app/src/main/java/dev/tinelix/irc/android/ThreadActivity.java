@@ -940,7 +940,7 @@ public class ThreadActivity extends Activity {
                         }
                         if(response != null) {
                             String parsedString;
-                            if(global_prefs.getBoolean("show_timestamps_in_msgs", true) == true) {
+                            if(global_prefs.getBoolean("show_msg_timestamps", true) == true) {
                                 parsedString = parser.parseString(response, true);
                             } else {
                                 parsedString = parser.parseString(response, false);
@@ -1055,7 +1055,9 @@ public class ThreadActivity extends Activity {
                                 @Override
                                 public void run() {
                                     try {
-                                        socket.close();
+                                        if(socket != null) {
+                                            socket.close();
+                                        }
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
@@ -1162,7 +1164,6 @@ public class ThreadActivity extends Activity {
                                     e.printStackTrace();
                                 }
                             }
-                            Log.d("Client", "Position: " + socks_msg_text.getSelectionStart());
                             int cursor_pos = socks_msg_text.getSelectionStart();
                             int current_ch_index = -1;
                             for (int ch_index = 0; ch_index < channelsArray.size(); ch_index++) {
@@ -1170,7 +1171,6 @@ public class ThreadActivity extends Activity {
                                     current_ch_index = ch_index;
                                 }
                             }
-                            Log.d("Client", "Current index: " + current_ch_index);
                             if(current_ch_index > -1 && channels_sb.size() > current_ch_index && channelsArray.size() > current_ch_index) {
                                 channels_sb.get(current_ch_index).append(socket_data_string);
                             }
@@ -1225,7 +1225,6 @@ public class ThreadActivity extends Activity {
                             } else {
                                 socks_msg_text.setSelection(cursor_pos);
                             }
-                            Log.d("Client", "Position 2: " + socks_msg_text.getSelectionStart());
                             socket_data_string = "";
                             Context context = getApplicationContext();
                             if(messageBody.length() > 0 && nicknames.split(", ")[0].length() > 0) {
@@ -1289,6 +1288,34 @@ public class ThreadActivity extends Activity {
                                     PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
                                     notification.contentIntent = contentIntent;
                                     notificationManager.notify(R.layout.notification_activity, notification);
+                                }
+                            }
+
+                            int current_ch_index = -1;
+
+                            for (int ch_index = 0; ch_index < channelsArray.size(); ch_index++) {
+                                if(current_channel.length() > 0 && current_channel.equals(channelsArray.get(ch_index))) {
+                                    current_ch_index = ch_index;
+                                }
+                            }
+                            if(current_ch_index > -1 && channels_sb.size() > current_ch_index && channelsArray.size() > current_ch_index) {
+                                channels_sb.get(current_ch_index).append(socket_data_string);
+                            }
+                            if(tabHost.getTabWidget().getTabCount() == 1) {
+                                socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
+                            } else if(tabHost.getTabWidget().getTabCount() > 1) {
+                                try {
+                                    if(current_ch_index > -1) {
+                                        Spinner channel_spinner = (Spinner) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_spinner);
+                                        if (channel_spinner.getSelectedItemPosition() == current_ch_index) {
+                                            EditText channel_socks_msg = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                                            channel_socks_msg.setText(channels_sb.get(current_ch_index));
+                                        }
+                                    } else {
+                                        socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
                             }
                         }
@@ -1388,9 +1415,13 @@ public class ThreadActivity extends Activity {
                                         CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(getApplicationContext(), spinnerArray);
                                         channels_spinner.setAdapter(customSpinnerAdapter);
                                     } else {
-                                        ArrayAdapter<String> spinner_adapter = new ArrayAdapter<String>(
-                                                getApplicationContext(), android.R.layout.simple_spinner_item, channelsArray);
-                                        channels_spinner.setAdapter(spinner_adapter);
+                                        ArrayList<CustomSpinnerItem> spinnerArray = new ArrayList<CustomSpinnerItem>();
+                                        spinnerArray.clear();
+                                        for (int i = 0; i < channelsArray.size(); i++) {
+                                            spinnerArray.add(new CustomSpinnerItem(channelsArray.get(i)));
+                                        }
+                                        CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(getApplicationContext(), spinnerArray);
+                                        channels_spinner.setAdapter(customSpinnerAdapter);
                                     }
                                     ImageButton channels_send_btn = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_send_button);
                                     channels_send_btn.setOnClickListener(new View.OnClickListener() {
@@ -1494,9 +1525,13 @@ public class ThreadActivity extends Activity {
                                         CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(getApplicationContext(), spinnerArray);
                                         channels_spinner.setAdapter(customSpinnerAdapter);
                                     } else {
-                                        ArrayAdapter<String> spinner_adapter = new ArrayAdapter<String>(
-                                                getApplicationContext(), android.R.layout.simple_spinner_item, channelsArray);
-                                        channels_spinner.setAdapter(spinner_adapter);
+                                        ArrayList<CustomSpinnerItem> spinnerArray = new ArrayList<CustomSpinnerItem>();
+                                        spinnerArray.clear();
+                                        for (int i = 0; i < channelsArray.size(); i++) {
+                                            spinnerArray.add(new CustomSpinnerItem(channelsArray.get(i)));
+                                        }
+                                        CustomSpinnerAdapter customSpinnerAdapter = new CustomSpinnerAdapter(getApplicationContext(), spinnerArray);
+                                        channels_spinner.setAdapter(customSpinnerAdapter);
                                     }
                                     ImageButton channels_send_btn = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_send_button);
                                     channels_send_btn.setOnClickListener(new View.OnClickListener() {

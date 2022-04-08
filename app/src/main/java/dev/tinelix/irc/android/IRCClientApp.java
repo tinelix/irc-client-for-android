@@ -45,6 +45,9 @@ public class IRCClientApp extends Application {
         if(global_prefs.contains("language") == false) {
             editor.putString("language", "OS dependent");
         }
+        if(global_prefs.contains("show_msg_timestamps") == false) {
+            editor.putBoolean("show_msg_timestamps", false);
+        }
         editor.commit();
         super.onCreate();
     }

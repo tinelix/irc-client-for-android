@@ -59,10 +59,10 @@ public class DebugLogsActivity extends Activity {
             BufferedReader bufferedReader = new BufferedReader(
                     new InputStreamReader(process.getInputStream()));
 
-            StringBuilder log=new StringBuilder();
+            StringBuilder log = new StringBuilder();
             String line = "";
             while ((line = bufferedReader.readLine()) != null) {
-                log.append(line);
+                log.append(line + "\r\n");
             }
             final EditText debug_log_text = findViewById(R.id.debug_log_text);
             log_text = log.toString();

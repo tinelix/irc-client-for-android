@@ -480,7 +480,7 @@ public class MainSettingsActivity  extends PreferenceActivity {
             }
         }
         Preference debug_logs = findPreference("debug_logs");
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             debug_logs.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
