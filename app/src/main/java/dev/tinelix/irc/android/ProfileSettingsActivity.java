@@ -35,6 +35,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,11 +64,15 @@ public class ProfileSettingsActivity extends PreferenceActivity
         setColorStyle(global_prefs);
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.profile_settings);
+        setContentView(R.layout.custom_preferences_layout);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getActionBar().setHomeButtonEnabled(true);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
+        } else {
+            TextView app_title = findViewById(R.id.app_title_label);
+            app_title.setText(R.string.connection_manager_title);
         }
 
         if (savedInstanceState == null) {

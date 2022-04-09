@@ -1,9 +1,11 @@
 package dev.tinelix.irc.android;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,6 +58,8 @@ public class AboutApplicationActivity extends Activity {
         }
         TextView license_label = (TextView) findViewById(R.id.license_label);
         license_label.setMovementMethod(LinkMovementMethod.getInstance());
+        TextView version_label = (TextView) findViewById(R.id.version_label);
+        version_label.setText(getResources().getString(R.string.version_str, ((IRCClientApp) getApplicationContext()).version, ((IRCClientApp) getApplicationContext()).build_date));
     };
 
     @Override
@@ -86,6 +90,7 @@ public class AboutApplicationActivity extends Activity {
                     activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
                     TextView app_title2 = findViewById(R.id.app_title_label);
                     app_title2.setTextColor(getResources().getColor(R.color.black));
+                    ((TextView) findViewById(R.id.license_label)).setTextColor(Color.DKGRAY);
                 } else {
                     LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
                     app_title_bar.setBackgroundColor(getResources().getColor(R.color.title_v11_transparent));
@@ -97,6 +102,7 @@ public class AboutApplicationActivity extends Activity {
                     activity_ll.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
                     TextView app_title2 = findViewById(R.id.app_title_label);
                     app_title2.setTextColor(getResources().getColor(R.color.white));
+                    ((TextView) findViewById(R.id.license_label)).setTextColor(Color.LTGRAY);
                 }
             }  else {
                 if(global_prefs.getBoolean("theme_requires_restart", false) == false) {
@@ -120,6 +126,7 @@ public class AboutApplicationActivity extends Activity {
                     activity_ll.setBackgroundColor(getResources().getColor(R.color.title_v11_full_transparent));
                     TextView app_title2 = findViewById(R.id.app_title_label);
                     app_title2.setTextColor(getResources().getColor(R.color.white));
+                    ((TextView) findViewById(R.id.license_label)).setTextColor(Color.LTGRAY);
                 } else {
                     LinearLayout app_title_bar = findViewById(R.id.app_title_bar);
                     app_title_bar.setBackgroundColor(getResources().getColor(R.color.white_75));
@@ -131,6 +138,7 @@ public class AboutApplicationActivity extends Activity {
                     activity_ll.setBackgroundColor(getResources().getColor(R.color.white));
                     TextView app_title2 = findViewById(R.id.app_title_label);
                     app_title2.setTextColor(getResources().getColor(R.color.black));
+                    ((TextView) findViewById(R.id.license_label)).setTextColor(Color.DKGRAY);
                 }
             } else {
                 if(global_prefs.getBoolean("theme_requires_restart", false) == false) {

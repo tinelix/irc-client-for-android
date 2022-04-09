@@ -34,7 +34,8 @@
             android:exported="true">
         </activity>
         <activity android:name=".ProfileSettingsActivity"
-            android:label="@string/connection_manager_title">
+            android:label="@string/connection_manager_title"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mcc|mnc|uiMode">
         </activity>
         <activity android:name=".CustomNicknamesActivity"
             android:label="@string/nicknames_manager_title">
@@ -50,7 +51,8 @@
             android:label="Notification Activity">
         </activity>
         <activity android:name=".MainSettingsActivity"
-            android:label="@string/settings_title">
+            android:label="@string/settings_title"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mcc|mnc|uiMode">
         </activity>
         <activity android:name=".DebugLogsActivity"
             android:label="@string/debug_log_item"

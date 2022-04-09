@@ -32,10 +32,13 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.Locale;
@@ -52,11 +55,15 @@ public class MainSettingsActivity  extends PreferenceActivity {
         setColorStyle(global_prefs);
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.main_settings);
+        setContentView(R.layout.custom_preferences_layout);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getActionBar().setHomeButtonEnabled(true);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
+        } else {
+            TextView app_title = findViewById(R.id.app_title_label);
+            app_title.setText(R.string.settings_title);
         }
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         final Preference ui_language = findPreference("interface_language");
@@ -488,6 +495,9 @@ public class MainSettingsActivity  extends PreferenceActivity {
                     return false;
                 }
             });
+        }
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+
         }
     }
 

@@ -30,6 +30,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if(global_prefs.getBoolean("connected", false) == true) {
+            finish();
+            return;
+        }
         setTitle(R.string.app_name);
         setCustomTheme(global_prefs);
         setContentView(R.layout.activity_main);
