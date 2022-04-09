@@ -75,7 +75,7 @@
         android:orientation="vertical">
 
         <CheckBox
-            android:id="@+id/checkBox"
+            android:id="@+id/checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"

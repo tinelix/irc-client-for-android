@@ -3,8 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="300dp"
-    android:layout_height="240dp"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,8 +15,8 @@
             android:id="@+id/dialog_title"
             android:layout_width="match_parent"
             android:layout_height="30dp"
-            android:layout_marginTop="6dp"
             android:layout_marginLeft="10dp"
+            android:layout_marginTop="6dp"
             android:layout_marginRight="10dp"
             android:layout_marginBottom="6dp"
             android:textColor="@color/orange"
@@ -31,6 +32,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:orientation="horizontal">
 
         <EditText
@@ -88,16 +90,18 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="88dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="4dp"
         android:orientation="vertical">
 
         <CheckBox
-            android:id="@+id/checkBox"
+            android:id="@+id/checkbox"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
+            android:layout_height="28dp"
             android:layout_marginStart="12dp"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
+            android:button="@drawable/checkbox"
             android:clickable="false"
             android:enabled="false"
             android:fontFamily="sans-serif-condensed"
@@ -108,11 +112,11 @@
         <CheckBox
             android:id="@+id/hide_ip_checkbox"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
+            android:layout_height="28dp"
             android:layout_marginStart="12dp"
             android:layout_marginLeft="12dp"
-            android:layout_marginTop="4dp"
             android:layout_marginRight="12dp"
+            android:button="@drawable/checkbox"
             android:text="@string/hide_ip_label" />
     </LinearLayout>
 

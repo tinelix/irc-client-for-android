@@ -5,13 +5,11 @@
     </PreferenceCategory>
     <Preference
         android:key="interface_language"
-        android:layout="@layout/pref_widget"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="@string/interface_language_item" />
     <Preference
         android:key="interface_theme"
-        android:layout="@layout/pref_widget"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="@string/interface_theme_item" />
@@ -20,7 +18,6 @@
     </PreferenceCategory>
     <Preference
         android:key="font_size"
-        android:layout="@layout/pref_widget"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="@string/font_size_item" />
