@@ -468,8 +468,13 @@ public class ProfileSettingsActivity extends PreferenceActivity
                             port_number.setTextColor(getResources().getColor(R.color.black));
                         }
                     }
-                    server_name.setPadding(12, 0, 12, 0);
-                    port_number.setPadding(12, 0, 12, 0);
+                    if(getResources().getDisplayMetrics().density == 0.75) {
+                        server_name.setPadding(6, 0, 6, 0);
+                        port_number.setPadding(6, 0, 6, 0);
+                    } else {
+                        server_name.setPadding(12, 0, 12, 0);
+                        port_number.setPadding(12, 0, 12, 0);
+                    }
                     Button dialogButton = null;
                     customizeDialogStyle(dialogButton, global_prefs, alertDialog);
                 }
