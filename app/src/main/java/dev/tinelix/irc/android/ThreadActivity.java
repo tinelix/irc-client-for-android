@@ -1097,17 +1097,13 @@ public class ThreadActivity extends Activity {
                         socks_msg_text = findViewById(R.id.sock_msg_text);
                         for(int ch_index = 0; ch_index < channelsArray.size(); ch_index++) {
                             if(channelsArray.get(ch_index).equals(current_channel)) {
-                                Log.d("Client", "Found channel at position " + ch_index);
                                 View tab = tabHost.getTabWidget().getChildTabViewAt(0);
                                 if(tab == null) {
                                     Log.e("Client", "TabView is null");
                                 }
                                 socks_msg_text = (EditText) tab.findViewById(R.id.sock_msg_text);
                                 if(socks_msg_text == null) {
-                                    Log.e("Client", "EditText is null");
                                     socks_msg_text = findViewById(R.id.sock_msg_text);
-                                } else {
-                                    Log.d("Client", "EditText is null");
                                 }
                             }
                         }
@@ -1217,13 +1213,33 @@ public class ThreadActivity extends Activity {
                                 socket_data_string = "";
                         }
                     } else if(state == "getting_data_with_mention") {
+                        int cursor_pos = socks_msg_text.getSelectionStart();
+                        int current_ch_index = -1;
                         if(socket_data_string.length() > 0) {
-                            int cursor_pos = socks_msg_text.getSelectionStart();
-                            socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
-                            if(autoscroll_needed == true) {
-                                socks_msg_text.setSelection(socks_msg_text.getText().length());
-                            } else {
-                                socks_msg_text.setSelection(cursor_pos);
+                            for (int ch_index = 0; ch_index < channelsArray.size(); ch_index++) {
+                                if(current_channel.length() > 0 && current_channel.equals(channelsArray.get(ch_index))) {
+                                    current_ch_index = ch_index;
+                                }
+                            }
+                            if(current_ch_index > -1 && channels_sb.size() > current_ch_index && channelsArray.size() > current_ch_index) {
+                                channels_sb.get(current_ch_index).append(socket_data_string);
+                            }
+                            if(tabHost.getTabWidget().getTabCount() == 1) {
+                                socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
+                            } else if(tabHost.getTabWidget().getTabCount() > 1) {
+                                try {
+                                    if(current_ch_index > -1) {
+                                        Spinner channel_spinner = (Spinner) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_spinner);
+                                        if (channel_spinner.getSelectedItemPosition() == current_ch_index) {
+                                            EditText channel_socks_msg = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
+                                            channel_socks_msg.setText(channels_sb.get(current_ch_index));
+                                        }
+                                    } else {
+                                        socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
                             socket_data_string = "";
                             Context context = getApplicationContext();
@@ -1288,34 +1304,6 @@ public class ThreadActivity extends Activity {
                                     PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
                                     notification.contentIntent = contentIntent;
                                     notificationManager.notify(R.layout.notification_activity, notification);
-                                }
-                            }
-
-                            int current_ch_index = -1;
-
-                            for (int ch_index = 0; ch_index < channelsArray.size(); ch_index++) {
-                                if(current_channel.length() > 0 && current_channel.equals(channelsArray.get(ch_index))) {
-                                    current_ch_index = ch_index;
-                                }
-                            }
-                            if(current_ch_index > -1 && channels_sb.size() > current_ch_index && channelsArray.size() > current_ch_index) {
-                                channels_sb.get(current_ch_index).append(socket_data_string);
-                            }
-                            if(tabHost.getTabWidget().getTabCount() == 1) {
-                                socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
-                            } else if(tabHost.getTabWidget().getTabCount() > 1) {
-                                try {
-                                    if(current_ch_index > -1) {
-                                        Spinner channel_spinner = (Spinner) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_spinner);
-                                        if (channel_spinner.getSelectedItemPosition() == current_ch_index) {
-                                            EditText channel_socks_msg = (EditText) tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_msg_text);
-                                            channel_socks_msg.setText(channels_sb.get(current_ch_index));
-                                        }
-                                    } else {
-                                        socks_msg_text.setText(socks_msg_text.getText() + socket_data_string);
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
                                 }
                             }
                         }
@@ -1472,7 +1460,6 @@ public class ThreadActivity extends Activity {
                                             View view = tabHost.getTabWidget().getChildAt(1);
                                             view.setBackgroundResource(R.drawable.tabwidget);
                                             if (view != null) {
-                                                Log.d("Client", "TabWidget View");
                                                 tabHost.getTabWidget().getChildAt(1).getLayoutParams().height = (int) (30 * getResources().getDisplayMetrics().density);
                                                 View tabImage = view.findViewById(android.R.id.icon);
                                                 if (tabImage != null) {
