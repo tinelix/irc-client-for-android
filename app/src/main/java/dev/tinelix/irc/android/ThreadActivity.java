@@ -1068,7 +1068,7 @@ public class ThreadActivity extends Activity {
                         }
                         if(socket.isConnected() == true && state == "finishing_sending_message") {
                             PrintWriter out;
-                            out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output)));
+                            out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, encoding)));
                             Log.i("Client", "Sending message...\r\n\r\nMESSAGE: [" + sendingMsgText.replace("\r", "\\r").replace("\n", "\\n") + "]");
                             out.println(new String((sendingMsgText).getBytes(encoding), encoding));
                             Log.i("Client", "Clearing output stream...");
