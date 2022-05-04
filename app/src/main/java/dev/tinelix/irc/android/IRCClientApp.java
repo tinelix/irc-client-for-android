@@ -12,8 +12,8 @@ import java.util.LinkedList;
 public class IRCClientApp extends Application {
     ArrayList<Profile> profilesList = new ArrayList<Profile>();
 
-    public String version = "0.3.4 Beta";
-    public String build_date = "2022-05-03";
+    public String version = "0.4.0 Beta";
+    public String build_date = "2022-05-04";
 
     @Override
     public void onCreate() {

@@ -64,6 +64,8 @@ public class ConnectionManagerActivity extends Activity implements SharedPrefere
                     openOptionsMenu();
                 }
             });
+        } else {
+            getActionBar().setTitle(getResources().getString(R.string.connection_manager_title));
         }
         profilesAdapter = new ProfileAdapter(this, profilesList);
         String package_name = getApplicationContext().getPackageName();

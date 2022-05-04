@@ -60,8 +60,10 @@ public class ServerSettingsDialogFragm extends DialogFragment {
                         EditText server_name = view.findViewById(R.id.server_text);
                         EditText port_number = view.findViewById(R.id.port_numb);
                         CheckBox hide_ip_cb = view.findViewById(R.id.hide_ip_checkbox);
+                        CheckBox force_ssl_cb = view.findViewById(R.id.force_ssl_checkbox);
                         String[] encoding_array = getResources().getStringArray(R.array.encoding_array);
                         String encoding = new String();
+                        String force_ssl = new String();
                         if(encoding_spinner.getSelectedItemPosition() == 0) {
                             encoding = "utf-8";
                         } else if(encoding_spinner.getSelectedItemPosition() == 1) {
@@ -79,8 +81,13 @@ public class ServerSettingsDialogFragm extends DialogFragment {
                         } else {
                             hide_ip = "Disabled";
                         }
+                        if(force_ssl_cb.isChecked() == true) {
+                            force_ssl = "Enabled";
+                        } else {
+                            force_ssl = "Disabled";
+                        }
                        ((ProfileSettingsActivity) getActivity()).onSettingServer(server_name.getText().toString(),
-                               port_number.getText().toString(), encoding, hide_ip);
+                               port_number.getText().toString(), encoding, hide_ip, force_ssl);
                     }
             });
             builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
@@ -137,6 +144,15 @@ public class ServerSettingsDialogFragm extends DialogFragment {
                 hide_ip_cb.setChecked(false);
             } else {
                 hide_ip_cb.setChecked(true);
+            }
+
+            server_parameter = "force_ssl";
+            current_value = ((ProfileSettingsActivity) getActivity()).getCurrentValue(server_parameter);
+            CheckBox force_ssl_cb = view.findViewById(R.id.force_ssl_checkbox);
+            if(current_value.contains("Disabled")) {
+                force_ssl_cb.setChecked(false);
+            } else {
+                force_ssl_cb.setChecked(true);
             }
         };
         return builder.create();

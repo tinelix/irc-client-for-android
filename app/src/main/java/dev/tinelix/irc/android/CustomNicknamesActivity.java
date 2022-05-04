@@ -48,8 +48,11 @@ public class CustomNicknamesActivity extends Activity {
         setCustomTheme(global_prefs);
         setContentView(R.layout.custom_nicknames_activity);
         setColorStyle(global_prefs);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            getActionBar().setHomeButtonEnabled(true);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                getActionBar().setHomeButtonEnabled(true);
+            }
+            getActionBar().setTitle(getResources().getString(R.string.nicknames_manager_title));
         }
         current_parameter = "creating_nickname";
         if (savedInstanceState == null) {

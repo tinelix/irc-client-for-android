@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="main_menu_array">
-        <item>Менеджер подключений</item>
+        <item>Начать общение</item>
         <item>Настройки</item>
         <item>О приложении</item>
         <item>Выход</item>
@@ -35,7 +35,7 @@
     <string name="server_settings">Настройки сервера</string>
     <string name="identification">Идентификация</string>
     <string name="port">Порт</string>
-    <string name="only_ssl">Только SSL/TLS (пока не реализовано)</string>
+    <string name="only_ssl">Только SSL/TLS</string>
     <string name="connection_lost_msg">Соединение потеряно.</string>
     <string name="connection_timeout_msg">Время подключения превышено. Повторите позже.</string>
     <string name="no_connection_msg">Не удалось подключиться к серверу.</string>

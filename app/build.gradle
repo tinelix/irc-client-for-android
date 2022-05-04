@@ -6,8 +6,8 @@ android {
         applicationId "dev.tinelix.irc.android"
         minSdkVersion 8
         targetSdkVersion 32
-        versionCode 21
-        versionName '0.3.4_beta_20220503'
+        versionCode 22
+        versionName '0.4.0_beta_20220504'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

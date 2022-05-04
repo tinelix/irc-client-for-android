@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="main_menu_array">
-        <item>Connection manager</item>
+        <item>Start chatting</item>
         <item>Settings</item>
         <item>About application</item>
         <item>Quit</item>
@@ -22,7 +22,7 @@
     <string name="enter_the_password_title">Enter password</string>
     <string name="enter_the_realname_title">Enter real name</string>
     <string name="enter_the_hostname_title">Enter hostname</string>
-    <string name="your_nickname">Никнейм</string>
+    <string name="your_nickname">Nickname</string>
     <string name="prof_name">Profile name</string>
     <string name="profile_main_category">Main</string>
     <string name="auth_method">Authentication method</string>
@@ -39,7 +39,7 @@
     <string name="identification">Identification</string>
     <string name="hostname">Hostname</string>
     <string name="port">Port</string>
-    <string name="only_ssl">Only SSL/TLS (not implemented yet)</string>
+    <string name="only_ssl">Only SSL/TLS</string>
     <string name="connection_lost_msg">Connection lost.</string>
     <string name="connection_timeout_msg">Connection time is exceeded. Try again later.</string>
     <string name="no_connection_msg">Could not connect to the server.</string>

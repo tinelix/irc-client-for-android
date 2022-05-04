@@ -25,6 +25,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.Html;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
@@ -428,9 +429,15 @@ public class MainSettingsActivity  extends PreferenceActivity {
         setFontSizePref.setSummary(getString(R.string.value_in_px, prefs.getInt("font_size", 18)));
 
         final CheckBoxPreference save_msg_history = (CheckBoxPreference) findPreference("save_msg_history");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).canWrite() == true) {
                 save_msg_history.setChecked(global_prefs.getBoolean("save_msg_history", false));
+            } else {
+                save_msg_history.setChecked(false);
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    save_msg_history.setChecked(global_prefs.getBoolean("save_msg_history", false));
             } else {
                 save_msg_history.setChecked(false);
             }
@@ -479,13 +486,6 @@ public class MainSettingsActivity  extends PreferenceActivity {
                 return false;
             }
         });
-        if(global_prefs.getBoolean("save_msg_history", false) == true) {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                save_msg_history.setSummary(getResources().getString(R.string.saved_messages_history, "Documents/Tinelix/IRC Client/Messages Logs"));
-            } else {
-                save_msg_history.setSummary(getResources().getString(R.string.saved_messages_history, "Tinelix/IRC Client/Messages Logs"));
-            }
-        }
         Preference debug_logs = findPreference("debug_logs");
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             debug_logs.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -496,19 +496,35 @@ public class MainSettingsActivity  extends PreferenceActivity {
                 }
             });
         }
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-
-        }
     }
 
     @Override
     protected void onResume() {
         CheckBoxPreference save_msg_history = (CheckBoxPreference) findPreference("save_msg_history");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(MainSettingsActivity.this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).canWrite() == true) {
+                save_msg_history.setChecked(global_prefs.getBoolean("save_msg_history", false));
+                save_msg_history.setSummary(getResources().getString(R.string.saved_messages_history, "Documents/Tinelix/IRC Client/Messages Logs"));
             } else {
                 save_msg_history.setChecked(false);
-                onChangingBooleanValues(current_parameter, save_msg_history.isChecked());
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                save_msg_history.setChecked(global_prefs.getBoolean("save_msg_history", false));
+                save_msg_history.setSummary(getResources().getString(R.string.saved_messages_history, "Tinelix/IRC Client/Messages Logs"));
+            } else {
+                save_msg_history.setChecked(false);
+            }
+        } else {
+            File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath());
+            if (!directory.canWrite() && !directory.canRead()) {
+                save_msg_history.setChecked(false);
+                save_msg_history.setEnabled(false);
+                save_msg_history.setSummary(R.string.device_memory_restricted);
+            } else {
+                save_msg_history.setChecked(global_prefs.getBoolean("save_msg_history", false));
+                save_msg_history.setSummary(getResources().getString(R.string.saved_messages_history, "Tinelix/IRC Client/Messages Logs"));
             }
         }
         super.onResume();

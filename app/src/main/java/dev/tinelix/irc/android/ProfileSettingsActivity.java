@@ -67,6 +67,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
         setContentView(R.layout.custom_preferences_layout);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getActionBar().setHomeButtonEnabled(true);
+            getActionBar().setTitle(getResources().getString(R.string.connection_manager_title));
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -357,11 +358,13 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     final EditText server_name = dialogView.findViewById(R.id.server_text);
                     final EditText port_number = dialogView.findViewById(R.id.port_numb);
                     final CheckBox hide_ip_cb = dialogView.findViewById(R.id.hide_ip_checkbox);
+                    final CheckBox force_ssl_cb = dialogView.findViewById(R.id.force_ssl_checkbox);
                     dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             String[] encoding_array = getResources().getStringArray(R.array.encoding_array);
                             String encoding = new String();
+                            String force_ssl = new String();
                             if(encoding_spinner.getSelectedItemPosition() == 0) {
                                 encoding = "utf-8";
                             } else if(encoding_spinner.getSelectedItemPosition() == 1) {
@@ -379,8 +382,13 @@ public class ProfileSettingsActivity extends PreferenceActivity
                             } else {
                                 hide_ip = "Disabled";
                             }
+                            if(force_ssl_cb.isChecked() == true) {
+                                force_ssl = "Enabled";
+                            } else {
+                                force_ssl = "Disabled";
+                            }
                             onSettingServer(server_name.getText().toString(),
-                                    port_number.getText().toString(), encoding, hide_ip);
+                                    port_number.getText().toString(), encoding, hide_ip, force_ssl);
                         }
                     });
                     dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
@@ -414,6 +422,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     } else if(current_value.contains("koi8_u")) {
                         encoding_spinner.setSelection(4);
                     }
+
                     server_parameter = "hide_ip";
                     current_value = getCurrentValue(server_parameter);
                     if(current_value.contains("Disabled")) {
@@ -421,6 +430,15 @@ public class ProfileSettingsActivity extends PreferenceActivity
                     } else {
                         hide_ip_cb.setChecked(true);
                     }
+
+                    server_parameter = "force_ssl";
+                    current_value = getCurrentValue(server_parameter);
+                    if(current_value.contains("Disabled")) {
+                        force_ssl_cb.setChecked(false);
+                    } else {
+                        force_ssl_cb.setChecked(true);
+                    }
+
                     customizeServerSettingsDialog(global_prefs, dialogView);
                     TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
                     dialog_title.setText(getString(R.string.server_settings));
@@ -1016,6 +1034,10 @@ public class ProfileSettingsActivity extends PreferenceActivity
             Context context = getApplicationContext();
             SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
             value = prefs.getString("hide_ip", "");
+        } else if(parameter == "force_ssl") {
+            Context context = getApplicationContext();
+            SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
+            value = prefs.getString("force_ssl", "");
         } else if(parameter == "changing_quitmsg") {
             Context context = getApplicationContext();
             SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
@@ -1026,7 +1048,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
         return value;
     }
 
-    public void onSettingServer(String server, String port, String encoding, String hide_ip) {
+    public void onSettingServer(String server, String port, String encoding, String hide_ip, String force_ssl) {
         Preference server_settings = (Preference) findPreference("server_settings");
         Context context = getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(old_profile_name, 0);
@@ -1038,6 +1060,7 @@ public class ProfileSettingsActivity extends PreferenceActivity
         }
         editor.putString("encoding", encoding);
         editor.putString("hide_ip", hide_ip);
+        editor.putString("force_ssl", force_ssl);
         editor.commit();
     }
 

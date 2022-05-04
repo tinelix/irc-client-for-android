@@ -75,18 +75,14 @@
         android:orientation="vertical">
 
         <CheckBox
-            android:id="@+id/checkbox"
+            android:id="@+id/force_ssl_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            android:clickable="false"
-            android:enabled="false"
-            android:fontFamily="sans-serif-condensed"
             android:text="@string/only_ssl"
-            android:textSize="14sp"
-            tools:targetApi="jelly_bean" />
+            android:textSize="14sp" />
 
         <CheckBox
             android:id="@+id/hide_ip_checkbox"

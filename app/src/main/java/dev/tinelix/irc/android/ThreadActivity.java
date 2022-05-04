@@ -59,6 +59,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,6 +76,7 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.channels.IllegalBlockingModeException;
+import java.security.KeyStore;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,12 +89,21 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.zip.Inflater;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
 import static java.lang.System.out;
 import static java.lang.Thread.sleep;
 
 public class ThreadActivity extends Activity {
 
     public Socket socket;
+    public SSLSocket sslSocket;
     public boolean isConnected;
     public InputStream input;
     public OutputStream output;
@@ -124,6 +135,7 @@ public class ThreadActivity extends Activity {
     public String auth_method;
     public String hide_ip;
     public String quit_msg;
+    public String force_ssl;
     public int sended_bytes_count;
     public int received_bytes_count;
     public String messageAuthor;
@@ -225,11 +237,11 @@ public class ThreadActivity extends Activity {
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
                     go_down.setVisible(true);
+                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.autoscroll_is_disabled), Toast.LENGTH_LONG).show();
                 } else {
                     Button go_down_btn = findViewById(R.id.go_down_button);
                     go_down_btn.setVisibility(View.VISIBLE);
                 }
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.autoscroll_is_disabled), Toast.LENGTH_LONG).show();
                 return false;
             }
         });
@@ -299,6 +311,7 @@ public class ThreadActivity extends Activity {
         encoding = prefs.getString("encoding", "");
         hide_ip = prefs.getString("hide_ip", "");
         quit_msg = prefs.getString("quit_message", "");
+        force_ssl = prefs.getString("force_ssl", "Disabled");
         if(hostname.length() <= 2) {
             hostname = nicknames.split(", ")[0];
         }
@@ -324,7 +337,6 @@ public class ThreadActivity extends Activity {
             View view = tabHost.getTabWidget().getChildAt(0);
             view.setBackgroundResource(R.drawable.tabwidget);
             if (view != null) {
-                Log.d("Client", "TabWidget View");
                 tabHost.getTabWidget().getChildAt(0).getLayoutParams().height = (int) (30 * getResources().getDisplayMetrics().density);
                 View tabImage = view.findViewById(android.R.id.icon);
                 if (tabImage != null) {
@@ -343,16 +355,17 @@ public class ThreadActivity extends Activity {
                     ViewGroup.LayoutParams params = tabTitle.getLayoutParams();
                     params.height = ViewGroup.LayoutParams.MATCH_PARENT;
                 } else {
-                    Log.e("Client", "TabTitle View is null");
                 }
             } else {
-                Log.e("Client", "TabWidget View is null");
             }
         }
 
         tabSpec = tabHost.newTabSpec("thread");
-
-        new Thread(new ircThread()).start();
+        if(force_ssl.equals("Enabled")) {
+            new Thread(new sslIrcThread()).start();
+        } else {
+            new Thread(new ircThread()).start();
+        }
         ImageButton send_btn = findViewById(R.id.send_button);
         send_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -579,7 +592,6 @@ public class ThreadActivity extends Activity {
             autoscroll_needed = true;
             MenuItem go_down = thread_menu.findItem(R.id.go_down_item);
             go_down.setVisible(false);
-
         }
 
         return super.onOptionsItemSelected(item);
@@ -1033,10 +1045,183 @@ public class ThreadActivity extends Activity {
         }
     }
 
+    class sslIrcThread implements Runnable {
+        @Override
+        public void run() {
+            try {
+                final SharedPreferences global_prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                final TrustManager[] trustAllCerts = new TrustManager[]{
+                        new X509TrustManager() {
+                            @Override
+                            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                            }
+
+                            @Override
+                            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                            }
+
+                            @Override
+                            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                                return new java.security.cert.X509Certificate[]{};
+                            }
+                        }
+                };
+
+                final SSLContext sslContext = SSLContext.getInstance("SSL");
+                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                SSLSocketFactory ssf = (SSLSocketFactory) sslContext.getSocketFactory();
+                Log.d("Client", "Getting IP address from " + server + ":" + port + "...");
+                InetAddress serverAddr = InetAddress.getByName(server);
+
+                state = "connecting";
+                Log.d("Client", "Connecting to " + server + ":" + port + "... (Secured)");
+                SocketAddress socketAddress = new InetSocketAddress(serverAddr, port);
+                sslSocket = (SSLSocket) ssf.createSocket(serverAddr, port);
+
+                while(state == "connecting") {
+                    if (sslSocket.isConnected()) {
+                        updateUITask.run();
+                        sleep(50);
+                    }
+                }
+                input = sslSocket.getInputStream();
+                output = sslSocket.getOutputStream();
+                output.write(("USER " + nicknames.split(", ")[0] + " " +
+                        hostname + " " + nicknames.split(", ")[0] + " :" +
+                        realname + "\r\n").getBytes(encoding));
+                output.flush();
+                sended_bytes_count += ("USER " + nicknames.split(", ")[0] + " " +
+                        hostname + " " + nicknames.split(", ")[0] + " :" +
+                        realname + "\r\n").getBytes(encoding).length;
+                output.write(("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes(encoding));
+                output.flush();
+                sended_bytes_count += ("NICK " + nicknames.split(", ")[0] + "\r\n").getBytes(encoding).length;
+                if(password.length() > 0 && auth_method.startsWith("NickServ")) {
+                    output.write(("NICKSERV identify " + password + "\r\n").getBytes(encoding));
+                    output.flush();
+                    sended_bytes_count += ("NICKSERV identify " + password + "\r\n").getBytes(encoding).length;
+                }
+                if(hide_ip.startsWith("Enabled")) {
+                    output.write(("MODE " + nicknames.split(", ")[0] + " +x\r\n").getBytes(encoding));
+                    output.flush();
+                    sended_bytes_count += ("MODE " + nicknames.split(", ")[0] + " +x\r\n").getBytes(encoding).length;
+                }
+                BufferedReader in = new BufferedReader(new InputStreamReader(sslSocket.getInputStream(), encoding));
+                String response;
+                messageAuthor = new String();
+                messageBody = new String();
+                messageBody = "";
+                String nick = nicknames.split(", ")[0];
+                IRCParser parser = new IRCParser();
+                msg = new StringBuilder();
+                while(sslSocket.isConnected() == true) {
+                        sleep(10);
+                        response = in.readLine();
+                        raw_socket_data_string = response;
+                        received_bytes_count += response.length();
+                        if (response.startsWith("PING")) {
+                            output.write(("PONG " + response.split(" ")[1]).getBytes(encoding));
+                            output.flush();
+                            sended_bytes_count += ("PONG " + response.split(" ")[1]).getBytes(encoding).length;
+                        }
+                        if(response != null) {
+                            String parsedString;
+                            if(global_prefs.getBoolean("show_msg_timestamps", true) == true) {
+                                parsedString = parser.parseString(response, true);
+                            } else {
+                                parsedString = parser.parseString(response, false);
+                            }
+                            messageBody = parser.getMessageBody(response);
+                            messageAuthor = parser.getMessageAuthor(response);
+                            current_channel = parser.getChannel(response);
+                            if(parsedString.length() > 0) {
+                                msg.append(parsedString).append("\n");
+                                socket_data_string = msg.toString();
+                                msg.setLength(0);
+                                if(messageBody.contains(nicknames.split(", ")[0])) {
+                                    state = "getting_data_with_mention";
+                                } else {
+                                    state = "getting_data";
+                                }
+                                updateUITask.run();
+                            };
+                        }
+                }
+                sslSocket.close();
+                sslSocket = null;
+                state = "connection_lost";
+                updateUITask.run();
+            } catch (UnknownHostException uhEx) {
+                Log.e("Socket", "UnknownHostException");
+                try {
+                    sslSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                sslSocket = null;
+                state = "no_connection";
+                updateUITask.run();
+            } catch(SocketTimeoutException timeoutEx) {
+                Log.e("Socket", "SocketTimeoutException");
+                try {
+                    sslSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                sslSocket = null;
+                state = "timeout";
+                updateUITask.run();
+            } catch (IllegalBlockingModeException ibmEx) {
+                Log.e("Socket", "IllegalBlockingModeException");
+                try {
+                    sslSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                sslSocket = null;
+                state = "no_connection";
+                updateUITask.run();
+            } catch (IllegalArgumentException iaEx) {
+                Log.e("Socket", "IllegalArgumentException");
+                try {
+                    sslSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                sslSocket = null;
+                state = "no_connection";
+                updateUITask.run();
+            } catch (ConnectException Ex) {
+                Log.e("Socket", "ConnectException");
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                sslSocket = null;
+                state = "no_connection";
+                updateUITask.run();
+            } catch (IOException ioEx) {
+                ioEx.printStackTrace();
+            } catch (Exception ex) {
+                try {
+                    if(socket != null) {
+                        socket.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                sslSocket = null;
+                state = "disconnected";
+                updateUITask.run();
+            }
+        }
+    }
+
     class SendSocketMsg implements Runnable {
         @Override
         public void run() {
-            if (socket != null) {
+            if (socket != null || sslSocket != null) {
                 state = "sending_message";
                 while(state == "sending_message") {
                     updateUITask.run();
@@ -1055,27 +1240,48 @@ public class ThreadActivity extends Activity {
                                 @Override
                                 public void run() {
                                     try {
-                                        if(socket != null) {
-                                            socket.close();
+                                        if(force_ssl.equals("Enabled")) {
+                                            if (sslSocket != null) {
+                                                sslSocket.close();
+                                                sslSocket = null;
+                                            }
+                                        } else {
+                                            if (socket != null) {
+                                                socket.close();
+                                                socket = null;
+                                            }
                                         }
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                                    socket = null;
                                     finish();
                                 }
                             }, 1000);
                         }
-                        if(socket.isConnected() == true && state == "finishing_sending_message") {
-                            PrintWriter out;
-                            out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, encoding)));
-                            Log.i("Client", "Sending message...\r\n\r\nMESSAGE: [" + sendingMsgText.replace("\r", "\\r").replace("\n", "\\n") + "]");
-                            out.println(new String((sendingMsgText).getBytes(encoding), encoding));
-                            Log.i("Client", "Clearing output stream...");
-                            out.flush();
-                            Log.i("Client", "\r\nSended message!");
-                            state = "sended_message";
-                            updateUITask.run();
+                        if(force_ssl.equals("Enabled")) {
+                            if (sslSocket.isConnected() == true && state == "finishing_sending_message") {
+                                PrintWriter out;
+                                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, encoding)));
+                                Log.i("Client", "Sending message...\r\n\r\nMESSAGE: [" + sendingMsgText.replace("\r", "\\r").replace("\n", "\\n") + "]");
+                                out.println(new String((sendingMsgText).getBytes(encoding), encoding));
+                                Log.i("Client", "Clearing output stream...");
+                                out.flush();
+                                Log.i("Client", "\r\nSended message!");
+                                state = "sended_message";
+                                updateUITask.run();
+                            }
+                        } else {
+                            if (socket.isConnected() == true && state == "finishing_sending_message") {
+                                PrintWriter out;
+                                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, encoding)));
+                                Log.i("Client", "Sending message...\r\n\r\nMESSAGE: [" + sendingMsgText.replace("\r", "\\r").replace("\n", "\\n") + "]");
+                                out.println(new String((sendingMsgText).getBytes(encoding), encoding));
+                                Log.i("Client", "Clearing output stream...");
+                                out.flush();
+                                Log.i("Client", "\r\nSended message!");
+                                state = "sended_message";
+                                updateUITask.run();
+                            }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -1308,6 +1514,7 @@ public class ThreadActivity extends Activity {
                             }
                         }
                     } else if(state == "disconnected") {
+                        Toast.makeText(getApplicationContext(), R.string.connection_lost_msg, Toast.LENGTH_SHORT).show();
                         socks_msg_text.setSelection(socks_msg_text.getText().length());
                         connectionDialog.cancel();
                         finish();
@@ -1327,7 +1534,7 @@ public class ThreadActivity extends Activity {
                         connectionDialog.cancel();
                         finish();
                     } else if(state == "sending_message") {
-                        if (socket != null) {
+                        if (socket != null || sslSocket != null) {
                             EditText output_msg_text;
                             if(tabHost.getCurrentTab() == 1) {
                                 output_msg_text = tabHost.getTabContentView().getChildAt(1).findViewById(R.id.channels_output_msg_text);
