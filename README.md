@@ -5,7 +5,7 @@
 
 <p><b>Minimal Android version:</b> Android 2.2 Froyo (with Android API level 8) and higher.
 <h3>Links</h3>
-<a href="https://github.com/tinelix/irc-client-for-android/releases/tag/0.3.4-beta-20220503">Download latest version</a> | <a href="https://tinelix.github.io">by Tinelix</a>
+<a href="https://github.com/tinelix/irc-client-for-android/releases/tag/0.4.0-beta-20220504">Download latest version</a> | <a href="https://tinelix.github.io">by Tinelix</a>
 <p><p>
 <b>Get new updates via:</b>
 <a href="https://apt.izzysoft.de/fdroid/index/apk/dev.tinelix.irc.android">IzzyOnDroid F-Droid repository</a> | <a href="https://4pda.to/forum/index.php?showtopic=1043503&st=0#entry113549362">4PDA forum</a>* | <a href="https://tinelix.github.io/pages/eng/tinelix/irc-client.html">My website</a>
