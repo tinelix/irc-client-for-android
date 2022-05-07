@@ -105,7 +105,6 @@
             android:clickable="true"
             android:fontFamily="sans-serif-condensed"
             android:text="@string/only_ssl"
-            android:textSize="14sp"
             tools:targetApi="jelly_bean" />
 
         <CheckBox

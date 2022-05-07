@@ -1261,29 +1261,32 @@ public class ThreadActivity extends Activity {
                         if(force_ssl.equals("Enabled")) {
                             if (sslSocket.isConnected() == true && state == "finishing_sending_message") {
                                 PrintWriter out;
-                                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, encoding)));
-                                Log.i("Client", "Sending message...\r\n\r\nMESSAGE: [" + sendingMsgText.replace("\r", "\\r").replace("\n", "\\n") + "]");
-                                out.println(new String((sendingMsgText).getBytes(encoding), encoding));
-                                Log.i("Client", "Clearing output stream...");
-                                out.flush();
-                                Log.i("Client", "\r\nSended message!");
-                                state = "sended_message";
-                                updateUITask.run();
+                                if(output != null) {
+                                    out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, encoding)));
+                                    out.println(new String((sendingMsgText).getBytes(encoding), encoding));
+                                    out.flush();
+                                    state = "sended_message";
+                                    updateUITask.run();
+                                }
                             }
                         } else {
                             if (socket.isConnected() == true && state == "finishing_sending_message") {
                                 PrintWriter out;
-                                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, encoding)));
-                                Log.i("Client", "Sending message...\r\n\r\nMESSAGE: [" + sendingMsgText.replace("\r", "\\r").replace("\n", "\\n") + "]");
-                                out.println(new String((sendingMsgText).getBytes(encoding), encoding));
-                                Log.i("Client", "Clearing output stream...");
-                                out.flush();
-                                Log.i("Client", "\r\nSended message!");
-                                state = "sended_message";
-                                updateUITask.run();
+                                if(output != null) {
+                                    out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, encoding)));
+                                    Log.i("Client", "Sending message...\r\n\r\nMESSAGE: [" + sendingMsgText.replace("\r", "\\r").replace("\n", "\\n") + "]");
+                                    out.println(new String((sendingMsgText).getBytes(encoding), encoding));
+                                    Log.i("Client", "Clearing output stream...");
+                                    out.flush();
+                                    Log.i("Client", "\r\nSended message!");
+                                    state = "sended_message";
+                                    updateUITask.run();
+                                }
                             }
                         }
                     } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

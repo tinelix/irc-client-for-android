@@ -104,4 +104,5 @@
     <string name="autoscroll_is_disabled">Autoscrolling is disabled. You can enable using the \"Go down\" button.</string>
     <string name="show_messages_timestamps_item">Show timestamps in messages</string>
     <string name="channels_tab_item">Channels</string>
+    <string name="unknown">Unknown</string>
 </resources>

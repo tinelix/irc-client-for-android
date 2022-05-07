@@ -97,4 +97,5 @@
     <string name="autoscroll_is_disabled">Автопрокрутка отключена. Включить можно с помощью кнопки \"Вниз\".</string>
     <string name="show_messages_timestamps_item">Показывать время в сообщ.</string>
     <string name="channels_tab_item">Каналы</string>
+    <string name="unknown">Неизвестно</string>
 </resources>
