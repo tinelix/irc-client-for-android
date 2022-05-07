@@ -1274,9 +1274,7 @@ public class ThreadActivity extends Activity {
                                 PrintWriter out;
                                 if(output != null) {
                                     out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, encoding)));
-                                    Log.i("Client", "Sending message...\r\n\r\nMESSAGE: [" + sendingMsgText.replace("\r", "\\r").replace("\n", "\\n") + "]");
                                     out.println(new String((sendingMsgText).getBytes(encoding), encoding));
-                                    Log.i("Client", "Clearing output stream...");
                                     out.flush();
                                     Log.i("Client", "\r\nSended message!");
                                     state = "sended_message";
