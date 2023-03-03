@@ -1,1 +1,0 @@
-'libs' - folder for Gradle libs
