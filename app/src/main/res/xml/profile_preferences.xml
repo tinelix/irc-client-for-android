@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:key="main_category"
+        android:title="@string/profile_main_category">
+        <Preference
+            android:key="profile_name"
+            android:title="@string/profile_name"/>
+        <Preference
+            android:key="auth_method"
+            android:title="@string/auth_method"/>
+        <Preference
+            android:key="nicknames"
+            android:title="@string/nicknames"/>
+        <Preference
+            android:enabled="false"
+            android:key="password"
+            android:title="@string/password" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="server_category"
+        android:title="@string/profile_server_category">
+        <Preference
+            android:key="server_settings"
+            android:title="@string/server_settings"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="ident_category"
+        android:title="@string/profile_identification_category">
+        <Preference
+            android:key="real_name"
+            android:title="@string/real_name"/>
+        <Preference
+            android:key="host_name"
+            android:title="@string/host_name"/>
+        <Preference
+            android:key="quiting_msg"
+            android:title="@string/quiting_message"/>
+    </PreferenceCategory>
+</PreferenceScreen>

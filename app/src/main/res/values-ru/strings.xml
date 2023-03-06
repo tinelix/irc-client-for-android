@@ -2,4 +2,14 @@
     <string name="app_name">Tinelix IRC</string>
     <string name="not_implemented_yet">Еще не реализовано.</string>
     <string name="profile_name">Имя профиля</string>
+    <string name="profile_main_category">Общие</string>
+    <string name="auth_method">Метод аутентификации</string>
+    <string name="nicknames">Никнеймы</string>
+    <string name="password">Пароль</string>
+    <string name="profile_server_category">Сервер</string>
+    <string name="server_settings">Настройки сервера</string>
+    <string name="profile_identification_category">Идентификация</string>
+    <string name="real_name">Полное имя</string>
+    <string name="host_name">Имя хоста</string>
+    <string name="quiting_message">Сообщение о выходе</string>
 </resources>
