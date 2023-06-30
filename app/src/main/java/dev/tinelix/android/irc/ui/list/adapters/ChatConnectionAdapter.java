@@ -29,7 +29,7 @@ public class ChatConnectionAdapter extends RecyclerView.Adapter<ChatConnectionAd
     @NonNull
     @Override
     public ChatConnectionAdapter.Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new Holder(LayoutInflater.from(ctx).inflate(R.layout.chat_profile, parent, false));
+        return new Holder(LayoutInflater.from(ctx).inflate(R.layout.list_item_chat_profile, parent, false));
     }
 
     @Override
